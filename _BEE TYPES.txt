@@ -1,0 +1,121 @@
+------------------------------------------------------
+Mundane Bees
+------------------------------------------------------
+Forest Bee
+Honey Comb
+
+Meadows Bee
+Honey Comb
+
+Modest Bee
+Parched Comb
+
+Tropical Bee
+Silky Comb
+
+Wintry Bee
+Frozen Comb
+
+Marshy Bee
+Mossy Comb
+
+Water Bee
+Wet Comb
+
+Rocky Bee
+Rocky Comb
+
+Embittered Bee
+Simmering Comb
+
+Marbled Bee
+Honey Comb
+
+Valiant Bee (5% chance when getting normal)
+Cocoa Comb
+
+Steadfast Bee (rare)
+Cocoa Comb
+
+------------------------------------------------------
+Cross Breeding
+------------------------------------------------------
+Common Bee
+Mundane bee + a different mundane bee
+Honey Comb
+
+Cultivated Bee
+Common bee + mundane bee
+Honey Comb
+
+Noble Bee
+Common bee + cultivated bee
+Dripping Comb
+
+Majestic Bee
+Noble bee + cultivated bee
+Dripping Comb
+
+Imperial Bee
+Noble bee + majestic bee
+Dripping Comb
+
+Dilligent Bee
+Common bee + cultivated bee
+Stringy Comb
+
+Unweary Bee
+Dilligent bee + cultivated bee
+Stringy Comb
+
+Industrious Bee
+Dilligent bee + unweary bee
+Stringy Comb
+
+Heroic Bee
+Steadfast bee + valiant bee
+Cocoa Comb
+
+Sinister Bee
+Modest bee + cultivated bee
+Tropical bee + cultivated bee
+Simmering Comb
+
+Fiendish Bee
+Cultivated bee + sinister bee
+Modest bee + sinister bee
+Tropical bee + sinister bee
+Simmering Comb
+
+Demonic Bee
+Sinister bee + fiendish bee
+Simmering Comb
+
+Frugal Bee
+Modest bee + sinister bee
+Modest bee + fiendish bee
+Parched Comb
+
+Austere Bee
+Modest bee + frugal bee
+Parched Comb / Powdery Comb
+
+Exotic Bee
+Austere bee + tropical bee
+Silky Comb
+
+Edenic Bee
+Exotic bee + tropical bee
+Silky Comb
+
+Icy Bee
+Industrious bee + wintry bee
+Frozen Comb
+
+Glacial Bee
+Icy bee + wintry bee
+Frozen Comb
+
+Rural Bee
+Meadows bee + diligent bee
+Wheaten Comb

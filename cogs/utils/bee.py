@@ -2,6 +2,8 @@ import typing
 import enum
 import uuid
 
+from discord.ext import commands
+
 
 class Nobility(enum.Enum):
     DRONE = 'Drone'
@@ -68,6 +70,15 @@ class Bee(object):
         ...
 
     @classmethod
+    async def fetch_bees_by_user(cls, db, user_id: int) -> list['Bee']:
+        """
+        Gives you a list of the bees owned by the given user.
+        """
+
+        rows = await db("""SELECT * FROM bees WHERE owner_id=$1""", user_id)
+        return [cls(**i) for i in rows]
+
+    @classmethod
     async def create_bee(cls, db, user_id: int = None):
         """
         Create a new bee.
@@ -88,5 +99,20 @@ class Bee(object):
             """UPDATE bees SET parent_ids=$2, owner_id=$3, name=$4, nobility=$5,
             speed=$6, fertility=$7, generation=$8 WHERE id=$1""",
             self.id, self.parent_ids, self.owner_id, self.name,
-            self.nobility, self.speed, self.fertility, self.generation
+            self.nobility.value, self.speed, self.fertility, self.generation
         )
+
+    @classmethod
+    async def convert(cls, ctx, value: str):
+        """
+        Get a bee instance from its name.
+        """
+
+        async with ctx.bot.database() as db:
+            rows = await db(
+                """SELECT * FROM bees WHERE owner_id=$1 AND (id=$2 OR LOWER(name)=LOWER($2::TEXT))""",
+                ctx.author.id, value,
+            )
+        if not rows:
+            raise commands.BadArgument("You don't have a bee with that name!")
+        return cls(**rows[0])

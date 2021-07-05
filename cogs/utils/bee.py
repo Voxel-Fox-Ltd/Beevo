@@ -3,6 +3,7 @@ import enum
 import uuid
 
 from discord.ext import commands
+import voxelbotutils as vbu
 
 
 class Nobility(enum.Enum):
@@ -12,6 +13,8 @@ class Nobility(enum.Enum):
 
 
 class Bee(object):
+
+    SLASH_COMMAND_ARG_TYPE = vbu.ApplicationCommandOptionType.STRING
 
     def __init__(
             self, id: typing.Union[str, uuid.UUID], parent_ids: list[typing.Union[str, uuid.UUID]],
@@ -41,6 +44,10 @@ class Bee(object):
 
         #: How many generations old this bee is.
         self.generation: int = generation
+
+    @property
+    def display_name(self):
+        return self.name or self.id
 
     @property
     def id(self):
@@ -85,7 +92,7 @@ class Bee(object):
         """
 
         rows = await db(
-            """INSERT INTO bees (id, owner_id) VALUES (GEN_RANDOM_UUID(), $1) RETURNING *""",
+            """INSERT INTO bees (id, owner_id) VALUES (GEN_RANDOM_UUID()::TEXT, $1) RETURNING *""",
             user_id,
         )
         return cls(**rows[0])
@@ -100,6 +107,16 @@ class Bee(object):
             speed=$6, fertility=$7, generation=$8 WHERE id=$1""",
             self.id, self.parent_ids, self.owner_id, self.name,
             self.nobility.value, self.speed, self.fertility, self.generation
+        )
+
+    async def delete(self, db):
+        """
+        Remove a bee from its owner.
+        """
+
+        await db(
+            """UPDATE bees SET owner_id=NULL WHERE id=$1""",
+            self.id,
         )
 
     @classmethod

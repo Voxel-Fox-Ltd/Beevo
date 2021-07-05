@@ -27,7 +27,7 @@ class BeeCommands(vbu.Cog):
             bee = await utils.Bee.create_bee(db, ctx.author.id)
             bee.name = random.choice(self.names)
             await bee.update(db)
-        return await ctx.send(f"Created your bee! `{bee.name or bee.id}`")
+        return await ctx.send(f"Created your new bee **{bee.display_name}**!")
 
     @vbu.command()
     async def listbees(self, ctx: vbu.Context):
@@ -39,7 +39,7 @@ class BeeCommands(vbu.Cog):
             bees = await utils.Bee.fetch_bees_by_user(db, ctx.author.id)
         if not bees:
             return await ctx.send("You don't have any bees! :c")
-        bee_string = "\n".join([f"\\* **{i.name or i.id}**" for i in bees])
+        bee_string = "\n".join([f"\\* **{i.display_name}**" for i in bees])
         return await ctx.send(f"You have {len(bees)} bees: \n{bee_string}")
 
     @vbu.command()
@@ -52,6 +52,24 @@ class BeeCommands(vbu.Cog):
             before.name = after
             await before.update(db)
         return await ctx.send("Updated!")
+
+    @vbu.command()
+    async def releasebee(self, ctx: vbu.Context, bee: utils.Bee):
+        """
+        Releases one of your bees back into the wild.
+        """
+
+        async with self.bot.database() as db:
+            await bee.delete(db)
+        return await ctx.send(f"Released **{bee.display_name}** into the wild \N{PENSIVE FACE}")
+
+    @vbu.command()
+    async def petbee(self, ctx: vbu.Context, bee: utils.Bee):
+        """
+        Pet one of your bees on their fluffy lil heads.
+        """
+
+        return await ctx.send(f"**{bee.display_name}**: *Happy buzzing noises*")
 
 
 def setup(bot: vbu.Bot):

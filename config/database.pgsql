@@ -35,8 +35,8 @@ END $$;
 
 
 CREATE TABLE IF NOT EXISTS bees(
-    id UUID PRIMARY KEY,  -- the bee identifier
-    parent_ids UUID[],  -- the parents of the bees
+    id TEXT PRIMARY KEY,  -- the bee identifier
+    parent_ids TEXT[],  -- the parents of the bees
     owner_id BIGINT,  -- the ID of the user who owns the bee
     name TEXT,  -- the name given to the bee
     nobility nobility NOT NULL DEFAULT 'Drone',  -- the type of bee that this is

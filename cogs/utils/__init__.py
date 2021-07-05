@@ -1,1 +1,1 @@
-from .bee import Bee
+from .bee import Bee, BeeType, Nobility

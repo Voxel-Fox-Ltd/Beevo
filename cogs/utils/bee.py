@@ -1,6 +1,7 @@
 import typing
 import enum
 import uuid
+import random
 
 from discord.ext import commands
 import voxelbotutils as vbu
@@ -12,6 +13,20 @@ class Nobility(enum.Enum):
     QUEEN = 'Queen'
 
 
+class BeeType(enum.Enum):
+    # Mundane bees
+    FOREST = 'forest'
+    MEADOWS = 'meadows'
+    MODEST = 'modest'
+    TROPICAL = 'tropical'
+    WINTRY = 'wintry'
+    MARSHY = 'marshy'
+    WATER = 'water'
+    ROCKY = 'rocky'
+    EMBITTERED = 'embittered'
+    MARBLED = 'marbled'
+
+
 class Bee(object):
 
     SLASH_COMMAND_ARG_TYPE = vbu.ApplicationCommandOptionType.STRING
@@ -19,7 +34,7 @@ class Bee(object):
     def __init__(
             self, id: typing.Union[str, uuid.UUID], parent_ids: list[typing.Union[str, uuid.UUID]],
             nobility: typing.Union[str, Nobility], speed: int, fertility: int, owner_id: int,
-            generation: int, name: str):
+            generation: int, name: str, type: typing.Union[str, BeeType]):
 
         #: The ID of this bee.
         self.id: str = id
@@ -32,6 +47,9 @@ class Bee(object):
 
         #: The name that the owner gave to this bee
         self.name: str = name
+
+        #: The name that the owner gave to this bee
+        self.type: str = type
 
         #: The nobility of this bee - this says if it's a queen, princess, or drone.
         self.nobility: str = nobility
@@ -68,6 +86,17 @@ class Bee(object):
         else:
             self._nobility = Nobility(value)
 
+    @property
+    def type(self):
+        return self._type
+
+    @type.setter
+    def type(self, value: typing.Union[str, BeeType]):
+        if isinstance(value, BeeType):
+            self._type = value
+        else:
+            self._type = BeeType(value)
+
     @classmethod
     def breed(cls, mother: 'Bee', father: 'Bee'):
         ...
@@ -86,14 +115,15 @@ class Bee(object):
         return [cls(**i) for i in rows]
 
     @classmethod
-    async def create_bee(cls, db, user_id: int = None):
+    async def create_bee(cls, db, user_id: int = None, bee_type: BeeType = None, nobility: Nobility = Nobility.DRONE):
         """
         Create a new bee.
         """
 
+        bee_type = bee_type or random.choice(list(BeeType))
         rows = await db(
-            """INSERT INTO bees (id, owner_id) VALUES (GEN_RANDOM_UUID()::TEXT, $1) RETURNING *""",
-            user_id,
+            """INSERT INTO bees (id, owner_id, type, nobility) VALUES (GEN_RANDOM_UUID()::TEXT, $1, $2, $3) RETURNING *""",
+            user_id, bee_type.value, nobility.value,
         )
         return cls(**rows[0])
 
@@ -104,9 +134,10 @@ class Bee(object):
 
         await db(
             """UPDATE bees SET parent_ids=$2, owner_id=$3, name=$4, nobility=$5,
-            speed=$6, fertility=$7, generation=$8 WHERE id=$1""",
+            speed=$6, fertility=$7, generation=$8, type=$9 WHERE id=$1""",
             self.id, self.parent_ids, self.owner_id, self.name,
-            self.nobility.value, self.speed, self.fertility, self.generation
+            self.nobility.value, self.speed, self.fertility, self.generation,
+            self.type.value,
         )
 
     async def delete(self, db):

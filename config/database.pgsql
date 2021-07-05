@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS bees(
     id TEXT PRIMARY KEY,  -- the bee identifier
     parent_ids TEXT[],  -- the parents of the bees
     owner_id BIGINT,  -- the ID of the user who owns the bee
+    type TEXT NOT NULL,  -- the type of bee
     name TEXT,  -- the name given to the bee
     nobility nobility NOT NULL DEFAULT 'Drone',  -- the type of bee that this is
     speed INTEGER NOT NULL DEFAULT 0,  -- how often they produce honey

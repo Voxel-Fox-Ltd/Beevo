@@ -1,7 +1,6 @@
 import pathlib
 import random
 
-from discord.ext import commands
 import voxelbotutils as vbu
 
 from cogs import utils
@@ -24,10 +23,22 @@ class BeeCommands(vbu.Cog):
         """
 
         async with self.bot.database() as db:
-            bee = await utils.Bee.create_bee(db, ctx.author.id)
+            bee = await utils.Bee.create_bee(db, ctx.author.id, nobility=utils.Nobility.DRONE)
             bee.name = random.choice(self.names)
             await bee.update(db)
-        return await ctx.send(f"Created your new bee **{bee.display_name}**!")
+        return await ctx.send(f"Created your new {bee.type.value.lower()} drone **{bee.display_name}**!")
+
+    @vbu.command()
+    async def getprincess(self, ctx: vbu.Context):
+        """
+        Generate a test bee for you to flirt with.
+        """
+
+        async with self.bot.database() as db:
+            bee = await utils.Bee.create_bee(db, ctx.author.id, nobility=utils.Nobility.PRINCESS)
+            bee.name = random.choice(self.names)
+            await bee.update(db)
+        return await ctx.send(f"Created your new {bee.type.value.lower()} princess **{bee.display_name}**!")
 
     @vbu.command()
     async def listbees(self, ctx: vbu.Context):
@@ -39,7 +50,7 @@ class BeeCommands(vbu.Cog):
             bees = await utils.Bee.fetch_bees_by_user(db, ctx.author.id)
         if not bees:
             return await ctx.send("You don't have any bees! :c")
-        bee_string = "\n".join([f"\\* **{i.display_name}**" for i in bees])
+        bee_string = "\n".join([f"\\* **{i.display_name}** ({i.type.value.lower()} {i.nobility.value.lower()})" for i in bees])
         return await ctx.send(f"You have {len(bees)} bees: \n{bee_string}")
 
     @vbu.command()

@@ -80,7 +80,7 @@ class BeeCommands(vbu.Cog):
         Pet one of your bees on their fluffy lil heads.
         """
 
-        return await ctx.send(f"**{bee.display_name}**: *Happy buzzing noises*")
+        return await ctx.send(f"**{bee.display_name}**: *Happy buzzing noises* \N{HONEYBEE}")
 
 
 def setup(bot: vbu.Bot):

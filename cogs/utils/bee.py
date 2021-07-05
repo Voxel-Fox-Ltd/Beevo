@@ -158,7 +158,7 @@ class Bee(object):
 
         async with ctx.bot.database() as db:
             rows = await db(
-                """SELECT * FROM bees WHERE owner_id=$1 AND (id=$2 OR LOWER(name)=LOWER($2::TEXT))""",
+                """SELECT * FROM bees WHERE owner_id=$1 AND (id=$2 OR name=$2)""",
                 ctx.author.id, value,
             )
         if not rows:

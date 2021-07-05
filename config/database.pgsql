@@ -27,6 +27,9 @@ CREATE TABLE IF NOT EXISTS channel_list(
 );
 
 
+CREATE EXTENSION IF NOT EXISTS citext;
+
+
 DO $$ BEGIN
     CREATE TYPE nobility AS ENUM ('Queen', 'Princess', 'Drone');
 EXCEPTION
@@ -39,9 +42,10 @@ CREATE TABLE IF NOT EXISTS bees(
     parent_ids TEXT[],  -- the parents of the bees
     owner_id BIGINT,  -- the ID of the user who owns the bee
     type TEXT NOT NULL,  -- the type of bee
-    name TEXT,  -- the name given to the bee
+    name CITEXT,  -- the name given to the bee
     nobility nobility NOT NULL DEFAULT 'Drone',  -- the type of bee that this is
     speed INTEGER NOT NULL DEFAULT 0,  -- how often they produce honey
     fertility INTEGER NOT NULL DEFAULT 0,  -- how many drones spawn on their death
-    generation INTEGER NOT NULL DEFAULT 0  -- how many generations this bee has been alive for
+    generation INTEGER NOT NULL DEFAULT 0,  -- how many generations this bee has been alive for
+    UNIQUE (owner_id, name)
 );

@@ -2,9 +2,13 @@ import typing
 import enum
 import uuid
 import random
+import pathlib
 
 from discord.ext import commands
 import voxelbotutils as vbu
+
+
+NAMES_FILE_PATH = pathlib.Path("./config/names.txt")
 
 
 class Nobility(enum.Enum):
@@ -153,6 +157,9 @@ class Bee(object):
 
     SLASH_COMMAND_ARG_TYPE = vbu.ApplicationCommandOptionType.STRING
 
+    with open(NAMES_FILE_PATH) as a:
+        NAMES = a.read().strip().split("\n")
+
     __slots__ = (
         '_id', 'parent_ids', 'guild_id', 'owner_id', 'name', '_type',
         '_nobility', 'speed', 'fertility', 'generation',
@@ -179,10 +186,10 @@ class Bee(object):
         self.name: str = name
 
         #: The name that the owner gave to this bee.
-        self.type: str = type  # Added as _type
+        self.type: BeeType = type  # Added as _type
 
         #: The nobility of this bee - this says if it's a queen, princess, or drone.
-        self.nobility: str = nobility  # Added as _nobility
+        self.nobility: Nobility = nobility  # Added as _nobility
 
         #: How quickly this bee can produce honey. Only used for queens but can be bred down from anywhere.
         self.speed: int = speed
@@ -229,7 +236,17 @@ class Bee(object):
 
     @classmethod
     def breed(cls, mother: 'Bee', father: 'Bee'):
-        ...
+        """
+        Breed two bees together to make a queen. Raises a ValueError if one bee is not a princess, and
+        one bee is not a drone.
+        """
+
+        if {mother.nobility.value, father.nobility.value} != {Nobility.DRONE.value, Nobility.PRINCESS.value}:
+            raise ValueError()
+
+    @classmethod
+    def get_random_name(cls):
+        return random.choice(cls.NAMES)
 
     @classmethod
     async def fetch_bee_by_id(cls, bee_id: str):
@@ -252,9 +269,9 @@ class Bee(object):
 
         bee_type = bee_type or random.choice(list(BeeType.get_mundane_bees()))
         rows = await db(
-            """INSERT INTO bees (id, guild_id, owner_id, type, nobility) VALUES
-            (GEN_RANDOM_UUID()::TEXT, $1, $2, $3, $4) RETURNING *""",
-            guild_id, user_id, bee_type.value, nobility.value,
+            """INSERT INTO bees (id, guild_id, owner_id, type, nobility, name) VALUES
+            (GEN_RANDOM_UUID()::TEXT, $1, $2, $3, $4, $5) RETURNING *""",
+            guild_id, user_id, bee_type.value, nobility.value, cls.get_random_name(),
         )
         return cls(**rows[0])
 
@@ -291,7 +308,7 @@ class Bee(object):
 
         async with ctx.bot.database() as db:
             rows = await db(
-                """SELECT * FROM bees WHERE owner_id=$1 AND (id=$2 OR name=$2) AND guild_id=$3""",
+                """SELECT * FROM bees WHERE owner_id=$1 AND (id=$2 OR LOWER(name)=LOWER($2)) AND guild_id=$3""",
                 ctx.author.id, value, ctx.guild.id,
             )
         if not rows:

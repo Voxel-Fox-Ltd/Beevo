@@ -1,6 +1,3 @@
-import pathlib
-import random
-
 import voxelbotutils as vbu
 import discord
 from discord.ext import commands
@@ -9,18 +6,10 @@ import asyncpg
 from cogs import utils
 
 
-NAMES_FILE_PATH = pathlib.Path("./config/names.txt")
-
-
 class BeeCommands(vbu.Cog):
 
     def __init__(self, bot: vbu.Bot):
         super().__init__(bot)
-        with open(NAMES_FILE_PATH) as a:
-            self.names = a.read().strip().split("\n")
-
-    def get_random_name(self) -> str:
-        return random.choice(self.names)
 
     @vbu.command()
     @vbu.cooldown.cooldown(1, 60 * 60, commands.BucketType.user)
@@ -32,13 +21,16 @@ class BeeCommands(vbu.Cog):
 
         async with self.bot.database() as db:
             drone = await utils.Bee.create_bee(db, ctx.guild.id, ctx.author.id, nobility=utils.Nobility.DRONE)
-            await drone.update(db, name=self.get_random_name())
+            await drone.update(db)
             princess = await utils.Bee.create_bee(db, ctx.guild.id, ctx.author.id, nobility=utils.Nobility.PRINCESS)
-            await princess.update(db, name=self.get_random_name())
-        return await ctx.send((
-            f"Created your new bees: a {drone.type.value.lower()} drone, **{drone.display_name}**; "
-            f"and a {princess.type.value.lower()} princess, **{princess.display_name}**!"
-        ))
+            await princess.update(db)
+        return await ctx.send(
+            (
+                f"Created your new bees: a {drone.type.value.lower()} drone, **{drone.display_name}**; "
+                f"and a {princess.type.value.lower()} princess, **{princess.display_name}**!"
+            ),
+            wait=False,
+        )
 
     @vbu.command(aliases=['list'])
     @commands.guild_only()
@@ -50,9 +42,13 @@ class BeeCommands(vbu.Cog):
         async with self.bot.database() as db:
             bees = await utils.Bee.fetch_bees_by_user(db, ctx.guild.id, ctx.author.id)
         if not bees:
-            return await ctx.send("You don't have any bees! :c")
+            return await ctx.send("You don't have any bees! :c", wait=False)
         bee_string = "\n".join([f"\N{BULLET} **{i.display_name}** ({i.type.value.lower()} {i.nobility.value.lower()})" for i in bees])
-        return await ctx.send(f"You have {len(bees)} bees: \n{bee_string}", allowed_mentions=discord.AllowedMentions.none())
+        return await ctx.send(
+            f"You have {len(bees)} bees: \n{bee_string}",
+            allowed_mentions=discord.AllowedMentions.none(),
+            wait=False,
+        )
 
     @vbu.command(aliases=['rename'])
     @commands.guild_only()
@@ -63,9 +59,9 @@ class BeeCommands(vbu.Cog):
 
         # Check name length
         if len(after) < 1:
-            return await ctx.send("That bee name is too short!")
+            return await ctx.send("That bee name is too short!", wait=False)
         if len(after) > 50:
-            return await ctx.send("That bee name is too long!")
+            return await ctx.send("That bee name is too long!", wait=False)
 
         # Save bee
         async with self.bot.database() as db:
@@ -75,8 +71,9 @@ class BeeCommands(vbu.Cog):
                 return await ctx.send(
                     f"You already have a bee with the name **{after}**! >:c",
                     allowed_mentions=discord.AllowedMentions.none(),
+                    wait=False,
                 )
-        return await ctx.send("Updated!")
+        return await ctx.send("Updated!", wait=False)
 
     @vbu.command(aliases=['release'])
     @commands.guild_only()
@@ -91,6 +88,7 @@ class BeeCommands(vbu.Cog):
         return await ctx.send(
             f"Released **{bee.display_name}** into the wild \N{PENSIVE FACE}",
             allowed_mentions=discord.AllowedMentions.none(),
+            wait=False,
         )
 
     @vbu.command(aliases=['pet'])
@@ -103,6 +101,7 @@ class BeeCommands(vbu.Cog):
         return await ctx.send(
             f"**{bee.display_name}**: *Happy buzzing noises* \N{HONEYBEE}",
             allowed_mentions=discord.AllowedMentions.none(),
+            wait=False,
         )
 
     @vbu.command(aliases=['breed'])
@@ -112,7 +111,8 @@ class BeeCommands(vbu.Cog):
         Breed one of your princesses and drones into a queen.
         """
 
-        pass
+        utils.Bee.breed(princess, drone)
+        await ctx.send("nice", wait=False)
 
 
 def setup(bot: vbu.Bot):

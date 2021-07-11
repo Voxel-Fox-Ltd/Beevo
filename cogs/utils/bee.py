@@ -24,12 +24,18 @@ class BeeType(object):
 
     @classmethod
     def get_mundane_bees(cls):
+        for i in cls.get_all_bees():
+            if isinstance(i, MundaneBeeType):
+                yield i
+
+    @classmethod
+    def get_all_bees(cls):
         items = dir(cls)
         for i in items:
             if not i.isupper():
                 continue
             x = getattr(cls, i)
-            if isinstance(x, MundaneBeeType):
+            if isinstance(x, BeeType):
                 yield x
 
     @classmethod
@@ -147,13 +153,18 @@ class Bee(object):
 
     SLASH_COMMAND_ARG_TYPE = vbu.ApplicationCommandOptionType.STRING
 
+    __slots__ = (
+        '_id', 'parent_ids', 'guild_id', 'owner_id', 'name', '_type',
+        '_nobility', 'speed', 'fertility', 'generation',
+    )
+
     def __init__(
             self, id: typing.Union[str, uuid.UUID], parent_ids: list[typing.Union[str, uuid.UUID]],
             nobility: typing.Union[str, Nobility], speed: int, fertility: int, owner_id: int,
             generation: int, name: str, type: typing.Union[str, BeeType], guild_id: int):
 
         #: The ID of this bee.
-        self.id: str = id
+        self.id: str = id  # Added as _id
 
         #: The IDs of this bee's parents - can be empty but cannot be null.
         self.parent_ids: list[str] = parent_ids or list()
@@ -168,10 +179,10 @@ class Bee(object):
         self.name: str = name
 
         #: The name that the owner gave to this bee.
-        self.type: str = type
+        self.type: str = type  # Added as _type
 
         #: The nobility of this bee - this says if it's a queen, princess, or drone.
-        self.nobility: str = nobility
+        self.nobility: str = nobility  # Added as _nobility
 
         #: How quickly this bee can produce honey. Only used for queens but can be bred down from anywhere.
         self.speed: int = speed
@@ -247,11 +258,13 @@ class Bee(object):
         )
         return cls(**rows[0])
 
-    async def update(self, db):
+    async def update(self, db, **kwargs):
         """
         Create a new bee.
         """
 
+        for i, o in kwargs.items():
+            setattr(self, i, o)
         await db(
             """UPDATE bees SET parent_ids=$2, owner_id=$3, name=$4, nobility=$5,
             speed=$6, fertility=$7, generation=$8, type=$9, guild_id=$10 WHERE id=$1""",

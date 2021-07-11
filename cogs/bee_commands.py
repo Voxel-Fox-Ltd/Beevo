@@ -1,3 +1,5 @@
+import collections
+
 import voxelbotutils as vbu
 import discord
 from discord.ext import commands
@@ -34,18 +36,43 @@ class BeeCommands(vbu.Cog):
 
     @vbu.command(aliases=['list'])
     @commands.guild_only()
-    async def listbees(self, ctx: vbu.Context):
+    async def listbees(self, ctx: vbu.Context, user: discord.Member = None):
         """
         Shows you all of the bees you have
         """
 
+        # Get the bees for the given user
+        user = user or ctx.author
         async with self.bot.database() as db:
-            bees = await utils.Bee.fetch_bees_by_user(db, ctx.guild.id, ctx.author.id)
+            bees = await utils.Bee.fetch_bees_by_user(db, ctx.guild.id, user.id)
         if not bees:
             return await ctx.send("You don't have any bees! :c", wait=False)
-        bee_string = "\n".join([f"\N{BULLET} **{i.display_name}** ({i.type.value.lower()} {i.nobility.value.lower()})" for i in bees])
+
+        # Collate their bees
+        bee_groups = collections.defaultdict(list)
+        for i in bees:
+            bee_groups[i.nobility].append(i)
+
+        # Format their bees into an embed
+        embed = vbu.Embed(use_random_colour=True, description=f"{user.mention} has {len(bees)} total bees")
+        formatter = lambda bee: f"\N{BULLET} **{bee.display_name}** ({bee.type.value.lower()} {bee.nobility.value.lower()})"  # noqa
+        embed.add_field(
+            "Queens",
+            "\n".join([formatter(i) for i in bee_groups[utils.Nobility.QUEEN]]) or "None :<",
+            inline=False
+        )
+        embed.add_field(
+            "Princesses",
+            "\n".join([formatter(i) for i in bee_groups[utils.Nobility.PRINCESS]]) or "None :<",
+            inline=False
+        )
+        embed.add_field(
+            "Drones",
+            "\n".join([formatter(i) for i in bee_groups[utils.Nobility.DRONE]]) or "None :<",
+            inline=False
+        )
         return await ctx.send(
-            f"You have {len(bees)} bees: \n{bee_string}",
+            embed=embed,
             allowed_mentions=discord.AllowedMentions.none(),
             wait=False,
         )

@@ -2,6 +2,7 @@ import pathlib
 import random
 
 import voxelbotutils as vbu
+from discord.ext import commands
 
 from cogs import utils
 
@@ -17,43 +18,41 @@ class BeeCommands(vbu.Cog):
             self.names = a.read().strip().split("\n")
 
     @vbu.command()
-    async def getdrone(self, ctx: vbu.Context):
+    @vbu.cooldown.cooldown(1, 60 * 60, commands.BucketType.user)
+    @commands.guild_only()
+    async def getbees(self, ctx: vbu.Context):
         """
-        Generate a test bee for you to flirt with.
-        """
-
-        async with self.bot.database() as db:
-            bee = await utils.Bee.create_bee(db, ctx.author.id, nobility=utils.Nobility.DRONE)
-            bee.name = random.choice(self.names)
-            await bee.update(db)
-        return await ctx.send(f"Created your new {bee.type.value.lower()} drone **{bee.display_name}**!")
-
-    @vbu.command()
-    async def getprincess(self, ctx: vbu.Context):
-        """
-        Generate a test bee for you to flirt with.
+        Catch some new bees for your hive.
         """
 
         async with self.bot.database() as db:
-            bee = await utils.Bee.create_bee(db, ctx.author.id, nobility=utils.Nobility.PRINCESS)
-            bee.name = random.choice(self.names)
-            await bee.update(db)
-        return await ctx.send(f"Created your new {bee.type.value.lower()} princess **{bee.display_name}**!")
+            drone = await utils.Bee.create_bee(db, ctx.guild.id, ctx.author.id, nobility=utils.Nobility.DRONE)
+            drone.name = random.choice(self.names)
+            await drone.update(db)
+            princess = await utils.Bee.create_bee(db, ctx.guild.id, ctx.author.id, nobility=utils.Nobility.PRINCESS)
+            princess.name = random.choice(self.names)
+            await princess.update(db)
+        return await ctx.send((
+            f"Created your new bees: a {drone.type.value.lower()} drone, **{drone.display_name}**; "
+            f"and a {princess.type.value.lower()} princess, **{princess.display_name}**!"
+        ))
 
-    @vbu.command()
+    @vbu.command(aliases=['list'])
+    @commands.guild_only()
     async def listbees(self, ctx: vbu.Context):
         """
         Shows you all of the bees you have
         """
 
         async with self.bot.database() as db:
-            bees = await utils.Bee.fetch_bees_by_user(db, ctx.author.id)
+            bees = await utils.Bee.fetch_bees_by_user(db, ctx.guild.id, ctx.author.id)
         if not bees:
             return await ctx.send("You don't have any bees! :c")
         bee_string = "\n".join([f"\\* **{i.display_name}** ({i.type.value.lower()} {i.nobility.value.lower()})" for i in bees])
         return await ctx.send(f"You have {len(bees)} bees: \n{bee_string}")
 
-    @vbu.command()
+    @vbu.command(aliases=['rename'])
+    @commands.guild_only()
     async def renamebee(self, ctx: vbu.Context, before: utils.Bee, after: str):
         """
         Renames one of your bees.
@@ -64,17 +63,20 @@ class BeeCommands(vbu.Cog):
             await before.update(db)
         return await ctx.send("Updated!")
 
-    @vbu.command()
+    @vbu.command(aliases=['release'])
+    @commands.guild_only()
     async def releasebee(self, ctx: vbu.Context, bee: utils.Bee):
         """
         Releases one of your bees back into the wild.
         """
 
         async with self.bot.database() as db:
-            await bee.delete(db)
+            bee.owner_id = None
+            await bee.update(db)
         return await ctx.send(f"Released **{bee.display_name}** into the wild \N{PENSIVE FACE}")
 
-    @vbu.command()
+    @vbu.command(aliases=['pet'])
+    @commands.guild_only()
     async def petbee(self, ctx: vbu.Context, bee: utils.Bee):
         """
         Pet one of your bees on their fluffy lil heads.

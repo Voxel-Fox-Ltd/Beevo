@@ -40,6 +40,7 @@ END $$;
 CREATE TABLE IF NOT EXISTS bees(
     id TEXT PRIMARY KEY,  -- the bee identifier
     parent_ids TEXT[],  -- the parents of the bees
+    guild_id BIGINT,  -- the ID of the guild that the bee belongs to
     owner_id BIGINT,  -- the ID of the user who owns the bee
     type TEXT NOT NULL,  -- the type of bee
     name CITEXT,  -- the name given to the bee

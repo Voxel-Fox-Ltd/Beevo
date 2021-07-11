@@ -23,6 +23,16 @@ class BeeType(object):
         return f"{self.__class__.__name__}('{self.name}')"
 
     @classmethod
+    def get_mundane_bees(cls):
+        items = dir(cls)
+        for i in items:
+            if not i.isupper():
+                continue
+            x = getattr(cls, i)
+            if isinstance(x, MundaneBeeType):
+                yield x
+
+    @classmethod
     def get(cls, value: str):
         """
         Get a given bee type.
@@ -140,7 +150,7 @@ class Bee(object):
     def __init__(
             self, id: typing.Union[str, uuid.UUID], parent_ids: list[typing.Union[str, uuid.UUID]],
             nobility: typing.Union[str, Nobility], speed: int, fertility: int, owner_id: int,
-            generation: int, name: str, type: typing.Union[str, BeeType]):
+            generation: int, name: str, type: typing.Union[str, BeeType], guild_id: int):
 
         #: The ID of this bee.
         self.id: str = id
@@ -148,13 +158,16 @@ class Bee(object):
         #: The IDs of this bee's parents - can be empty but cannot be null.
         self.parent_ids: list[str] = parent_ids or list()
 
-        #: The owner of this particular bee
+        #: The guild that this bee belongs to.
+        self.guild_id: int = guild_id
+
+        #: The owner of this particular bee.
         self.owner_id: int = owner_id
 
-        #: The name that the owner gave to this bee
+        #: The name that the owner gave to this bee.
         self.name: str = name
 
-        #: The name that the owner gave to this bee
+        #: The name that the owner gave to this bee.
         self.type: str = type
 
         #: The nobility of this bee - this says if it's a queen, princess, or drone.
@@ -212,24 +225,25 @@ class Bee(object):
         ...
 
     @classmethod
-    async def fetch_bees_by_user(cls, db, user_id: int) -> list['Bee']:
+    async def fetch_bees_by_user(cls, db, guild_id: int, user_id: int) -> list['Bee']:
         """
         Gives you a list of the bees owned by the given user.
         """
 
-        rows = await db("""SELECT * FROM bees WHERE owner_id=$1""", user_id)
+        rows = await db("""SELECT * FROM bees WHERE owner_id=$1 AND guild_id=$2""", user_id, guild_id)
         return [cls(**i) for i in rows]
 
     @classmethod
-    async def create_bee(cls, db, user_id: int = None, bee_type: BeeType = None, nobility: Nobility = Nobility.DRONE):
+    async def create_bee(cls, db, guild_id: int, user_id: int, bee_type: BeeType = None, nobility: Nobility = Nobility.DRONE):
         """
         Create a new bee.
         """
 
-        bee_type = bee_type or random.choice(list(BeeType))
+        bee_type = bee_type or random.choice(list(BeeType.get_mundane_bees()))
         rows = await db(
-            """INSERT INTO bees (id, owner_id, type, nobility) VALUES (GEN_RANDOM_UUID()::TEXT, $1, $2, $3) RETURNING *""",
-            user_id, bee_type.value, nobility.value,
+            """INSERT INTO bees (id, guild_id, owner_id, type, nobility) VALUES
+            (GEN_RANDOM_UUID()::TEXT, $1, $2, $3, $4) RETURNING *""",
+            guild_id, user_id, bee_type.value, nobility.value,
         )
         return cls(**rows[0])
 
@@ -240,10 +254,10 @@ class Bee(object):
 
         await db(
             """UPDATE bees SET parent_ids=$2, owner_id=$3, name=$4, nobility=$5,
-            speed=$6, fertility=$7, generation=$8, type=$9 WHERE id=$1""",
+            speed=$6, fertility=$7, generation=$8, type=$9, guild_id=$10 WHERE id=$1""",
             self.id, self.parent_ids, self.owner_id, self.name,
             self.nobility.value, self.speed, self.fertility, self.generation,
-            self.type.value,
+            self.type.value, self.guild_id,
         )
 
     async def delete(self, db):
@@ -264,8 +278,8 @@ class Bee(object):
 
         async with ctx.bot.database() as db:
             rows = await db(
-                """SELECT * FROM bees WHERE owner_id=$1 AND (id=$2 OR name=$2)""",
-                ctx.author.id, value,
+                """SELECT * FROM bees WHERE owner_id=$1 AND (id=$2 OR name=$2) AND guild_id=$3""",
+                ctx.author.id, value, ctx.guild.id,
             )
         if not rows:
             raise commands.BadArgument("You don't have a bee with that name!")

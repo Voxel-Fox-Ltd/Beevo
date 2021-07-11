@@ -13,18 +13,124 @@ class Nobility(enum.Enum):
     QUEEN = 'Queen'
 
 
-class BeeType(enum.Enum):
-    # Mundane bees
-    FOREST = 'forest'
-    MEADOWS = 'meadows'
-    MODEST = 'modest'
-    TROPICAL = 'tropical'
-    WINTRY = 'wintry'
-    MARSHY = 'marshy'
-    WATER = 'water'
-    ROCKY = 'rocky'
-    EMBITTERED = 'embittered'
-    MARBLED = 'marbled'
+class BeeType(object):
+
+    def __init__(self, value: str):
+        self.name = value.upper()
+        self.value = value.lower()
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}('{self.name}')"
+
+    @classmethod
+    def get(cls, value: str):
+        """
+        Get a given bee type.
+        """
+
+        return getattr(cls, value.upper(), None)
+
+    @staticmethod
+    def check_if_matches(compare, base):
+        """
+        See if an object matches the base class (which may be an object).
+        """
+
+        try:
+            return isinstance(compare, base)
+        except TypeError:
+            return compare.value == base.value
+
+    @classmethod
+    def combine(cls, first: 'BeeType', second: 'BeeType'):
+        """
+        Combine two bees and give the child type.
+        """
+
+        # If they're two of the same, just combine em
+        if first.value == second.value:
+            return cls(first.value)
+
+        # Let's see how the combinations line up
+        for (i, o), v in BEE_COMBINATIONS.items():
+            checks = [
+                cls.check_if_matches(first, i),
+                cls.check_if_matches(first, o),
+                cls.check_if_matches(second, i),
+                cls.check_if_matches(second, o),
+            ]
+            if checks.count(True) >= 2:
+                return v
+        return random.choice([first, second])
+
+
+class MundaneBeeType(BeeType):
+    pass
+
+
+BeeType.FOREST = MundaneBeeType("forest")
+BeeType.MEADOWS = MundaneBeeType("meadows")
+BeeType.MODEST = MundaneBeeType("modest")
+BeeType.TROPICAL = MundaneBeeType("tropical")
+BeeType.WINTRY = MundaneBeeType("wintry")
+BeeType.MARSHY = MundaneBeeType("marshy")
+BeeType.WATER = MundaneBeeType("water")
+BeeType.ROCKY = MundaneBeeType("rocky")
+BeeType.EMBITTERED = MundaneBeeType("embittered")
+BeeType.MARBLED = MundaneBeeType("marbled")
+BeeType.STEADFAST = MundaneBeeType("steadfast")
+BeeType.VALIANT = MundaneBeeType("valiant")
+
+
+class ComplexBeeType(BeeType):
+    pass
+
+
+BeeType.COMMON = ComplexBeeType("common")
+BeeType.CULTIVATED = ComplexBeeType("cultivated")
+BeeType.NOBLE = ComplexBeeType("noble")
+BeeType.MAJESTIC = ComplexBeeType("majestic")
+BeeType.IMPERIAL = ComplexBeeType("imperial")
+BeeType.DILLIGENT = ComplexBeeType("dilligent")
+BeeType.UNWEARY = ComplexBeeType("unweary")
+BeeType.INDUSTRIOUS = ComplexBeeType("industrious")
+BeeType.HEROIC = ComplexBeeType("heroic")
+BeeType.SINISTER = ComplexBeeType("sinister")
+BeeType.FIENDISH = ComplexBeeType("fiendish")
+BeeType.DEMONIC = ComplexBeeType("demonic")
+BeeType.FRUGAL = ComplexBeeType("frugal")
+BeeType.AUSTERE = ComplexBeeType("austere")
+BeeType.EXOTIC = ComplexBeeType("exotic")
+BeeType.EDENIC = ComplexBeeType("edenic")
+BeeType.ICY = ComplexBeeType("icy")
+BeeType.GLACIAL = ComplexBeeType("glacial")
+BeeType.RURAL = ComplexBeeType("rural")
+
+
+BEE_COMBINATIONS = {
+    (MundaneBeeType, MundaneBeeType,): BeeType.COMMON,
+    (BeeType.COMMON, MundaneBeeType,): BeeType.CULTIVATED,
+    (BeeType.COMMON, BeeType.CULTIVATED,): BeeType.NOBLE,
+    (BeeType.NOBLE, BeeType.CULTIVATED,): BeeType.IMPERIAL,
+    (BeeType.COMMON, BeeType.CULTIVATED,): BeeType.DILLIGENT,
+    (BeeType.DILLIGENT, BeeType.CULTIVATED,): BeeType.UNWEARY,
+    (BeeType.DILLIGENT, BeeType.UNWEARY,): BeeType.INDUSTRIOUS,
+    (BeeType.STEADFAST, BeeType.VALIANT,): BeeType.HEROIC,
+    (BeeType.MODEST, BeeType.CULTIVATED,): BeeType.SINISTER,
+    (BeeType.TROPICAL, BeeType.CULTIVATED,): BeeType.SINISTER,
+    (BeeType.MODEST, BeeType.SINISTER,): BeeType.FIENDISH,
+    (BeeType.CULTIVATED, BeeType.SINISTER,): BeeType.FIENDISH,
+    (BeeType.TROPICAL, BeeType.SINISTER,): BeeType.FIENDISH,
+    (BeeType.FIENDISH, BeeType.SINISTER,): BeeType.DEMONIC,
+    (BeeType.MODEST, BeeType.SINISTER,): BeeType.FRUGAL,
+    (BeeType.MODEST, BeeType.FIENDISH,): BeeType.FRUGAL,
+    (BeeType.MODEST, BeeType.FRUGAL,): BeeType.AUSTERE,
+    (BeeType.AUSTERE, BeeType.TROPICAL,): BeeType.EXOTIC,
+    (BeeType.EXOTIC, BeeType.TROPICAL,): BeeType.EDENIC,
+    (BeeType.INDUSTRIOUS, BeeType.WINTRY,): BeeType.ICY,
+    (BeeType.ICY, BeeType.WINTRY,): BeeType.GLACIAL,
+    (BeeType.MEADOWS, BeeType.DILLIGENT,): BeeType.RURAL,
+}
 
 
 class Bee(object):

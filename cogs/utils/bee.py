@@ -185,7 +185,7 @@ class Bee(object):
         #: The name that the owner gave to this bee.
         self.name: str = name
 
-        #: The name that the owner gave to this bee.
+        #: The type of bee that this is
         self.type: BeeType = type  # Added as _type
 
         #: The nobility of this bee - this says if it's a queen, princess, or drone.
@@ -235,14 +235,41 @@ class Bee(object):
             self._type = BeeType(value)
 
     @classmethod
-    def breed(cls, mother: 'Bee', father: 'Bee'):
+    async def breed(cls, db, mother: 'Bee', father: 'Bee'):
         """
-        Breed two bees together to make a queen. Raises a ValueError if one bee is not a princess, and
-        one bee is not a drone.
+        Breed two bees together to make a queen, which will be automatically added to the user, as well
+        as both parents being removed from the user.
+        Raises a ValueError if one bee is not a princess and one bee is not a drone.
         """
 
+        # Make sure the nobilities are correct
         if {mother.nobility.value, father.nobility.value} != {Nobility.DRONE.value, Nobility.PRINCESS.value}:
             raise ValueError()
+
+        # Work out which bee is which
+        princess = [i for i in [mother, father] if i.nobility == Nobility.PRINCESS][0]
+        drone = [i for i in [mother, father] if i.nobility == Nobility.DRONE][0]
+
+        # Pick some new stats for it
+        speed = random.randint(
+            max(min(princess.speed, drone.speed) - 2, 0),
+            max(princess.speed, drone.speed) + 5,
+        )
+        fertility = random.randint(
+            max(min(princess.fertility, drone.fertility) - 2, 0),
+            max(princess.fertility, drone.fertility) + 5,
+        )
+        new_bee = await cls.create_bee(
+            db=db,
+            guild_id=princess.guild_id,
+            user_id=princess.owner_id,
+            bee_type=BeeType.combine(princess.type, drone.type),
+            nobility=Nobility.QUEEN,
+        )
+        await new_bee.update(db, speed=speed, fertility=fertility, parent_ids=[princess.id, drone.id])
+        await princess.update(db, owner_id=None)
+        await drone.update(db, owner_id=None)
+        return new_bee
 
     @classmethod
     def get_random_name(cls):

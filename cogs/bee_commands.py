@@ -138,8 +138,17 @@ class BeeCommands(vbu.Cog):
         Breed one of your princesses and drones into a queen.
         """
 
-        utils.Bee.breed(princess, drone)
-        await ctx.send("nice", wait=False)
+        async with self.bot.database() as db:
+            try:
+                new_bee = await utils.Bee.breed(db, princess, drone)
+            except ValueError:
+                raise
+                return await ctx.send("You can't breed anything other than a drone and a princess! :<", wait=False)
+        return await ctx.send(
+            f"Your princess and drone got together and made a new {new_bee.type.value} queen, **{new_bee.display_name}**! :D",
+            allowed_mentions=discord.AllowedMentions.none(),
+            wait=False,
+        )
 
 
 def setup(bot: vbu.Bot):

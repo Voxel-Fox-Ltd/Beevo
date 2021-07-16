@@ -166,7 +166,7 @@ class Bee(object):
     )
 
     def __init__(
-            self, id: typing.Union[str, uuid.UUID], parent_ids: list[typing.Union[str, uuid.UUID]],
+            self, id: typing.Union[str, uuid.UUID], parent_ids: typing.List[typing.Union[str, uuid.UUID]],
             nobility: typing.Union[str, Nobility], speed: int, fertility: int, owner_id: int,
             generation: int, name: str, type: typing.Union[str, BeeType], guild_id: int):
 
@@ -174,7 +174,7 @@ class Bee(object):
         self.id: str = id  # Added as _id
 
         #: The IDs of this bee's parents - can be empty but cannot be null.
-        self.parent_ids: list[str] = parent_ids or list()
+        self.parent_ids: typing.List[str] = parent_ids or list()
 
         #: The guild that this bee belongs to.
         self.guild_id: int = guild_id
@@ -280,7 +280,7 @@ class Bee(object):
         ...
 
     @classmethod
-    async def fetch_bees_by_user(cls, db, guild_id: int, user_id: int) -> list['Bee']:
+    async def fetch_bees_by_user(cls, db, guild_id: int, user_id: int) -> typing.List['Bee']:
         """
         Gives you a list of the bees owned by the given user.
         """

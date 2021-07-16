@@ -43,11 +43,11 @@ class HiveCommands(vbu.Cog):
                 # See if we're EDGING BABY
                 if x == 0:
                     nosearch_cells.add("HAS_LEFT")
-                if x == WIDTH - 1:
+                if x == self.WIDTH - 1:
                     nosearch_cells.add("HAS_RIGHT")
                 if y == 0:
                     nosearch_cells.add("HAS_TOP")
-                if y == HEIGHT - 1:
+                if y == self.HEIGHT - 1:
                     nosearch_cells.add("HAS_BOTTOM")
 
                 # Find a relevant cell

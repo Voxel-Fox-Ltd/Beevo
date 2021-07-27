@@ -10,7 +10,7 @@ from cogs import utils
 
 class BeeCommands(vbu.Cog):
 
-    @vbu.group()
+    @vbu.subcommand_group()
     @commands.guild_only()
     async def bee(self, ctx: vbu.Context):
         """

@@ -16,7 +16,7 @@ class HiveCommands(vbu.Cog):
 
     @vbu.group(invoke_without_command=False)
     @commands.guild_only()
-    async def hive(self, ctx: vbu.Context, *, hive: utils.Hive):
+    async def hive(self, ctx: vbu.Context):
         """
         The parent command for bee hive handling.
         """

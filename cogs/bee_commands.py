@@ -10,13 +10,19 @@ from cogs import utils
 
 class BeeCommands(vbu.Cog):
 
-    def __init__(self, bot: vbu.Bot):
-        super().__init__(bot)
+    @vbu.group()
+    @commands.guild_only()
+    async def bee(self, ctx: vbu.Context):
+        """
+        The parent group for the bee commands.
+        """
 
-    @vbu.command()
+        pass
+
+    @bee.command(name="get")
     @vbu.cooldown.cooldown(1, 60 * 60, commands.BucketType.user)
     @commands.guild_only()
-    async def getbees(self, ctx: vbu.Context):
+    async def bee_get(self, ctx: vbu.Context):
         """
         Catch some new bees for your hive.
         """
@@ -34,9 +40,9 @@ class BeeCommands(vbu.Cog):
             wait=False,
         )
 
-    @vbu.command(aliases=['listbees'])
+    @bee.command(name="list")
     @commands.guild_only()
-    async def list(self, ctx: vbu.Context, user: discord.Member = None):
+    async def bee_list(self, ctx: vbu.Context, user: discord.Member = None):
         """
         Shows you all of the bees you have
         """
@@ -77,9 +83,9 @@ class BeeCommands(vbu.Cog):
             wait=False,
         )
 
-    @vbu.command(aliases=['renamebee'])
+    @bee.command(name="rename")
     @commands.guild_only()
-    async def rename(self, ctx: vbu.Context, before: utils.Bee, *, after: str):
+    async def bee_rename(self, ctx: vbu.Context, before: utils.Bee, *, after: str):
         """
         Renames one of your bees.
         """
@@ -102,9 +108,9 @@ class BeeCommands(vbu.Cog):
                 )
         return await ctx.send("Updated!", wait=False)
 
-    @vbu.command(aliases=['releasebee'])
+    @bee.command(name="release")
     @commands.guild_only()
-    async def release(self, ctx: vbu.Context, bee: utils.Bee):
+    async def bee_release(self, ctx: vbu.Context, bee: utils.Bee):
         """
         Releases one of your bees back into the wild.
         """
@@ -118,9 +124,9 @@ class BeeCommands(vbu.Cog):
             wait=False,
         )
 
-    @vbu.command(aliases=['petbee'])
+    @bee.command(name="pet")
     @commands.guild_only()
-    async def pet(self, ctx: vbu.Context, bee: utils.Bee):
+    async def bee_pet(self, ctx: vbu.Context, bee: utils.Bee):
         """
         Pet one of your bees on their fluffy lil heads.
         """
@@ -131,19 +137,21 @@ class BeeCommands(vbu.Cog):
             wait=False,
         )
 
-    @vbu.command(aliases=['breedbee'])
+    @bee.command(name="breed")
     @commands.guild_only()
-    async def breed(self, ctx: vbu.Context, princess: utils.Bee, drone: utils.Bee):
+    async def bee_breed(self, ctx: vbu.Context, princess: utils.Bee, drone: utils.Bee):
         """
         Breed one of your princesses and drones into a queen.
         """
 
+        # Breed the bee
         async with self.bot.database() as db:
             try:
                 new_bee = await utils.Bee.breed(db, princess, drone)
             except ValueError:
-                raise
                 return await ctx.send("You can't breed anything other than a drone and a princess! :<", wait=False)
+
+        # Tell the user about their new queen
         return await ctx.send(
             f"Your princess and drone got together and made a new {new_bee.type.value} queen, **{new_bee.display_name}**! :D",
             allowed_mentions=discord.AllowedMentions.none(),

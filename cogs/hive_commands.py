@@ -1,63 +1,76 @@
 import voxelbotutils as vbu
+from discord.ext import commands, tasks
 
 from cogs import utils
 
 
 class HiveCommands(vbu.Cog):
 
-    WIDTH = 9
-    HEIGHT = 9
-
-    @vbu.command()
-    async def hive(self, ctx):
+    @tasks.loop(seconds=1)
+    async def hive_lifetime_ticker(self):
         """
-        Generate a cute lil beehive for you.
+        Tick every second to run a lifetime for the bees.
         """
 
-        grid = [[None for inner in range(self.WIDTH)] for outer in range(self.HEIGHT)]
+        pass
 
-        # Go through each grid cell
-        for y in range(0, self.HEIGHT):
-            for x in range(0, self.WIDTH):
+    @vbu.group(invoke_without_command=False)
+    @commands.guild_only()
+    async def hive(self, ctx: vbu.Context, *, hive: utils.Hive):
+        """
+        The parent command for bee hive handling.
+        """
 
-                # Set up our filters
-                search_cells = set()
-                nosearch_cells = set()
+        pass
 
-                # See if there's a cell above
-                if y:
-                    above = grid[y - 1][x]
-                    if "HAS_BOTTOM" in above.flags:
-                        search_cells.add("HAS_TOP")
-                    else:
-                        nosearch_cells.add("HAS_TOP")
+    @hive.command(name="get")
+    @commands.guild_only()
+    async def hive_get(self, ctx: vbu.Context):
+        """
+        Give yourself a new hive.
+        """
 
-                # See if there's a cell to the left
-                if x:
-                    left = grid[y][x - 1]
-                    if "HAS_RIGHT" in left.flags:
-                        search_cells.add("HAS_LEFT")
-                    else:
-                        nosearch_cells.add("HAS_LEFT")
+        pass
 
-                # See if we're EDGING BABY
-                if x == 0:
-                    nosearch_cells.add("HAS_LEFT")
-                if x == self.WIDTH - 1:
-                    nosearch_cells.add("HAS_RIGHT")
-                if y == 0:
-                    nosearch_cells.add("HAS_TOP")
-                if y == self.HEIGHT - 1:
-                    nosearch_cells.add("HAS_BOTTOM")
+    @hive.command(name="list")
+    @commands.guild_only()
+    async def hive_list(self, ctx: vbu.Context):
+        """
+        Give you a list of all of your hives.
+        """
 
-                # Find a relevant cell
-                new_cell = utils.HiveCellEmoji.get_cell(search_cells, nosearch_cells)
-                grid[y][x] = new_cell
+        # Grab their hives
+        async with self.bot.database() as db:
+            rows = await db(
+                """SELECT * FROM hives WHERE guild_id=$1 AND owner_id=$2""",
+                ctx.guild.id, ctx.author.id,
+            )
+        if not rows:
+            return await ctx.send("You don't have any hives yet! :<", wait=False)
 
-        output_lines = list()
-        for i in grid:
-            output_lines.append("".join([o.emoji for o in i]))
-        await ctx.send(embed=vbu.Embed(description="\n".join(output_lines)))
+        # Format into an embed
+        embed = vbu.Embed(use_random_colour=True, description="")
+        for r in rows:
+            embed.description += f"\n\N{BULLET} {r['name']}"
+        return await ctx.send(embed=embed, wait=False)
+
+    @hive.command(name="add")
+    @commands.guild_only()
+    async def hive_add(self, ctx: vbu.Context, bee: utils.Bee):
+        """
+        Add one of your bees to a hive.
+        """
+
+        pass
+
+    @hive.command(name="remove")
+    @commands.guild_only()
+    async def hive_remove(self, ctx: vbu.Context, hive: utils.Hive, bee: utils.Bee):
+        """
+        Remove one of your bees from a hive.
+        """
+
+        pass
 
 
 def setup(bot: vbu.Bot):

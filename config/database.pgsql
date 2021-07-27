@@ -51,3 +51,12 @@ CREATE TABLE IF NOT EXISTS bees(
     generation INTEGER NOT NULL DEFAULT 0,  -- how many generations this bee has been alive for
     UNIQUE (owner_id, name)
 );
+
+
+CREATE TABLE IF NOT EXISTS hives(
+    id TEXT PRIMARY KEY,
+    name CITEXT,
+    bee_ids TEXT[],
+    guild_id BIGINT,
+    owner_id BIGINT,
+)

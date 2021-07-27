@@ -14,7 +14,7 @@ class HiveCommands(vbu.Cog):
 
         pass
 
-    @vbu.subcommand_group(invoke_without_command=False)
+    @vbu.group(invoke_without_command=False)
     @commands.guild_only()
     async def hive(self, ctx: vbu.Context, *, hive: utils.Hive):
         """

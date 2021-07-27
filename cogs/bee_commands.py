@@ -34,9 +34,9 @@ class BeeCommands(vbu.Cog):
             wait=False,
         )
 
-    @vbu.command(aliases=['list'])
+    @vbu.command(aliases=['listbees'])
     @commands.guild_only()
-    async def listbees(self, ctx: vbu.Context, user: discord.Member = None):
+    async def list(self, ctx: vbu.Context, user: discord.Member = None):
         """
         Shows you all of the bees you have
         """
@@ -77,9 +77,9 @@ class BeeCommands(vbu.Cog):
             wait=False,
         )
 
-    @vbu.command(aliases=['rename'])
+    @vbu.command(aliases=['renamebee'])
     @commands.guild_only()
-    async def renamebee(self, ctx: vbu.Context, before: utils.Bee, *, after: str):
+    async def rename(self, ctx: vbu.Context, before: utils.Bee, *, after: str):
         """
         Renames one of your bees.
         """
@@ -102,9 +102,9 @@ class BeeCommands(vbu.Cog):
                 )
         return await ctx.send("Updated!", wait=False)
 
-    @vbu.command(aliases=['release'])
+    @vbu.command(aliases=['releasebee'])
     @commands.guild_only()
-    async def releasebee(self, ctx: vbu.Context, bee: utils.Bee):
+    async def release(self, ctx: vbu.Context, bee: utils.Bee):
         """
         Releases one of your bees back into the wild.
         """
@@ -118,9 +118,9 @@ class BeeCommands(vbu.Cog):
             wait=False,
         )
 
-    @vbu.command(aliases=['pet'])
+    @vbu.command(aliases=['petbee'])
     @commands.guild_only()
-    async def petbee(self, ctx: vbu.Context, bee: utils.Bee):
+    async def pet(self, ctx: vbu.Context, bee: utils.Bee):
         """
         Pet one of your bees on their fluffy lil heads.
         """
@@ -131,9 +131,9 @@ class BeeCommands(vbu.Cog):
             wait=False,
         )
 
-    @vbu.command(aliases=['breed'])
+    @vbu.command(aliases=['breedbee'])
     @commands.guild_only()
-    async def breedbee(self, ctx: vbu.Context, princess: utils.Bee, drone: utils.Bee):
+    async def breed(self, ctx: vbu.Context, princess: utils.Bee, drone: utils.Bee):
         """
         Breed one of your princesses and drones into a queen.
         """

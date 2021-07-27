@@ -2,13 +2,11 @@ import typing
 import enum
 import uuid
 import random
-import pathlib
 
 from discord.ext import commands
 import voxelbotutils as vbu
 
-
-NAMES_FILE_PATH = pathlib.Path("./config/names.txt")
+from .name_utils import get_random_name
 
 
 class Nobility(enum.Enum):
@@ -157,9 +155,6 @@ class Bee(object):
 
     SLASH_COMMAND_ARG_TYPE = vbu.ApplicationCommandOptionType.STRING
 
-    with open(NAMES_FILE_PATH) as a:
-        NAMES = a.read().strip().split("\n")
-
     __slots__ = (
         '_id', 'parent_ids', 'guild_id', 'owner_id', 'name', '_type',
         '_nobility', 'speed', 'fertility', 'generation',
@@ -272,10 +267,6 @@ class Bee(object):
         return new_bee
 
     @classmethod
-    def get_random_name(cls):
-        return random.choice(cls.NAMES)
-
-    @classmethod
     async def fetch_bee_by_id(cls, bee_id: str):
         ...
 
@@ -298,7 +289,7 @@ class Bee(object):
         rows = await db(
             """INSERT INTO bees (id, guild_id, owner_id, type, nobility, name) VALUES
             (GEN_RANDOM_UUID()::TEXT, $1, $2, $3, $4, $5) RETURNING *""",
-            guild_id, user_id, bee_type.value, nobility.value, cls.get_random_name(),
+            guild_id, user_id, bee_type.value, nobility.value, get_random_name(),
         )
         return cls(**rows[0])
 

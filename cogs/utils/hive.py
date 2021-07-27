@@ -1,0 +1,3 @@
+class Hive(object):
+
+    pass

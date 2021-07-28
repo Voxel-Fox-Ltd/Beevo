@@ -27,11 +27,17 @@ class BeeCommands(vbu.Cog):
         Catch some new bees for your hive.
         """
 
+        # Defer our response because we love database lag
+        await ctx.defer()
+
+        # Get a new bee for the user
         async with self.bot.database() as db:
             drone = await utils.Bee.create_bee(db, ctx.guild.id, ctx.author.id, nobility=utils.Nobility.DRONE)
             await drone.update(db)
             princess = await utils.Bee.create_bee(db, ctx.guild.id, ctx.author.id, nobility=utils.Nobility.PRINCESS)
             await princess.update(db)
+
+        # And respond
         return await ctx.send(
             (
                 f"Created your new bees: a {drone.type.value.lower()} drone, **{drone.display_name}**; "
@@ -47,6 +53,7 @@ class BeeCommands(vbu.Cog):
         Shows you all of the bees you have
         """
 
+        # Defer our response because we love database lag
         await ctx.defer()
 
         # Get the bees for the given user
@@ -92,6 +99,9 @@ class BeeCommands(vbu.Cog):
         Renames one of your bees.
         """
 
+        # Defer our response because we love database lag
+        await ctx.defer()
+
         # Check name length
         if len(after) < 1:
             return await ctx.send("That bee name is too short!", wait=False)
@@ -116,6 +126,9 @@ class BeeCommands(vbu.Cog):
         """
         Releases one of your bees back into the wild.
         """
+
+        # Defer our response because we love database lag
+        await ctx.defer()
 
         async with self.bot.database() as db:
             bee.owner_id = None
@@ -145,6 +158,9 @@ class BeeCommands(vbu.Cog):
         """
         Breed one of your princesses and drones into a queen.
         """
+
+        # Defer our response because we love database lag
+        await ctx.defer()
 
         # Breed the bee
         async with self.bot.database() as db:

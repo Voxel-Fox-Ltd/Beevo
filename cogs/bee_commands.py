@@ -47,6 +47,8 @@ class BeeCommands(vbu.Cog):
         Shows you all of the bees you have
         """
 
+        await ctx.defer()
+
         # Get the bees for the given user
         user = user or ctx.author
         async with self.bot.database() as db:

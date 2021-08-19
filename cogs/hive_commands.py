@@ -61,6 +61,7 @@ class HiveCommands(vbu.Cog):
             )
         if not rows:
             await ctx.defer()
+            await self.create_first_hive(ctx)
             return await ctx.reinvoke()
 
         # Format into an embed

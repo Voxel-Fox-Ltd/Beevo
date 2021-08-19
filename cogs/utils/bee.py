@@ -156,7 +156,7 @@ class Bee(object):
     SLASH_COMMAND_ARG_TYPE = vbu.ApplicationCommandOptionType.STRING
 
     __slots__ = (
-        '_id', 'parent_ids', 'guild_id', 'owner_id', 'name', '_type',
+        'id', 'parent_ids', 'guild_id', 'owner_id', 'name', '_type',
         '_nobility', 'speed', 'fertility', 'generation', 'hive_id',
     )
 

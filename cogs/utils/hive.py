@@ -14,6 +14,10 @@ class Hive(object):
 
     SLASH_COMMAND_ARG_TYPE = vbu.ApplicationCommandOptionType.STRING
 
+    __slots__ = (
+        'id', 'index', 'guild_id', 'owner_id',
+    )
+
     def __init__(self, id: str, index: int, guild_id: int, owner_id: int):
         self.id: str = id
         self.index: int = index

@@ -73,18 +73,18 @@ class HiveCommands(vbu.Cog):
 
     @hive.command(name="add")
     @commands.guild_only()
-    async def hive_add(self, ctx: vbu.Context, bee: utils.Bee):
+    async def hive_add(self, ctx: vbu.Context, bee: utils.Bee, hive: utils.Hive):
         """
-        Add one of your bees to a hive.
+        Add one of your queens to a hive.
         """
 
         pass
 
     @hive.command(name="remove")
     @commands.guild_only()
-    async def hive_remove(self, ctx: vbu.Context, hive: utils.Hive, bee: utils.Bee):
+    async def hive_clear(self, ctx: vbu.Context, hive: utils.Hive):
         """
-        Remove one of your bees from a hive.
+        Clear out the bees from one of your hives.
         """
 
         pass

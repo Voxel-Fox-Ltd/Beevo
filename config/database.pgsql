@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS hives(
     index SMALLINT,
     guild_id BIGINT,
     owner_id BIGINT
-)
+);
 
 
 CREATE TABLE IF NOT EXISTS bees(

@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS hives(
     id TEXT PRIMARY KEY,
     index SMALLINT,
     guild_id BIGINT,
-    owner_id BIGINT,
+    owner_id BIGINT
 )
 
 

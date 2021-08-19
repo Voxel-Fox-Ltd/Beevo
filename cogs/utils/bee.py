@@ -161,13 +161,13 @@ class Bee(object):
     )
 
     def __init__(
-            self, id: typing.Union[str, uuid.UUID], parent_ids: typing.List[typing.Union[str, uuid.UUID]],
-            hive_id: typing.Union[str, uuid.UUID], nobility: typing.Union[str, Nobility],
-            speed: int, fertility: int, owner_id: int, generation: int, name: str,
-            type: typing.Union[str, BeeType], guild_id: int):
+            self, id: str, parent_ids: typing.List[str], hive_id: str,
+            nobility: typing.Union[str, Nobility], speed: int, fertility: int,
+            owner_id: int, generation: int, name: str, type: typing.Union[str, BeeType],
+            guild_id: int):
 
         #: The ID of this bee.
-        self.id: str = id  # Added as _id
+        self.id: str = id
 
         #: The IDs of this bee's parents - can be empty but cannot be null.
         self.parent_ids: typing.List[str] = parent_ids or list()
@@ -202,14 +202,6 @@ class Bee(object):
     @property
     def display_name(self):
         return self.name or self.id
-
-    @property
-    def id(self):
-        return self._id
-
-    @id.setter
-    def id(self, value: typing.Union[str, uuid.UUID]):
-        self._id = str(value)
 
     @property
     def nobility(self):

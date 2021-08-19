@@ -4,13 +4,6 @@ from discord.ext import commands, tasks
 from cogs import utils
 
 
-HIVE_NAMES = [
-    "Alpha", "Bravo", "Charlie", "Delta", "Echo", "Foxtrot", "Golf", "Hotel", "India",
-    "Juliet", "Kilo", "Lima", "Mike", "November", "Oscar", "Papa", "Quebec", "Romeo",
-    "Sierra", "Tango", "Uniform", "Victor", "Whiskey", "Xray", "Yankee", "Zulu",
-]
-
-
 class HiveCommands(vbu.Cog):
 
     @tasks.loop(seconds=1)
@@ -40,6 +33,19 @@ class HiveCommands(vbu.Cog):
 
         pass
 
+    async def create_first_hive(self, ctx: vbu.Context):
+        """
+        Generate the first hive for a given user.
+        """
+
+        async with self.bot.database() as db:
+            rows = await db(
+                """INSERT INTO hives (id, index, guild_id, owner_id) VALUES
+                (GEN_RANDOM_UUID(), 0, $1, $2) RETURNING *""",
+                ctx.guild.id, ctx.author.id,
+            )
+        return utils.Hive(**rows[0])
+
     @hive.command(name="list")
     @commands.guild_only()
     async def hive_list(self, ctx: vbu.Context):
@@ -54,7 +60,8 @@ class HiveCommands(vbu.Cog):
                 ctx.guild.id, ctx.author.id,
             )
         if not rows:
-            return await ctx.send("You don't have any hives yet! :<", wait=False)
+            await ctx.defer()
+            return await ctx.reinvoke()
 
         # Format into an embed
         embed = vbu.Embed(use_random_colour=True, description="")

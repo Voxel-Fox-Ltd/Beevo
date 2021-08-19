@@ -66,8 +66,9 @@ class HiveCommands(vbu.Cog):
 
         # Format into an embed
         embed = vbu.Embed(use_random_colour=True, description="")
-        for r in rows:
-            embed.description += f"\n\N{BULLET} {r['name']}"
+        hives = [utils.Hive(**r) for r in rows]
+        for h in hives:
+            embed.description += f"\n\N{BULLET} {h.name}"
         return await ctx.send(embed=embed, wait=False)
 
     @hive.command(name="add")

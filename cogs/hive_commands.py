@@ -1,4 +1,5 @@
 import voxelbotutils as vbu
+import discord
 from discord.ext import commands, tasks
 
 from cogs import utils
@@ -78,7 +79,32 @@ class HiveCommands(vbu.Cog):
         Add one of your queens to a hive.
         """
 
-        pass
+        # See if the bee is already in a hive
+        if bee.hive_id:
+            return await ctx.send(
+                f"**{bee.name}** is already in **{hive.name}**!",
+                allowed_mentions=discord.AllowedMentions.none(),
+                wait=False,
+            )
+
+        # See if the hive already has a bee
+        if hive.bee:
+            return await ctx.send(
+                f"There's already a bee in **{hive.name}**!",
+                wait=False,
+            )
+
+        # Actually move the bee around
+        await ctx.defer()
+        async with self.bot.database() as db:
+            await bee.update(db, hive_id=hive.id)
+
+        # And done!
+        return await ctx.send(
+            f"Successfully moved **{bee.name}** into **{hive.name}**!",
+            allowed_mentions=discord.AllowedMentions.none(),
+            wait=False,
+        )
 
     @hive.command(name="remove")
     @commands.guild_only()

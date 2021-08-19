@@ -1,6 +1,5 @@
 import typing
 import enum
-import uuid
 import random
 
 from discord.ext import commands
@@ -158,6 +157,7 @@ class Bee(object):
     __slots__ = (
         'id', 'parent_ids', 'guild_id', 'owner_id', 'name', '_type',
         '_nobility', 'speed', 'fertility', 'generation', 'hive_id',
+        'hive',
     )
 
     def __init__(
@@ -180,6 +180,9 @@ class Bee(object):
 
         #: The ID of the hive that this bee lives in.
         self.hive_id: str = hive_id
+
+        #: The hive object that this bee lives in.
+        self.hive: 'Hive' = None
 
         #: The name that the owner gave to this bee.
         self.name: str = name
@@ -295,13 +298,19 @@ class Bee(object):
         """
 
         for i, o in kwargs.items():
-            setattr(self, i, o)
+            if i == "hive_id" and self.hive is not None and self.hive.id != o:
+                self.hive = None
+            elif i == "hive":
+                self.hive_id = o.id
+            else:
+                setattr(self, i, o)
         await db(
             """UPDATE bees SET parent_ids=$2, owner_id=$3, name=$4, nobility=$5,
-            speed=$6, fertility=$7, generation=$8, type=$9, guild_id=$10 WHERE id=$1""",
+            speed=$6, fertility=$7, generation=$8, type=$9, guild_id=$10, hive_id=$11
+            WHERE id=$1""",
             self.id, self.parent_ids, self.owner_id, self.name,
             self.nobility.value, self.speed, self.fertility, self.generation,
-            self.type.value, self.guild_id,
+            self.type.value, self.guild_id, self.hive_id,
         )
 
     async def delete(self, db):

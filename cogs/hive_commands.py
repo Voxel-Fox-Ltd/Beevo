@@ -4,6 +4,13 @@ from discord.ext import commands, tasks
 from cogs import utils
 
 
+HIVE_NAMES = [
+    "Alpha", "Bravo", "Charlie", "Delta", "Echo", "Foxtrot", "Golf", "Hotel", "India",
+    "Juliet", "Kilo", "Lima", "Mike", "November", "Oscar", "Papa", "Quebec", "Romeo",
+    "Sierra", "Tango", "Uniform", "Victor", "Whiskey", "Xray", "Yankee", "Zulu",
+]
+
+
 class HiveCommands(vbu.Cog):
 
     @tasks.loop(seconds=1)
@@ -21,7 +28,8 @@ class HiveCommands(vbu.Cog):
         The parent command for bee hive handling.
         """
 
-        pass
+        if ctx.invoked_subcommand is None:
+            return await ctx.send_help(ctx.command)
 
     @hive.command(name="get")
     @commands.guild_only()

@@ -157,13 +157,14 @@ class Bee(object):
 
     __slots__ = (
         '_id', 'parent_ids', 'guild_id', 'owner_id', 'name', '_type',
-        '_nobility', 'speed', 'fertility', 'generation',
+        '_nobility', 'speed', 'fertility', 'generation', 'hive_id',
     )
 
     def __init__(
             self, id: typing.Union[str, uuid.UUID], parent_ids: typing.List[typing.Union[str, uuid.UUID]],
-            nobility: typing.Union[str, Nobility], speed: int, fertility: int, owner_id: int,
-            generation: int, name: str, type: typing.Union[str, BeeType], guild_id: int):
+            hive_id: typing.Union[str, uuid.UUID], nobility: typing.Union[str, Nobility],
+            speed: int, fertility: int, owner_id: int, generation: int, name: str,
+            type: typing.Union[str, BeeType], guild_id: int):
 
         #: The ID of this bee.
         self.id: str = id  # Added as _id
@@ -176,6 +177,9 @@ class Bee(object):
 
         #: The owner of this particular bee.
         self.owner_id: int = owner_id
+
+        #: The ID of the hive that this bee lives in.
+        self.hive_id: str = hive_id
 
         #: The name that the owner gave to this bee.
         self.name: str = name

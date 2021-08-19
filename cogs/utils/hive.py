@@ -1,5 +1,6 @@
 import typing
 
+from discord.ext import commands
 import voxelbotutils as vbu
 
 
@@ -27,3 +28,22 @@ class Hive(object):
     @property
     def name(self) -> str:
         return HIVE_NAMES[self.index]
+
+    @classmethod
+    async def convert(cls, ctx: vbu.Context, value: str):
+        """
+        The Discord convert method for hives.
+        """
+
+        try:
+            hive_index = HIVE_NAMES.index(value.title())
+        except ValueError:
+            raise commands.BadArgument(f"**{value}** isn't a valid hive name.")
+        async with ctx.bot.database() as db:
+            rows = await db(
+                """SELECT * FROM hives WHERE index=$1 AND guild_id=$2 AND owner_id=$3""",
+                hive_index, ctx.guild.id, ctx.author.id,
+            )
+        if not rows:
+            raise commands.BadArgument(f"You don't have a hive with the name **{value}**.")
+        return cls(**rows[0])

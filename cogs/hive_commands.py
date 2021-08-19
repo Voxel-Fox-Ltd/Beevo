@@ -65,10 +65,10 @@ class HiveCommands(vbu.Cog):
             return await ctx.reinvoke()
 
         # Format into an embed
-        embed = vbu.Embed(use_random_colour=True, description="")
+        embed = vbu.Embed(use_random_colour=True, description=f"You have **{len(rows)}** hive{'s' if len(rows) > 1 else ''}:")
         hives = [utils.Hive(**r) for r in rows]
         for h in hives:
-            embed.description += f"\n\N{BULLET} {h.name}"
+            embed.description += f"\n\N{BULLET} **{h.name}**"
         return await ctx.send(embed=embed, wait=False)
 
     @hive.command(name="add")

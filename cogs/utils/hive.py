@@ -86,13 +86,14 @@ class Hive(object):
         )
         hives = []
         for r in hive_rows:
-            hives.append((hive := cls(**r)))
-            if (bee_id := r['bee_id']):
+            if (bee_id := r.pop('bee_id', None)):
                 bee_rows = await db(
                     """SELECT * FROM bees WHERE bee_id=$1""",
                     bee_id,
                 )
                 bee = Bee(**bee_rows[0])
+            hives.append((hive := cls(**r)))
+            if bee_id:
                 hive.bee = bee
                 bee.hive = hive
         return hives

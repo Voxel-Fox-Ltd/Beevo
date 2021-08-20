@@ -73,4 +73,27 @@ class Hive(object):
             v.bee = bee
         return v
 
+    @classmethod
+    async def fetch_hives_by_user(cls, db, guild_id: int, user_id: int, *, fetch_bees: bool = True) -> typing.List['Hive']:
+        """
+        Get all the hives for a given user.
+        """
+
+        hive_rows = await db(
+            """SELECT h.*, b.id bee_id FROM hives h LEFT JOIN bees b ON h.id=b.id
+            WHERE h.guild_id=$1 AND h.owner_id=$2""",
+            guild_id, user_id,
+        )
+        hives = []
+        for r in hive_rows:
+            hives.append((hive := cls(**r)))
+            if (bee_id := r['bee_id']):
+                bee_rows = await db(
+                    """SELECT * FROM bees WHERE bee_id=$1""",
+                    bee_id,
+                )
+                bee = Bee(**bee_rows[0])
+                hive.bee = bee
+                bee.hive = hive
+        return hives
 

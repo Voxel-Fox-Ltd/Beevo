@@ -54,22 +54,23 @@ class HiveCommands(vbu.Cog):
         Give you a list of all of your hives.
         """
 
+        # Wew database
+        await ctx.defer()
+
         # Grab their hives
         async with self.bot.database() as db:
-            rows = await db(
-                """SELECT * FROM hives WHERE guild_id=$1 AND owner_id=$2""",
-                ctx.guild.id, ctx.author.id,
-            )
-        if not rows:
-            await ctx.defer()
+            hives = await utils.Hive.get_hives_by_user(db, ctx.guild.id, ctx.author.id)
+        if not hives:
             await self.create_first_hive(ctx)
             return await ctx.reinvoke()
 
         # Format into an embed
-        embed = vbu.Embed(use_random_colour=True, description=f"You have **{len(rows)}** hive{'s' if len(rows) > 1 else ''}:")
-        hives = [utils.Hive(**r) for r in rows]
+        embed = vbu.Embed(use_random_colour=True, description=f"You have **{len(hives)}** hive{'s' if len(hives) > 1 else ''}:")
         for h in hives:
-            embed.description += f"\n\N{BULLET} **{h.name}**"
+            if h.bee:
+                embed.description += f"\n\N{BULLET} **{h.name}** ({h.bee.name})"
+            else:
+                embed.description += f"\n\N{BULLET} **{h.name}** (*empty*)"
         return await ctx.send(embed=embed, wait=False)
 
     @hive.command(name="add")

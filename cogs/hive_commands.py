@@ -5,6 +5,12 @@ from discord.ext import commands, tasks
 from cogs import utils
 
 
+def defer():
+    async def predicate(ctx):
+        await ctx.defer()
+    return commands.check(predicate)
+
+
 class HiveCommands(vbu.Cog):
 
     @tasks.loop(seconds=1)
@@ -74,6 +80,7 @@ class HiveCommands(vbu.Cog):
         return await ctx.send(embed=embed, wait=False)
 
     @hive.command(name="add")
+    @defer()
     @commands.guild_only()
     async def hive_add(self, ctx: vbu.Context, bee: utils.Bee, hive: utils.Hive):
         """

@@ -86,6 +86,7 @@ class Hive(object):
         )
         hives = []
         for r in hive_rows:
+            r = dict(r)
             if (bee_id := r.pop('bee_id', None)):
                 bee_rows = await db(
                     """SELECT * FROM bees WHERE bee_id=$1""",

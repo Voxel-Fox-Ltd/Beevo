@@ -106,5 +106,5 @@ class Hive(object):
                 hive, _ = hives[bee.hive_id]
                 hive.bee = bee
                 bee.hive = hive
-        return hives.keys()
+        return [hive for hive_id, (hive, bee_id) in hives.items()]
 

@@ -81,7 +81,7 @@ class Hive(object):
 
         # Get hives
         hive_rows = await db(
-            """SELECT h.*, b.id bee_id FROM hives h LEFT JOIN bees b ON h.id=b.id
+            """SELECT h.*, b.id bee_id FROM hives h LEFT JOIN bees b ON h.id=b.hive_id
             WHERE h.guild_id=$1 AND h.owner_id=$2""",
             guild_id, user_id,
         )

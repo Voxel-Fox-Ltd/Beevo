@@ -79,23 +79,31 @@ class Hive(object):
         Get all the hives for a given user.
         """
 
+        # Get hives
         hive_rows = await db(
             """SELECT h.*, b.id bee_id FROM hives h LEFT JOIN bees b ON h.id=b.id
             WHERE h.guild_id=$1 AND h.owner_id=$2""",
             guild_id, user_id,
         )
-        hives = []
+        hives = {}
+        bee_ids = []
         for r in hive_rows:
-            r = dict(r)
-            if (bee_id := r.pop('bee_id', None)):
-                bee_rows = await db(
-                    """SELECT * FROM bees WHERE bee_id=$1""",
-                    bee_id,
-                )
-                bee = Bee(**bee_rows[0])
-            hives.append((hive := cls(**r)))
+            bee_id = r.pop('bee_id', None)
+            hive = cls(**r)
             if bee_id:
+                bee_ids.append(bee_id)
+            hives[hive.id] = (hive, bee_id)
+
+        # Get bees
+        if fetch_bees:
+            bee_rows = await db(
+                """SELECT * FROM bees WHERE bee_id=ANY($1::TEXT[])""",
+                bee_ids,
+            )
+            for r in bee_rows:
+                bee = Bee(**r)
+                hive, _ = hives[bee.hive_id]
                 hive.bee = bee
                 bee.hive = hive
-        return hives
+        return hives.keys()
 

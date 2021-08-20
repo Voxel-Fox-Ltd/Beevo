@@ -81,7 +81,7 @@ class HiveCommands(vbu.Cog):
         return await ctx.send(embed=embed, wait=False)
 
     @hive.command(name="add")
-    @defer()
+    # @defer()
     @commands.guild_only()
     async def hive_add(self, ctx: vbu.Context, bee: utils.Bee, hive: utils.Hive):
         """

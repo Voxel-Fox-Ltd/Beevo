@@ -88,6 +88,7 @@ class Hive(object):
         hives = {}
         bee_ids = []
         for r in hive_rows:
+            r = dict(r)
             bee_id = r.pop('bee_id', None)
             hive = cls(**r)
             if bee_id:

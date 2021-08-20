@@ -68,6 +68,9 @@ class Hive(object):
 
         # Return the hive object
         v = cls(**hive_row)
-        bee.hive = v
-        v.bee = bee
+        if bee_id:
+            bee.hive = v
+            v.bee = bee
         return v
+
+

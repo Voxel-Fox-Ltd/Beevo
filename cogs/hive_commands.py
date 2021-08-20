@@ -8,6 +8,7 @@ from cogs import utils
 def defer():
     async def predicate(ctx):
         await ctx.defer()
+        return True
     return commands.check(predicate)
 
 

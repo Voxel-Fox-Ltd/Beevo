@@ -98,7 +98,7 @@ class Hive(object):
         # Get bees
         if fetch_bees:
             bee_rows = await db(
-                """SELECT * FROM bees WHERE bee_id=ANY($1::TEXT[])""",
+                """SELECT * FROM bees WHERE id=ANY($1::TEXT[])""",
                 bee_ids,
             )
             for r in bee_rows:

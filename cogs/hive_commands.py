@@ -5,13 +5,6 @@ from discord.ext import commands, tasks
 from cogs import utils
 
 
-def defer():
-    async def predicate(ctx):
-        await ctx.defer()
-        return True
-    return commands.check(predicate)
-
-
 class HiveCommands(vbu.Cog):
 
     @tasks.loop(seconds=1)
@@ -55,7 +48,7 @@ class HiveCommands(vbu.Cog):
         return utils.Hive(**rows[0])
 
     @hive.command(name="list")
-    @defer()
+    @vbu.defer()
     @commands.guild_only()
     async def hive_list(self, ctx: vbu.Context):
         """
@@ -79,7 +72,7 @@ class HiveCommands(vbu.Cog):
         return await ctx.send(embed=embed, wait=False)
 
     @hive.command(name="add")
-    @defer()
+    @vbu.defer()
     @commands.guild_only()
     async def hive_add(self, ctx: vbu.Context, bee: utils.Bee, hive: utils.Hive):
         """
@@ -95,16 +88,16 @@ class HiveCommands(vbu.Cog):
             )
 
         # See if the hive already has a bee
-        if hive.bee:
+        if hive.bees:
             return await ctx.send(
                 f"There's already a bee in **{hive.name}**!",
                 wait=False,
             )
 
         # Actually move the bee around
-        await ctx.defer()
-        async with self.bot.database() as db:
-            await bee.update(db, hive_id=hive.id)
+        async with ctx.typing():
+            async with self.bot.database() as db:
+                await bee.update(db, hive_id=hive.id)
 
         # And done!
         return await ctx.send(
@@ -114,14 +107,32 @@ class HiveCommands(vbu.Cog):
         )
 
     @hive.command(name="remove")
-    @defer()
+    @vbu.defer()
     @commands.guild_only()
     async def hive_clear(self, ctx: vbu.Context, hive: utils.Hive):
         """
         Clear out the bees from one of your hives.
         """
 
-        pass
+        # See if the hive has a bee
+        if not hive.bees:
+            return await ctx.send(
+                f"There's no bee in **{hive.name}** :<",
+                wait=False,
+            )
+
+        # Alright move the bee
+        bee_count = len(hive.bees)
+        async with ctx.typing():
+            async with self.bot.database() as db:
+                for bee in hive.bees:
+                    await bee.update(db, hive_id=None)
+
+        # And done
+        return await ctx.send(
+            f"Moved **{bee_count}** bees out of **{hive.name}**~",
+            wait=False,
+        )
 
 
 def setup(bot: vbu.Bot):

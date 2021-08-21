@@ -32,14 +32,14 @@ class HiveCommands(vbu.Cog):
         if ctx.invoked_subcommand is None:
             return await ctx.send_help(ctx.command)
 
-    @hive.command(name="get")
-    @commands.guild_only()
-    async def hive_get(self, ctx: vbu.Context):
-        """
-        Give yourself a new hive.
-        """
+    # @hive.command(name="get")
+    # @commands.guild_only()
+    # async def hive_get(self, ctx: vbu.Context):
+    #     """
+    #     Give yourself a new hive.
+    #     """
 
-        pass
+    #     pass
 
     async def create_first_hive(self, ctx: vbu.Context):
         """
@@ -55,14 +55,12 @@ class HiveCommands(vbu.Cog):
         return utils.Hive(**rows[0])
 
     @hive.command(name="list")
+    @defer()
     @commands.guild_only()
     async def hive_list(self, ctx: vbu.Context):
         """
         Give you a list of all of your hives.
         """
-
-        # Wew database
-        await ctx.defer()
 
         # Grab their hives
         async with self.bot.database() as db:
@@ -81,7 +79,7 @@ class HiveCommands(vbu.Cog):
         return await ctx.send(embed=embed, wait=False)
 
     @hive.command(name="add")
-    # @defer()
+    @defer()
     @commands.guild_only()
     async def hive_add(self, ctx: vbu.Context, bee: utils.Bee, hive: utils.Hive):
         """
@@ -116,6 +114,7 @@ class HiveCommands(vbu.Cog):
         )
 
     @hive.command(name="remove")
+    @defer()
     @commands.guild_only()
     async def hive_clear(self, ctx: vbu.Context, hive: utils.Hive):
         """

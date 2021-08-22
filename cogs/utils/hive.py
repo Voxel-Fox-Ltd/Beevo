@@ -62,15 +62,15 @@ class Hive(object):
             hive = cls(**hive_row)
 
             # Grab all the bees that are in the hive
-            for row in hive_rows:
-                if row['bee_id']:
-                    bee_row = await db(
-                        """SELECT * FROM bees WHERE bee_id=$1""",
-                        row['bee_id'],
-                    )
-                    bee = Bee(**bee_row[0])
-                    bee.hive = hive
-                    hive.bees.add(bee)
+            bee_ids = [i['bee_id'] for i in hive_rows]
+            bee_rows = await db(
+                """SELECT * FROM bees WHERE id=ANY($1::TEXT[])""",
+                bee_ids,
+            )
+            for row in bee_rows:
+                bee = Bee(**row)
+                bee.hive = hive
+                hive.bees.add(bee)
 
         # Return the hive object
         return hive

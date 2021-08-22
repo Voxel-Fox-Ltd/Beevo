@@ -108,7 +108,7 @@ class HiveCommands(vbu.Cog):
             wait=False,
         )
 
-    @hive.command(name="remove")
+    @hive.command(name="clear")
     @vbu.defer()
     @commands.guild_only()
     async def hive_clear(self, ctx: vbu.Context, hive: utils.Hive):

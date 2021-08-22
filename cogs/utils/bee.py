@@ -242,7 +242,7 @@ class Bee(object):
         Get some new stats for the given bee.
         """
 
-        random_high, random_low = random_rate
+        random_low, random_high = random_rate
         speed = random.randint(
             max(math.floor(min(mother.speed, (father or mother).speed) * random_low), 1),  # always have at least a 1% chance of making honey
             min(math.ceil(max(mother.speed, (father or mother).speed) * random_high), 100),  # can't go over 100%

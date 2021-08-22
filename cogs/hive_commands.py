@@ -2,7 +2,7 @@ import asyncio
 
 import voxelbotutils as vbu
 import discord
-from discord.ext import commands, tasks
+from discord.ext import commands
 
 from cogs import utils
 
@@ -102,7 +102,11 @@ class HiveCommands(vbu.Cog):
             if h.bees:
                 embed.description += f"\n\N{BULLET} **{h.name}**"
                 for i in h.bees:
-                    embed.description += f"\n\u2800\u2800\N{BULLET} {i.name} (*{i.display_type}*)"
+                    if i.type == utils.Nobility.QUEEN:
+                        line = f"\n\u2800\u2800\N{BULLET} {i.name} (*{i.display_type}*) {{:progress}}"
+                        embed.description += utils.format(line, ((i.lifetime - i.lived_lifetime) * 100) / i.lifetime)
+                    else:
+                        embed.description += f"\n\u2800\u2800\N{BULLET} {i.name} (*{i.display_type}*)"
             else:
                 embed.description += f"\n\N{BULLET} **{h.name}** (*empty*)"
         return await ctx.send(embed=embed, wait=False)

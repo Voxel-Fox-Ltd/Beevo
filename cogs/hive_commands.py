@@ -49,7 +49,7 @@ class HiveCommands(vbu.Cog):
             # And handle those heckos
             dead_bees = [utils.Bee(**i) for i in dead_bee_rows]
             bee_death_tasks = [i.die(db) for i in dead_bees]
-            await asyncio.gather(bee_death_tasks)
+            await asyncio.gather(*bee_death_tasks)
 
     @vbu.group(invoke_without_command=False)
     @commands.guild_only()

@@ -7,13 +7,25 @@ from cogs import utils
 
 class HiveCommands(vbu.Cog):
 
-    @tasks.loop(seconds=1)
+    @tasks.loop(seconds=5)  # 1 tick is 5 seconds
     async def hive_lifetime_ticker(self):
         """
         Tick every second to run a lifetime for the bees.
         """
 
-        pass
+        async with self.bot.database() as db:
+            await db(
+                """
+                UPDATE
+                    bees
+                SET
+                    lived_lifetime = lived_lifetime + 1
+                WHERE
+                    hive_id IS NOT NULL -- is in a hive
+                    AND nobility = 'Queen'  -- is a queen
+                    AND lived_lifetime < lifetime  -- hasn't lived its life
+                """,
+            )
 
     @vbu.group(invoke_without_command=False)
     @commands.guild_only()
@@ -24,15 +36,6 @@ class HiveCommands(vbu.Cog):
 
         if ctx.invoked_subcommand is None:
             return await ctx.send_help(ctx.command)
-
-    # @hive.command(name="get")
-    # @commands.guild_only()
-    # async def hive_get(self, ctx: vbu.Context):
-    #     """
-    #     Give yourself a new hive.
-    #     """
-
-    #     pass
 
     async def create_first_hive(self, ctx: vbu.Context):
         """

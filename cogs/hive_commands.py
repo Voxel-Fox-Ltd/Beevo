@@ -61,7 +61,7 @@ class HiveCommands(vbu.Cog):
         # Grab their hives
         user = user or ctx.author
         async with self.bot.database() as db:
-            hives = await utils.Hive.fetch_hives_by_user(db, ctx.guild.id, user)
+            hives = await utils.Hive.fetch_hives_by_user(db, ctx.guild.id, user.id)
         if not hives:
             await self.create_first_hive(ctx)
             return await ctx.reinvoke()

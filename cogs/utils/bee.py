@@ -298,12 +298,26 @@ class Bee(object):
         """
 
         for i, o in kwargs.items():
-            if i == "hive_id" and self.hive is not None and self.hive.id != o:
-                self.hive = None
+
+            # See if we set a hive ID
+            if i == "hive_id":
+                if self.hive and self.hive.id != o:
+                    self.hive = None
+                self.hive_id = o
+
+            # See if we set a hive
             elif i == "hive":
-                self.hive_id = o.id
+                if o:
+                    self.hive_id = o.id
+                else:
+                    self.hive_id = None
+                self.hive = o
+
+            # Anything else is fine
             else:
                 setattr(self, i, o)
+
+        # SQL time
         await db(
             """UPDATE bees SET parent_ids=$2, owner_id=$3, name=$4, nobility=$5,
             speed=$6, fertility=$7, generation=$8, type=$9, guild_id=$10, hive_id=$11

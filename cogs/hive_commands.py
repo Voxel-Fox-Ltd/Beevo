@@ -50,20 +50,29 @@ class HiveCommands(vbu.Cog):
     @hive.command(name="list")
     @vbu.defer()
     @commands.guild_only()
-    async def hive_list(self, ctx: vbu.Context):
+    async def hive_list(self, ctx: vbu.Context, user: discord.Member = None):
         """
         Give you a list of all of your hives.
         """
 
         # Grab their hives
+        user = user or ctx.author
         async with self.bot.database() as db:
-            hives = await utils.Hive.fetch_hives_by_user(db, ctx.guild.id, ctx.author.id)
+            hives = await utils.Hive.fetch_hives_by_user(db, ctx.guild.id, user)
         if not hives:
             await self.create_first_hive(ctx)
             return await ctx.reinvoke()
 
         # Format into an embed
-        embed = vbu.Embed(use_random_colour=True, description=f"You have **{len(hives)}** hive{'s' if len(hives) > 1 else ''}:")
+        description = utils.format(
+            (
+                "{0:pronoun,You,{2}} {0:pronoun,have,has} **{1}** {1:plural,hive,hives}:"
+            ),
+            ctx.author == user,
+            len(hives),
+            user.mention,
+        )
+        embed = vbu.Embed(use_random_colour=True, description=description)
         for h in hives:
             if h.bees:
                 embed.description += f"\n\N{BULLET} **{h.name}**"

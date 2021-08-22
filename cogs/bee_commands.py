@@ -61,7 +61,12 @@ class BeeCommands(vbu.Cog):
         async with self.bot.database() as db:
             bees = await utils.Bee.fetch_bees_by_user(db, ctx.guild.id, user.id)
         if not bees:
-            return await ctx.send("You don't have any bees! :c", wait=False)
+            text = utils.format(
+                "{0:pronoun,You,{1}} {0:pronoun,don't,doesn't} have any bees! :c",
+                ctx.author == user,
+                user.mention,
+            )
+            return await ctx.send(text, wait=False)
 
         # Collate their bees
         bee_groups = collections.defaultdict(list)
@@ -69,7 +74,13 @@ class BeeCommands(vbu.Cog):
             bee_groups[i.nobility].append(i)
 
         # Format their bees into an embed
-        embed = vbu.Embed(use_random_colour=True, description=f"{user.mention} has {len(bees)} total bees")
+        description = utils.format(
+            "{0:pronoun,You,{2}} {0:pronoun,have,has} **{1}** total {1:plural,bee,bees}",
+            ctx.author == user,
+            len(bees),
+            user.mention,
+        )
+        embed = vbu.Embed(use_random_colour=True, description=description)
         formatter = lambda bee: f"\N{BULLET} **{bee.display_name}** ({bee.type.value.lower()} {bee.nobility.value.lower()})"  # noqa
         embed.add_field(
             "Queens",

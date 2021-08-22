@@ -132,7 +132,7 @@ class HiveCommands(vbu.Cog):
 
         # And done
         return await ctx.send(
-            f"Moved **{bee_count}** bees out of **{hive.name}**~",
+            f"Moved **{bee_count}** bee{'s' if bee_count > 1 else ''} out of **{hive.name}**~",
             wait=False,
         )
 

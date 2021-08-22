@@ -302,7 +302,7 @@ class Bee(object):
 
         # Generate our new bees
         def make_new_bee(nobility):
-            self.__class__(
+            return self.__class__(
                 id=None,
                 parent_ids=[self.id],
                 hive_id=self.hive_id,

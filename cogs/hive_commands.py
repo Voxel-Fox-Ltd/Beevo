@@ -68,9 +68,7 @@ class HiveCommands(vbu.Cog):
 
         # Format into an embed
         description = utils.format(
-            (
-                "{0:pronoun,You,{2}} {0:pronoun,have,has} **{1}** {1:plural,hive,hives}:"
-            ),
+            "{0:pronoun,You,{2}} {0:pronoun,have,has} **{1}** {1:plural,hive,hives}:",
             ctx.author == user,
             len(hives),
             user.mention,

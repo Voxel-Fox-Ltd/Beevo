@@ -68,7 +68,7 @@ class HiveCommands(vbu.Cog):
             if h.bees:
                 embed.description += f"\n\N{BULLET} **{h.name}**"
                 for i in h.bees:
-                    embed.description += f"\n\t\N{BULLET} {i.name}"
+                    embed.description += f"\n\u200b    \N{BULLET} {i.name}"
             else:
                 embed.description += f"\n\N{BULLET} **{h.name}** (*empty*)"
         return await ctx.send(embed=embed, wait=False)

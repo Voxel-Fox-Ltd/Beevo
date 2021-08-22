@@ -236,6 +236,31 @@ class Bee(object):
         else:
             self._type = BeeType(value)
 
+    @staticmethod
+    def get_new_stats(mother, father=None, random_rate=(0.9, 1.2,)) -> dict:
+        """
+        Get some new stats for the given bee.
+        """
+
+        random_high, random_low = random_rate
+        speed = random.randint(
+            max(math.floor(min(mother.speed, (father or mother).speed) * random_low), 1),  # always have at least a 1% chance of making honey
+            min(math.ceil(max(mother.speed, (father or mother).speed) * random_high), 100),  # can't go over 100%
+        )
+        fertility = random.randint(
+            max(math.floor(min(mother.fertility, (father or mother).fertility) * random_low), 1),  # always leave 1 bee
+            min(math.ceil(max(mother.fertility, (father or mother).fertility) * random_high), 10),  # max 10 bees
+        )
+        lifetime = random.randint(
+            max(math.floor(min(mother.lifetime, (father or mother).lifetime) * random_low), 60),  # 5 minutes
+            min(math.ceil(max(mother.lifetime, (father or mother).lifetime) * random_high), 720),  # 1 hour
+        )
+        return {
+            "speed": speed,
+            "fertility": fertility,
+            "lifetime": lifetime,
+        }
+
     @classmethod
     async def breed(cls, db, mother: 'Bee', father: 'Bee'):
         """
@@ -245,7 +270,7 @@ class Bee(object):
         """
 
         # Make sure the nobilities are correct
-        if {mother.nobility.value, father.nobility.value} != {Nobility.DRONE.value, Nobility.PRINCESS.value}:
+        if {mother.nobility, father.nobility} != {Nobility.DRONE, Nobility.PRINCESS}:
             raise ValueError()
 
         # Work out which bee is which
@@ -253,18 +278,7 @@ class Bee(object):
         drone = [i for i in [mother, father] if i.nobility == Nobility.DRONE][0]
 
         # Pick some new stats for it
-        speed = random.randint(
-            max(math.floor(min(princess.speed, drone.speed) * 0.9), 1),  # always have at least a 1% chance of making honey
-            min(math.ceil(max(princess.speed, drone.speed) * 1.1), 100),  # can't go over 100%
-        )
-        fertility = random.randint(
-            max(math.floor(min(princess.fertility, drone.fertility) * 0.9), 1),  # always leave 1 bee
-            min(math.ceil(max(princess.fertility, drone.fertility) * 1.1), 10),  # max 10 bees
-        )
-        lifetime = random.randint(
-            max(math.floor(min(princess.lifetime, drone.lifetime) * 0.9), 60),  # 5 minutes
-            min(math.ceil(max(princess.lifetime, drone.lifetime) * 1.1), 720),  # 1 hour
-        )
+        new_stats = cls.get_new_stats(mother, father)
         new_bee = await cls.create_bee(
             db=db,
             guild_id=princess.guild_id,
@@ -272,14 +286,60 @@ class Bee(object):
             bee_type=BeeType.combine(princess.type, drone.type),
             nobility=Nobility.QUEEN,
         )
-        await new_bee.update(db, speed=speed, fertility=fertility, lifetime=lifetime, parent_ids=[princess.id, drone.id])
+        await new_bee.update(db, **new_stats, parent_ids=[princess.id, drone.id])
         await princess.update(db, owner_id=None)
         await drone.update(db, owner_id=None)
         return new_bee
 
+    async def die(self, db) -> typing.List['Bee']:
+        """
+        Have this bee die, leaving behind a princess and a series of drones.
+        """
+
+        # Only queens can perish
+        if self.nobility != Nobility.QUEEN:
+            raise ValueError()
+
+        # Generate our new bees
+        def make_new_bee(nobility):
+            self.__class__(
+                id=None,
+                parent_ids=[self.id],
+                hive_id=self.hive_id,
+                nobility=nobility,
+                owner_id=self.owner_id,
+                name=None,
+                type=self.type,
+                guild_id=self.guild_id,
+                lived_lifetime=0,
+                **self.get_new_stats(self),
+            )
+        new_bees = [make_new_bee(Nobility.PRINCESS)]
+        new_bees.extend((make_new_bee(Nobility.DRONE) for _ in range(self.fertility)))
+
+        # Save the new bees to database
+        for bee in new_bees:
+            await bee.update(db)
+
+        # Update (kill) our current bee
+        self.owner_id = None
+        self.hive_id = None
+        await self.update(db)
+
+        # And return the new ones
+        return new_bees
+
     @classmethod
-    async def fetch_bee_by_id(cls, bee_id: str):
-        ...
+    async def fetch_bee_by_id(cls, db, bee_id: str) -> typing.Optional['Bee']:
+        """
+        Get a bee instance by its ID.
+        """
+
+        rows = await db("""SELECT * FROM bees WHERE id=$1""", bee_id)
+        try:
+            return cls(**rows[0])
+        except IndexError:
+            return None
 
     @classmethod
     async def fetch_bees_by_user(cls, db, guild_id: int, user_id: int) -> typing.List['Bee']:
@@ -291,7 +351,7 @@ class Bee(object):
         return [cls(**i) for i in rows]
 
     @classmethod
-    async def create_bee(cls, db, guild_id: int, user_id: int, bee_type: BeeType = None, nobility: Nobility = Nobility.DRONE):
+    async def create_bee(cls, db, guild_id: int, user_id: int, bee_type: BeeType = None, nobility: Nobility = Nobility.DRONE) -> 'Bee':
         """
         Create a new bee.
         """
@@ -329,7 +389,14 @@ class Bee(object):
             else:
                 setattr(self, i, o)
 
-        # SQL time
+        # Make sure we have some fields
+        if self.id is None:
+            new_bee = await self.create_bee(db, self.guild_id, self.owner_id)
+            self.id = new_bee.id
+        if self.name is None:
+            self.name = get_random_name()
+
+        # And database
         await db(
             """
             UPDATE

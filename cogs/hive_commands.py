@@ -1,3 +1,5 @@
+import asyncio
+
 import voxelbotutils as vbu
 import discord
 from discord.ext import commands, tasks
@@ -13,7 +15,10 @@ class HiveCommands(vbu.Cog):
         Update the bees' lived lifetime every tick.
         """
 
+        # Open the database
         async with self.bot.database() as db:
+
+            # Update bee lifetimes
             await db(
                 """
                 UPDATE
@@ -26,6 +31,25 @@ class HiveCommands(vbu.Cog):
                     AND lived_lifetime < lifetime  -- hasn't lived its life
                 """,
             )
+
+            # See which of the bees are dead
+            dead_bee_rows = await db(
+                """
+                SELECT
+                    *
+                FROM
+                    bees
+                WHERE
+                    hive_id IS NOT NULL
+                    AND nobility = 'Queen'
+                    AND lived_lifetime >= lifetime
+                """
+            )
+
+            # And handle those heckos
+            dead_bees = [utils.Bee(**i) for i in dead_bee_rows]
+            bee_death_tasks = [i.die(db) for i in dead_bees]
+            await asyncio.gather(bee_death_tasks)
 
     @vbu.group(invoke_without_command=False)
     @commands.guild_only()

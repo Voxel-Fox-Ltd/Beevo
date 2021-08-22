@@ -37,7 +37,7 @@ class HiveCommands(vbu.Cog):
         if ctx.invoked_subcommand is None:
             return await ctx.send_help(ctx.command)
 
-    async def create_first_hive(self, ctx: vbu.Context):
+    async def create_first_hive(self, guild_id: int, user_id: int):
         """
         Generate the first hive for a given user.
         """
@@ -46,7 +46,7 @@ class HiveCommands(vbu.Cog):
             rows = await db(
                 """INSERT INTO hives (id, index, guild_id, owner_id) VALUES
                 (GEN_RANDOM_UUID(), 0, $1, $2) RETURNING *""",
-                ctx.guild.id, ctx.author.id,
+                guild_id, user_id,
             )
         return utils.Hive(**rows[0])
 
@@ -63,7 +63,7 @@ class HiveCommands(vbu.Cog):
         async with self.bot.database() as db:
             hives = await utils.Hive.fetch_hives_by_user(db, ctx.guild.id, user.id)
         if not hives:
-            await self.create_first_hive(ctx)
+            await self.create_first_hive(ctx.guild.id, user.id)
             return await ctx.reinvoke()
 
         # Format into an embed

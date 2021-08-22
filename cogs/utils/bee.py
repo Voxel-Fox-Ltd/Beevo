@@ -1,6 +1,7 @@
 import typing
 import enum
 import random
+import math
 
 from discord.ext import commands
 import voxelbotutils as vbu
@@ -156,15 +157,15 @@ class Bee(object):
 
     __slots__ = (
         'id', 'parent_ids', 'guild_id', 'owner_id', 'name', '_type',
-        '_nobility', 'speed', 'fertility', 'generation', 'hive_id',
-        'hive',
+        '_nobility', 'speed', 'fertility', 'hive_id',
+        'hive', 'lifetime', 'lived_lifetime',
     )
 
     def __init__(
             self, id: str, parent_ids: typing.List[str], hive_id: str,
             nobility: typing.Union[str, Nobility], speed: int, fertility: int,
-            owner_id: int, generation: int, name: str, type: typing.Union[str, BeeType],
-            guild_id: int):
+            owner_id: int, name: str, type: typing.Union[str, BeeType],
+            guild_id: int, lifetime: int, lived_lifetime: int):
 
         #: The ID of this bee.
         self.id: str = id
@@ -199,8 +200,11 @@ class Bee(object):
         #: How many drones this bee produces when it dies. Only used for queens but can be bred down from anywhere.
         self.fertility: int = fertility
 
-        #: How many generations old this bee is.
-        self.generation: int = generation
+        #: How many ticks this bee stays alive for when it's in a hive.
+        self.lifetime: int = lifetime
+
+        #: How many ticks this bee has been in a hive for.
+        self.lived_lifetime: int = lived_lifetime
 
     @property
     def display_name(self):
@@ -246,12 +250,16 @@ class Bee(object):
 
         # Pick some new stats for it
         speed = random.randint(
-            max(min(princess.speed, drone.speed) - 2, 0),
-            max(princess.speed, drone.speed) + 5,
+            max(math.floor(min(princess.speed, drone.speed) * 0.9), 1),  # always have at least a 1% chance of making honey
+            min(math.ceil(max(princess.speed, drone.speed) * 1.1), 100),  # can't go over 100%
         )
         fertility = random.randint(
-            max(min(princess.fertility, drone.fertility) - 2, 0),
-            max(princess.fertility, drone.fertility) + 5,
+            max(math.floor(min(princess.fertility, drone.fertility) * 0.9), 1),  # always leave 1 bee
+            min(math.ceil(max(princess.fertility, drone.fertility) * 1.1), 10),  # max 10 bees
+        )
+        lifetime = random.randint(
+            max(math.floor(min(princess.lifetime, drone.lifetime) * 0.9), 60),  # 5 minutes
+            min(math.ceil(max(princess.lifetime, drone.lifetime) * 1.1), 720),  # 1 hour
         )
         new_bee = await cls.create_bee(
             db=db,
@@ -260,7 +268,7 @@ class Bee(object):
             bee_type=BeeType.combine(princess.type, drone.type),
             nobility=Nobility.QUEEN,
         )
-        await new_bee.update(db, speed=speed, fertility=fertility, parent_ids=[princess.id, drone.id])
+        await new_bee.update(db, speed=speed, fertility=fertility, lifetime=lifetime, parent_ids=[princess.id, drone.id])
         await princess.update(db, owner_id=None)
         await drone.update(db, owner_id=None)
         return new_bee
@@ -319,12 +327,28 @@ class Bee(object):
 
         # SQL time
         await db(
-            """UPDATE bees SET parent_ids=$2, owner_id=$3, name=$4, nobility=$5,
-            speed=$6, fertility=$7, generation=$8, type=$9, guild_id=$10, hive_id=$11
-            WHERE id=$1""",
+            """
+            UPDATE
+                bees
+            SET
+                parent_ids = $2,
+                owner_id = $3,
+                name = $4,
+                nobility = $5,
+                speed = $6,
+                fertility = $7,
+                type = $8,
+                guild_id = $9,
+                hive_id = $10,
+                lifetime = $11,
+                lived_lifetime = $12
+            WHERE
+                id = $1
+            """,
             self.id, self.parent_ids, self.owner_id, self.name,
-            self.nobility.value, self.speed, self.fertility, self.generation,
+            self.nobility.value, self.speed, self.fertility,
             self.type.value, self.guild_id, self.hive_id,
+            self.lifetime, self.lived_lifetime,
         )
 
     async def delete(self, db):

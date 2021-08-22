@@ -38,8 +38,8 @@ class BeeCommands(vbu.Cog):
         # And respond
         return await ctx.send(
             (
-                f"Created your new bees: a {drone.type.value.lower()} drone, **{drone.display_name}**; "
-                f"and a {princess.type.value.lower()} princess, **{princess.display_name}**!"
+                f"Created your new bees: a {drone.display_type}, **{drone.display_name}**; "
+                f"and a {princess.display_type}, **{princess.display_name}**!"
             ),
             wait=False,
         )

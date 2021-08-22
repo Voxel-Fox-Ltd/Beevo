@@ -211,6 +211,10 @@ class Bee(object):
         return self.name or self.id
 
     @property
+    def display_type(self):
+        return f"{self.type.value.lower()} {self.nobility.value.lower()}"
+
+    @property
     def nobility(self):
         return self._nobility
 

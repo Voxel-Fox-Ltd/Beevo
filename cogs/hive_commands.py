@@ -65,8 +65,10 @@ class HiveCommands(vbu.Cog):
         # Format into an embed
         embed = vbu.Embed(use_random_colour=True, description=f"You have **{len(hives)}** hive{'s' if len(hives) > 1 else ''}:")
         for h in hives:
-            if h.bee:
-                embed.description += f"\n\N{BULLET} **{h.name}** ({h.bee.name})"
+            if h.bees:
+                embed.description += f"\n\N{BULLET} **{h.name}**"
+                for i in h.bees:
+                    embed.description += f"\n\t\N{BULLET} {i.name}"
             else:
                 embed.description += f"\n\N{BULLET} **{h.name}** (*empty*)"
         return await ctx.send(embed=embed, wait=False)

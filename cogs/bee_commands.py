@@ -77,7 +77,7 @@ class BeeCommands(vbu.Cog):
             user.mention,
         )
         embed = vbu.Embed(use_random_colour=True, description=description)
-        formatter = lambda bee: f"\N{BULLET} **{bee.display_name}** ({bee.type.value.lower()} {bee.nobility.value.lower()})"  # noqa
+        formatter = lambda bee: f"\N{BULLET} **{bee.display_name}** ({bee.display_type})"  # noqa
         embed.add_field(
             "Queens",
             "\n".join([formatter(i) for i in bee_groups[utils.Nobility.QUEEN]]) or "None :<",

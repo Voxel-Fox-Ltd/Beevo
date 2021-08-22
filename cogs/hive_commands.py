@@ -7,10 +7,10 @@ from cogs import utils
 
 class HiveCommands(vbu.Cog):
 
-    @tasks.loop(seconds=5)  # 1 tick is 5 seconds
+    @vbu.Cog.listener("on_bee_tick")
     async def hive_lifetime_ticker(self):
         """
-        Tick every second to run a lifetime for the bees.
+        Update the bees' lived lifetime every tick.
         """
 
         async with self.bot.database() as db:

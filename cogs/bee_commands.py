@@ -20,15 +20,13 @@ class BeeCommands(vbu.Cog):
         pass
 
     @bee.command(name="get")
+    @vbu.defer()
     @vbu.cooldown.cooldown(1, 60 * 60, commands.BucketType.user)
     @commands.guild_only()
     async def bee_get(self, ctx: vbu.Context):
         """
         Catch some new bees for your hive.
         """
-
-        # Defer our response because we love database lag
-        await ctx.defer()
 
         # Get a new bee for the user
         async with self.bot.database() as db:
@@ -47,14 +45,12 @@ class BeeCommands(vbu.Cog):
         )
 
     @bee.command(name="list")
+    @vbu.defer()
     @commands.guild_only()
     async def bee_list(self, ctx: vbu.Context, user: discord.Member = None):
         """
-        Shows you all of the bees you have
+        Shows you all of the bees you have.
         """
-
-        # Defer our response because we love database lag
-        await ctx.defer()
 
         # Get the bees for the given user
         user = user or ctx.author
@@ -104,14 +100,12 @@ class BeeCommands(vbu.Cog):
         )
 
     @bee.command(name="rename")
+    @vbu.defer()
     @commands.guild_only()
     async def bee_rename(self, ctx: vbu.Context, before: utils.Bee, *, after: str):
         """
         Renames one of your bees.
         """
-
-        # Defer our response because we love database lag
-        await ctx.defer()
 
         # Check name length
         if len(after) < 1:
@@ -132,14 +126,12 @@ class BeeCommands(vbu.Cog):
         return await ctx.send("Updated!", wait=False)
 
     @bee.command(name="release")
+    @vbu.defer()
     @commands.guild_only()
     async def bee_release(self, ctx: vbu.Context, bee: utils.Bee):
         """
         Releases one of your bees back into the wild.
         """
-
-        # Defer our response because we love database lag
-        await ctx.defer()
 
         async with self.bot.database() as db:
             bee.owner_id = None

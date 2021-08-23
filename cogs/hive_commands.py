@@ -196,7 +196,7 @@ class HiveCommands(vbu.Cog):
                 bees = await utils.Bee.fetch_bees_by_user(db, ctx.guild.id, ctx.author.id)
             bees = {i.id: i for i in bees if i.hive_id is None and i.nobility == utils.Nobility.QUEEN}
             if not bees:
-                return await send_method("You have no available queens to add to a hive :<", components=None)
+                return await send_method(content="You have no available queens to add to a hive :<", components=None)
             components = vbu.MessageComponents(
                 vbu.ActionRow(vbu.SelectMenu(
                     custom_id="HIVE BEE_SELECTION",
@@ -212,11 +212,11 @@ class HiveCommands(vbu.Cog):
                     style=vbu.ButtonStyle.DANGER,
                 )),
             )
-            dropdown_message = await send_method("Which queen would you like to add to a hive?", components=components)
+            dropdown_message = await send_method(content="Which queen would you like to add to a hive?", components=components)
             try:
                 payload = await self.bot.wait_for("component_interaction", check=vbu.component_check(ctx.author, dropdown_message), timeout=60)
             except asyncio.TimeoutError:
-                return await send_method("I timed out waiting for you to say which bee you want to add to a hive :c", components=None)
+                return await send_method(content="I timed out waiting for you to say which bee you want to add to a hive :c", components=None)
             if payload.component.custom_id == "HIVE CANCEL":
                 return await payload.update_message(content="Cancelled your bee breed :<", components=None)
             send_method = payload.update_message
@@ -228,7 +228,7 @@ class HiveCommands(vbu.Cog):
                 hives = await utils.Hive.fetch_hives_by_user(db, ctx.guild.id, ctx.author.id, fetch_inventory=False)
             hives = {i.id: i for i in hives if not i.bees}
             if not hives:
-                return await send_method("You have no hives available to add bees to.", components=None)
+                return await send_method(content="You have no hives available to add bees to.", components=None)
             components = vbu.MessageComponents(
                 vbu.ActionRow(vbu.SelectMenu(
                     custom_id="HIVE HIVE_SELECTION",
@@ -244,11 +244,11 @@ class HiveCommands(vbu.Cog):
                     style=vbu.ButtonStyle.DANGER,
                 )),
             )
-            dropdown_message = await send_method("Which queen would you like to add to a hive?", components=components)
+            dropdown_message = await send_method(content="Which queen would you like to add to a hive?", components=components)
             try:
                 payload = await self.bot.wait_for("component_interaction", check=vbu.component_check(ctx.author, dropdown_message), timeout=60)
             except asyncio.TimeoutError:
-                return await send_method("I timed out waiting for you to say which bee you want to add to a hive :c", components=None)
+                return await send_method(content="I timed out waiting for you to say which bee you want to add to a hive :c", components=None)
             if payload.component.custom_id == "HIVE CANCEL":
                 return await payload.update_message(content="Cancelled your bee breed :<", components=None)
             send_method = payload.update_message
@@ -257,7 +257,7 @@ class HiveCommands(vbu.Cog):
         # See if the bee is already in a hive
         if bee.hive_id:
             return await send_method(
-                f"**{bee.name}** is already in **{hive.name}**!",
+                content=f"**{bee.name}** is already in **{hive.name}**!",
                 allowed_mentions=discord.AllowedMentions.none(),
                 components=None,
             )
@@ -265,7 +265,7 @@ class HiveCommands(vbu.Cog):
         # See if the hive already has a bee
         if hive.bees:
             return await send_method(
-                f"There's already a bee in **{hive.name}**!",
+                content=f"There's already a bee in **{hive.name}**!",
                 components=None,
             )
 
@@ -276,7 +276,7 @@ class HiveCommands(vbu.Cog):
 
         # And done!
         return await send_method(
-            f"Successfully moved **{bee.name}** into **{hive.name}**!",
+            content=f"Successfully moved **{bee.name}** into **{hive.name}**!",
             allowed_mentions=discord.AllowedMentions.none(),
             components=None,
         )

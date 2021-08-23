@@ -244,7 +244,7 @@ class HiveCommands(vbu.Cog):
                     FROM
                         hive_inventory
                     WHERE
-                        hive_id = $2
+                        hive_id = $3
                     ON CONFLICT
                         (user_id, item_name)
                     DO UPDATE SET

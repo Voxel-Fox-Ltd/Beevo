@@ -223,9 +223,9 @@ class HiveCommands(vbu.Cog):
         """
 
         # See if the hive has a bee
-        if not hive.bees:
+        if not hive.bees and not hive.inventory:
             return await ctx.send(
-                f"There's no bee in **{hive.name}** :<",
+                f"There's nothing in **{hive.name}** :<",
                 wait=False,
             )
 
@@ -238,9 +238,9 @@ class HiveCommands(vbu.Cog):
                 await db(
                     """
                     INSERT INTO
-                        user_inventory (user_id, item_name, quantity)
+                        user_inventory (guild_id, user_id, item_name, quantity)
                     SELECT
-                        $1, item_name, quantity
+                        $1, $2, item_name, quantity
                     FROM
                         hive_inventory
                     WHERE
@@ -250,7 +250,7 @@ class HiveCommands(vbu.Cog):
                     DO UPDATE SET
                         quantity = user_inventory.quantity + excluded.quantity
                     """,
-                    ctx.author.id, hive.id,
+                    ctx.guid.id, ctx.author.id, hive.id,
                 )
                 await db("""UPDATE hive_inventory SET quantity = 0 WHERE hive_id = $1""", hive.id)
                 await db.commit_transaction()

@@ -189,6 +189,7 @@ class HiveCommands(vbu.Cog):
 
         # Set up our sendable
         send_method = ctx.send
+        dropdown_message = None
 
         # See that they gave a bee
         if bee is None:
@@ -212,13 +213,13 @@ class HiveCommands(vbu.Cog):
                     style=vbu.ButtonStyle.DANGER,
                 )),
             )
-            dropdown_message = await send_method(content="Which queen would you like to add to a hive?", components=components)
+            dropdown_message = await send_method(content="Which queen would you like to add to a hive?", components=components) or dropdown_message
             try:
                 payload = await self.bot.wait_for("component_interaction", check=vbu.component_check(ctx.author, dropdown_message), timeout=60)
             except asyncio.TimeoutError:
                 return await send_method(content="I timed out waiting for you to say which bee you want to add to a hive :c", components=None)
             if payload.component.custom_id == "HIVE CANCEL":
-                return await payload.update_message(content="Cancelled your bee breed :<", components=None)
+                return await payload.update_message(content="Cancelled your hive add :<", components=None)
             send_method = payload.update_message
             bee = bees[payload.values[0]]
 
@@ -244,13 +245,13 @@ class HiveCommands(vbu.Cog):
                     style=vbu.ButtonStyle.DANGER,
                 )),
             )
-            dropdown_message = await send_method(content="Which queen would you like to add to a hive?", components=components)
+            dropdown_message = await send_method(content="What hive do you want to add youre bee to?", components=components) or dropdown_message
             try:
                 payload = await self.bot.wait_for("component_interaction", check=vbu.component_check(ctx.author, dropdown_message), timeout=60)
             except asyncio.TimeoutError:
-                return await send_method(content="I timed out waiting for you to say which bee you want to add to a hive :c", components=None)
+                return await send_method(content="I timed out waiting for you to say which hive you want to add to bee to :c", components=None)
             if payload.component.custom_id == "HIVE CANCEL":
-                return await payload.update_message(content="Cancelled your bee breed :<", components=None)
+                return await payload.update_message(content="Cancelled your hive add :<", components=None)
             send_method = payload.update_message
             hive = hives[payload.values[0]]
 

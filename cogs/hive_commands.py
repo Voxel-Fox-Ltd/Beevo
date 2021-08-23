@@ -88,8 +88,8 @@ class HiveCommands(vbu.Cog):
             for i in futures:
                 try:
                     results.extend(i.result())
-                except Exception:
-                    pass
+                except Exception as e:
+                    self.logger.error(e, exc_info=e)
             all_owner_ids = {i.owner_id: i.hive_id for i in results}
 
             # DM authors who want to know when the bees die

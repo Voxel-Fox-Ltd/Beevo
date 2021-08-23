@@ -130,7 +130,7 @@ class BeeCommands(vbu.Cog):
     @bee.command(name="release")
     @vbu.defer()
     @commands.guild_only()
-    async def bee_release(self, ctx: vbu.Context, bee: utils.Bee = None):
+    async def bee_release(self, ctx: vbu.Context, *, bee: utils.Bee = None):
         """
         Releases one of your bees back into the wild.
         """
@@ -230,15 +230,6 @@ class BeeCommands(vbu.Cog):
             wait=False,
         )
 
-    @bee.command(name="hive")
-    @commands.guild_only()
-    async def bee_hive(self, ctx: vbu.Context, bee: utils.Bee, hive: utils.Hive):
-        """
-        Add one of your bees to a hive.
-        """
-
-        return await ctx.invoke(self.bot.get_command("hive add"), bee, hive)
-
     @bee.command(name="breed")
     @vbu.defer()
     @commands.guild_only()
@@ -266,17 +257,6 @@ class BeeCommands(vbu.Cog):
         if not drones:
             return await ctx.send("You don't have an available drone to breed :<", wait=False)
 
-        # Make a check
-        def get_message_check(message):
-            def check(payload):
-                if payload.message.id != message.id:
-                    return False
-                if payload.user.id != ctx.author.id:
-                    self.bot.loop.create_task(payload.send(f"Only {ctx.author.mention} can interact with this select menu :<", wait=False))
-                    return False
-                return True
-            return check
-
         # Ask which princess they want to breed
         components = vbu.MessageComponents(
             vbu.ActionRow(vbu.SelectMenu(
@@ -295,7 +275,7 @@ class BeeCommands(vbu.Cog):
         )
         dropdown_message = await ctx.send("Which of your princesses would you like to breed?", components=components)
         try:
-            payload = await self.bot.wait_for("component_interaction", check=get_message_check(dropdown_message), timeout=60)
+            payload = await self.bot.wait_for("component_interaction", check=vbu.component_check(ctx.author, dropdown_message), timeout=60)
         except asyncio.TimeoutError:
             return await ctx.send("I timed out waiting for you to say which princess you want to breed :c", wait=False)
         if payload.component.custom_id == "BREED CANCEL":
@@ -320,7 +300,7 @@ class BeeCommands(vbu.Cog):
         )
         await payload.update_message(content="What type of drone would you like to breed?", components=components)
         try:
-            payload = await self.bot.wait_for("component_interaction", check=get_message_check(dropdown_message), timeout=60)
+            payload = await self.bot.wait_for("component_interaction", check=vbu.component_check(ctx.author, dropdown_message), timeout=60)
         except asyncio.TimeoutError:
             return await payload.send("I timed out waiting for you to say which drones you want to breed :c", wait=False)
         if payload.component.custom_id == "BREED CANCEL":
@@ -345,7 +325,7 @@ class BeeCommands(vbu.Cog):
         )
         await payload.update_message(content="Which of your drones would you like to breed?", components=components)
         try:
-            payload = await self.bot.wait_for("component_interaction", check=get_message_check(dropdown_message), timeout=60)
+            payload = await self.bot.wait_for("component_interaction", check=vbu.component_check(ctx.author, dropdown_message), timeout=60)
         except asyncio.TimeoutError:
             return await payload.send("I timed out waiting for you to say which drones you want to breed :c", wait=False)
         if payload.component.custom_id == "BREED CANCEL":

@@ -142,7 +142,7 @@ class HiveCommands(vbu.Cog):
                         bee_is_queen = True
                         line = (
                             f"**{i.name}** (*{i.display_type}*)\n"
-                            f"{{:progress,10}}"
+                            f"{{:progress,9}}"
                         )
                         bee_field_value += utils.format(line, ((i.lifetime - i.lived_lifetime) * 100) / i.lifetime)
                     else:

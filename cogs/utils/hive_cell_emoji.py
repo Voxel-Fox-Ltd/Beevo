@@ -16,7 +16,7 @@ class HiveCellEmoji(object):
     def get_cell(cls, flags, noflags, *, random: random_module.Random = None):
         valid_cells = [i for i in cls.all_cells if set(i.flags).issuperset(set(flags)) and not set(i.flags).intersection(set(noflags))]
         valid_cells.sort(key=operator.attrgetter("weight"))
-        return (random_module or random).choices(valid_cells, weights=[i.weight for i in valid_cells], k=1)[0]
+        return (random or random_module).choices(valid_cells, weights=[i.weight for i in valid_cells], k=1)[0]
 
     @classmethod
     def get_grid(cls, width: int = 9, height: int = 9, *, random: random_module.Random = None):

@@ -1,5 +1,6 @@
 import typing
 import random
+import uuid
 
 from discord.ext import commands
 import voxelbotutils as vbu
@@ -158,5 +159,5 @@ class Hive(object):
         return hives.values()
 
     def get_hive_grid(self, width: int = 9, height: int = 9):
-        r = random.Random(hash(self.id))
+        r = random.Random(int(uuid.UUID(self.id), 16))
         return HiveCellEmoji.get_grid(width, height, random=r)

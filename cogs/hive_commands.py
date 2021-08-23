@@ -125,7 +125,6 @@ class HiveCommands(vbu.Cog):
             len(hives),
             user.mention,
         )
-        embed = vbu.Embed(use_random_colour=True, description="")
         embeds = []
 
         # We have data for each hive

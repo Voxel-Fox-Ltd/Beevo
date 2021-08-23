@@ -109,7 +109,9 @@ class Hive(object):
         return hive
 
     @classmethod
-    async def fetch_hives_by_user(cls, db, guild_id: int, user_id: int, *, fetch_bees: bool = True) -> typing.List['Hive']:
+    async def fetch_hives_by_user(
+            cls, db, guild_id: int, user_id: int, *, fetch_bees: bool = True,
+            fetch_inventory: bool = True) -> typing.List['Hive']:
         """
         Get all the hives for a given user.
         """
@@ -141,6 +143,16 @@ class Hive(object):
                 hive = hives[bee.hive_id]
                 hive.bees.add(bee)
                 bee.hive = hive
+
+        # Get inventory
+        if fetch_inventory:
+            inventory_rows = await db(
+                """SELECT * FROM hive_inventory WHERE hive_id=ANY($1::TEXT[])""",
+                hives.keys(),
+            )
+            for r in inventory_rows:
+                hive = hives[bee.hive_id]
+                hive.inventory[r['item_name']] += r['quantity']
 
         # And return the hives
         return hives.values()

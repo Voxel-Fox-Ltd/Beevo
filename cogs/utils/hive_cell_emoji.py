@@ -1,3 +1,4 @@
+import operator
 import random as random_module
 
 
@@ -14,6 +15,7 @@ class HiveCellEmoji(object):
     @classmethod
     def get_cell(cls, flags, noflags, *, random: random_module.Random = None):
         valid_cells = [i for i in cls.all_cells if set(i.flags).issuperset(set(flags)) and not set(i.flags).intersection(set(noflags))]
+        valid_cells.sort(key=operator.attrgetter("weight"))
         return (random_module or random).choices(valid_cells, weights=[i.weight for i in valid_cells], k=1)[0]
 
     @classmethod

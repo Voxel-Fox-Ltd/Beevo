@@ -81,7 +81,24 @@ class HiveCommands(vbu.Cog):
             # And handle those heckos
             dead_queens = [utils.Bee(**i) for i in dead_queen_rows]
             queen_death_tasks = [i.die(db) for i in dead_queens]
-            await asyncio.gather(*queen_death_tasks)
+            futures = await asyncio.gather(*queen_death_tasks)
+
+            # Get the owner IDs for every bee that's died
+            results = []
+            for i in futures:
+                try:
+                    results.extend(i.result())
+                except Exception:
+                    pass
+            all_owner_ids = {i.owner_id: i.hive_id for i in results}
+
+            # DM authors who want to know when the bees die
+            for owner_id, hive_id in all_owner_ids.items():
+                try:
+                    owner = self.bot.get_user(owner_id) or await self.bot.fetch_user(owner_id)
+                    await owner.send(f"Your bee in hive **{hive_id}** has perished :<")
+                except discord.HTTPException:
+                    pass
 
     @vbu.group(invoke_without_command=False)
     @commands.guild_only()
@@ -109,8 +126,7 @@ class HiveCommands(vbu.Cog):
     @hive.command(name="list")
     @vbu.defer()
     @commands.guild_only()
-    async def hive_list(
-            self, ctx: vbu.Context, user: discord.Member = None):
+    async def hive_list(self, ctx: vbu.Context, user: discord.Member = None):
         """
         Give you a list of all of your hives.
         """

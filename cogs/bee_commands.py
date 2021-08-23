@@ -95,11 +95,6 @@ class BeeCommands(vbu.Cog):
             "\n".join([formatter(i) for i in bee_groups[utils.Nobility.PRINCESS]]) or "None :<",
             inline=False
         )
-        # embed.add_field(
-        #     "Drones",
-        #     "\n".join([formatter(i) for i in bee_groups[utils.Nobility.DRONE]]) or "None :<",
-        #     inline=False
-        # )
         for t, bees in drone_types:
             embed.add_field(
                 f"{t.value.title()} Drones",

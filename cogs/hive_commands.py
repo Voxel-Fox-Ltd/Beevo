@@ -132,15 +132,17 @@ class HiveCommands(vbu.Cog):
         for h in hives:
             embed = vbu.Embed(use_random_colour=True, title=h.name, description=h.get_hive_grid())
             bee_field_value = ""
+            bee_is_queen = False
             item_field_value = ""
 
             # If the hive has bees
             if h.bees:
                 for i in h.bees:
                     if i.nobility == utils.Nobility.QUEEN:
+                        bee_is_queen = True
                         line = (
-                            f"\n\N{BULLET} {i.name} (*{i.display_type}*)\n"
-                            f"\u2800\u2800{{:progress}}"
+                            f"**{i.name}** (*{i.display_type}*)\n"
+                            f"{{:progress,10}}"
                         )
                         bee_field_value += utils.format(line, ((i.lifetime - i.lived_lifetime) * 100) / i.lifetime)
                     else:
@@ -156,7 +158,7 @@ class HiveCommands(vbu.Cog):
             # Add fields
             if bee_field_value:
                 embed.add_field(
-                    "Bees",
+                    "Active Bees" if bee_is_queen else "Bees",
                     bee_field_value,
                     inline=False,
                 )

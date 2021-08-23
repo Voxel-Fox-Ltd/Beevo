@@ -42,37 +42,37 @@ CREATE TABLE IF NOT EXISTS bee_comb_type(
     type TEXT PRIMARY KEY,
     comb TEXT
 );
-INSERT INTO bee_comb_type VALUES ('Forest', 'Honey') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Meadows', 'Honey') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Modest', 'Parched') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Tropical', 'Silky') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Wintry', 'Frozen') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Marshy', 'Mossy') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Water', 'Wet') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Rocky', 'Rocky') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Embittered', 'Simmering') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Marbled', 'Honey') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Valiant', 'Cocoa') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Steadfast', 'Cocoa') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Common', 'Honey') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Cultivated', 'Honey') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Noble', 'Dripping') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Majestic', 'Dripping') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Imperial', 'Dripping') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Dilligent', 'Stringy') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Unweary', 'Stringy') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Industrious', 'Stringy') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Heroic', 'Cocoa') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Sinister', 'Simmering') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Fiendish', 'Simmering') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Demonic', 'Simmering') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Frugal', 'Parched') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Austere', 'Parched') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Exotic', 'Silky') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Edenic', 'Silky') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Icy', 'Frozen') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Glacial', 'Frozen') ON CONFLICT (type) DO NOTHING;
-INSERT INTO bee_comb_type VALUES ('Rural', 'Wheaten') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('forest', 'honey') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('meadows', 'honey') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('modest', 'parched') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('tropical', 'silky') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('wintry', 'frozen') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('marshy', 'mossy') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('water', 'wet') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('rocky', 'rocky') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('embittered', 'simmering') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('marbled', 'honey') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('valiant', 'cocoa') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('steadfast', 'cocoa') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('common', 'honey') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('cultivated', 'honey') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('noble', 'dripping') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('majestic', 'dripping') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('imperial', 'dripping') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('dilligent', 'stringy') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('unweary', 'stringy') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('industrious', 'stringy') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('heroic', 'cocoa') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('sinister', 'simmering') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('fiendish', 'simmering') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('demonic', 'simmering') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('frugal', 'parched') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('austere', 'parched') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('exotic', 'silky') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('edenic', 'silky') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('icy', 'frozen') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('glacial', 'frozen') ON CONFLICT (type) DO NOTHING;
+INSERT INTO bee_comb_type VALUES ('rural', 'wheaten') ON CONFLICT (type) DO NOTHING;
 
 
 CREATE TABLE IF NOT EXISTS user_inventory(

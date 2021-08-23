@@ -209,67 +209,19 @@ class HiveCommands(vbu.Cog):
 
         # See that they gave a bee
         if bee is None:
-            async with self.bot.database() as db:
-                bees = await utils.Bee.fetch_bees_by_user(db, ctx.guild.id, ctx.author.id)
-            bees = {i.id: i for i in bees if i.hive_id is None and i.nobility == utils.Nobility.QUEEN}
-            if not bees:
-                return await send_method(content="You have no available queens to add to a hive :<", components=None)
-            components = vbu.MessageComponents(
-                vbu.ActionRow(vbu.SelectMenu(
-                    custom_id="HIVE BEE_SELECTION",
-                    options=[
-                        vbu.SelectOption(label=bee.name, value=bee.id, description=bee.display_type.capitalize())
-                        for bee in bees.values()
-                    ],
-                    placeholder="Which bee do you want to add to a hive?"
-                )),
-                vbu.ActionRow(vbu.Button(
-                    label="Cancel",
-                    custom_id="HIVE CANCEL",
-                    style=vbu.ButtonStyle.DANGER,
-                )),
+            payload, dropdown_message, bee = await utils.Bee.send_bee_dropdown(
+                ctx=ctx, send_method=send_method, current_message=dropdown_message,
+                check=lambda bee: bee.nobility == utils.Nobility.QUEEN,
             )
-            dropdown_message = await send_method(content="Which queen would you like to add to a hive?", components=components) or dropdown_message
-            try:
-                payload = await self.bot.wait_for("component_interaction", check=vbu.component_check(ctx.author, dropdown_message), timeout=60)
-            except asyncio.TimeoutError:
-                return await send_method(content="I timed out waiting for you to say which bee you want to add to a hive :c", components=None)
-            if payload.component.custom_id == "HIVE CANCEL":
-                return await payload.update_message(content="Cancelled your hive add :<", components=None)
             send_method = payload.update_message
-            bee = bees[payload.values[0]]
 
         # See that they gave a hive
         if hive is None:
-            async with self.bot.database() as db:
-                hives = await utils.Hive.fetch_hives_by_user(db, ctx.guild.id, ctx.author.id, fetch_inventory=False)
-            hives = {i.id: i for i in hives if not i.bees}
-            if not hives:
-                return await send_method(content="You have no hives available to add bees to.", components=None)
-            components = vbu.MessageComponents(
-                vbu.ActionRow(vbu.SelectMenu(
-                    custom_id="HIVE HIVE_SELECTION",
-                    options=[
-                        vbu.SelectOption(label=hive.name, value=hive.id)
-                        for hive in hives.values()
-                    ],
-                    placeholder="Which bee do you want to add to a hive?"
-                )),
-                vbu.ActionRow(vbu.Button(
-                    label="Cancel",
-                    custom_id="HIVE CANCEL",
-                    style=vbu.ButtonStyle.DANGER,
-                )),
+            payload, dropdown_message, hive = await utils.Hive.send_hive_dropdown(
+                ctx=ctx, send_method=send_method, current_message=dropdown_message,
+                check=lambda hive: not hive.bees,
             )
-            dropdown_message = await send_method(content="What hive do you want to add youre bee to?", components=components) or dropdown_message
-            try:
-                payload = await self.bot.wait_for("component_interaction", check=vbu.component_check(ctx.author, dropdown_message), timeout=60)
-            except asyncio.TimeoutError:
-                return await send_method(content="I timed out waiting for you to say which hive you want to add to bee to :c", components=None)
-            if payload.component.custom_id == "HIVE CANCEL":
-                return await payload.update_message(content="Cancelled your hive add :<", components=None)
             send_method = payload.update_message
-            hive = hives[payload.values[0]]
 
         # See if the bee is already in a hive
         if bee.hive_id:
@@ -311,7 +263,10 @@ class HiveCommands(vbu.Cog):
 
         # Make sure they give a hive
         if hive is None:
-            payload, message, hive = await utils.Hive.send_hive_dropdown(ctx, send_method, None, lambda hive: hive.bees)
+            payload, message, hive = await utils.Hive.send_hive_dropdown(
+                ctx=ctx, send_method=send_method, current_message=None,
+                check=lambda hive: hive.bees,
+            )
             send_method = payload.update_message
 
         # See if the hive has a bee

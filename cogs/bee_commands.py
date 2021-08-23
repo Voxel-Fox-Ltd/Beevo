@@ -22,7 +22,7 @@ class BeeCommands(vbu.Cog):
 
     @bee.command(name="get")
     @vbu.defer()
-    @vbu.cooldown.cooldown(1, 60 * 60, commands.BucketType.user)
+    @vbu.cooldown.cooldown(1, 60 * 15, commands.BucketType.user)
     @commands.guild_only()
     async def bee_get(self, ctx: vbu.Context):
         """
@@ -229,6 +229,15 @@ class BeeCommands(vbu.Cog):
             allowed_mentions=discord.AllowedMentions.none(),
             wait=False,
         )
+
+    @bee.command(name="hive")
+    @commands.guild_only()
+    async def bee_hive(self, ctx: vbu.Context, bee: utils.Bee, hive: utils.Hive):
+        """
+        Add one of your bees to a hive.
+        """
+
+        return await ctx.invoke(self.bot.get_command("hive add"), bee, hive)
 
     @bee.command(name="breed")
     @vbu.defer()

@@ -278,51 +278,78 @@ class BeeCommands(vbu.Cog):
             return check
 
         # Ask which princess they want to breed
-        components = vbu.MessageComponents(vbu.ActionRow(vbu.SelectMenu(
-            custom_id="BREED BEE_SELECTION",
-            options=[
-                vbu.SelectOption(label=bee.name, value=bee.id, description=bee.display_type.capitalize())
-                for bee in princesses.values()
-            ],
-            placeholder="Which princess would you like to breed?"
-        )))
+        components = vbu.MessageComponents(
+            vbu.ActionRow(vbu.SelectMenu(
+                custom_id="BREED BEE_SELECTION",
+                options=[
+                    vbu.SelectOption(label=bee.name, value=bee.id, description=bee.display_type.capitalize())
+                    for bee in princesses.values()
+                ],
+                placeholder="Which princess would you like to breed?"
+            )),
+            vbu.ActionRow(vbu.Button(
+                label="Cancel",
+                custom_id="BREED CANCEL",
+                style=vbu.ButtonStyle.DANGER,
+            )),
+        )
         dropdown_message = await ctx.send("Which of your princesses would you like to breed?", components=components)
         try:
             payload = await self.bot.wait_for("component_interaction", check=get_message_check(dropdown_message), timeout=60)
         except asyncio.TimeoutError:
             return await ctx.send("I timed out waiting for you to say which princess you want to breed :c", wait=False)
+        if payload.component.custom_id == "BREED CANCEL":
+            return await payload.send("Cancelled your bee breed :<", wait=False)
         princess = princesses[payload.values[0]]
 
         # Ask which drone they want to breed
-        components = vbu.MessageComponents(vbu.ActionRow(vbu.SelectMenu(
-            custom_id="BREED BEE_SELECTION",
-            options=[
-                vbu.SelectOption(label=i.title(), value=i)
-                for i in set([o.type.value for o in drones.values()])
-            ],
-            placeholder="What type of drone would you like to breed?"
-        )))
+        components = vbu.MessageComponents(
+            vbu.ActionRow(vbu.SelectMenu(
+                custom_id="BREED BEE_SELECTION",
+                options=[
+                    vbu.SelectOption(label=i.title(), value=i)
+                    for i in set([o.type.value for o in drones.values()])
+                ],
+                placeholder="What type of drone would you like to breed?"
+            )),
+            vbu.ActionRow(vbu.Button(
+                label="Cancel",
+                custom_id="BREED CANCEL",
+                style=vbu.ButtonStyle.DANGER,
+            )),
+        )
         await payload.update_message(content="What type of drone would you like to breed?", components=components)
         try:
             payload = await self.bot.wait_for("component_interaction", check=get_message_check(dropdown_message), timeout=60)
         except asyncio.TimeoutError:
             return await payload.send("I timed out waiting for you to say which drones you want to breed :c", wait=False)
+        if payload.component.custom_id == "BREED CANCEL":
+            return await payload.send("Cancelled your bee breed :<", wait=False)
         drone_type = payload.values[0]
 
         # Ask which drone they want to breed
-        components = vbu.MessageComponents(vbu.ActionRow(vbu.SelectMenu(
-            custom_id="BREED BEE_SELECTION",
-            options=[
-                vbu.SelectOption(label=bee.name, value=bee.id, description=bee.display_type.capitalize())
-                for bee in [o for o in drones.values() if o.type.value == drone_type][:25]
-            ],
-            placeholder="Which drone would you like to breed?"
-        )))
+        components = vbu.MessageComponents(
+            vbu.ActionRow(vbu.SelectMenu(
+                custom_id="BREED BEE_SELECTION",
+                options=[
+                    vbu.SelectOption(label=bee.name, value=bee.id, description=bee.display_type.capitalize())
+                    for bee in [o for o in drones.values() if o.type.value == drone_type][:25]
+                ],
+                placeholder="Which drone would you like to breed?"
+            )),
+            vbu.ActionRow(vbu.Button(
+                label="Cancel",
+                custom_id="BREED CANCEL",
+                style=vbu.ButtonStyle.DANGER,
+            )),
+        )
         await payload.update_message(content="Which of your drones would you like to breed?", components=components)
         try:
             payload = await self.bot.wait_for("component_interaction", check=get_message_check(dropdown_message), timeout=60)
         except asyncio.TimeoutError:
             return await payload.send("I timed out waiting for you to say which drones you want to breed :c", wait=False)
+        if payload.component.custom_id == "BREED CANCEL":
+            return await payload.send("Cancelled your bee breed :<", wait=False)
         drone = drones[payload.values[0]]
 
         # Breed the bee

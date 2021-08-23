@@ -129,16 +129,89 @@ class BeeCommands(vbu.Cog):
     @bee.command(name="release")
     @vbu.defer()
     @commands.guild_only()
-    async def bee_release(self, ctx: vbu.Context, bee: utils.Bee):
+    async def bee_release(self, ctx: vbu.Context, bee: utils.Bee = None):
         """
         Releases one of your bees back into the wild.
         """
 
+        send_method = ctx.send
+
+        # If they didn't give a bee then give them a dropdown
+        if bee is None:
+            async with self.bot.database() as db:
+                bees = await utils.Bee.fetch_bees_by_user(db, ctx.guild.id, ctx.author.id)
+            bees = [i for i in bees if i.hive_id is None]
+            queens = {i.id: i for i in bees if i.nobility == utils.Nobility.QUEEN}
+            princesses = {i.id: i for i in bees if i.nobility == utils.Nobility.PRINCESS}
+            drones = {i.id: i for i in bees if i.nobility == utils.Nobility.DRONE}
+
+            # Ask what kind of bee they want to get rid of
+            components = vbu.MessageComponents.add_buttons_with_rows(
+                vbu.Button("Queen", custom_id="RELEASE QUEEN", disabled=not bool(queens)),
+                vbu.Button("Princess", custom_id="RELEASE PRINCESS", disabled=not bool(princesses)),
+                vbu.Button("Drone", custom_id="RELEASE DRONES", disabled=not bool(drones)),
+            )
+            release_message = await ctx.send(
+                "What kind of bee would you like to release?",
+                components=components,
+            )
+            try:
+                payload = await self.bot.wait_for("component_interaction", check=vbu.component_check(ctx.author, release_message), timeout=60)
+            except asyncio.TimeoutError:
+                return await ctx.send(
+                    "I timed out waiting for you to say what kind of bee you want to release :<",
+                    wait=False,
+                )
+
+            # Give them a dropdown to click on
+            chosen_list = None
+            if payload.component.custom_id == "RELEASE QUEEN":
+                chosen_list = queens
+            elif payload.component.custom_id == "RELEASE PRINCESS":
+                chosen_list = princesses
+            elif payload.component.custom_id == "RELEASE DRONES":
+                chosen_list = drones
+            components = vbu.MessageComponents(vbu.ActionRow(vbu.SelectMenu(
+                custom_id="RELEASE SELECT",
+                options=[
+                    vbu.SelectOption(label=i.name, description=i.display_type, value=i.id)
+                    for index, i in enumerate(chosen_list) if index < 25
+                ],
+                placeholder="Select all the bees that you'd like to release.",
+                max_values=min(len(chosen_list), 25),
+            )))
+            await payload.update_message(
+                content="Which bee would you like to disown?",
+                components=components,
+            )
+
+            # Wait for them to select some bee IDs
+            try:
+                payload = await self.bot.wait_for("component_interaction", check=vbu.component_check(ctx.author, release_message), timeout=60)
+            except asyncio.TimeoutError:
+                return await payload.send(
+                    "I timed out waiting for you to say which bees you want to release :<",
+                    wait=False,
+                )
+
+            # Make the bee IDs that we want to remove
+            await payload.defer_update()
+            send_method = payload.message.edit
+            bee_ids = payload.values
+
+        # They specified a bee ID initially in the command
+        else:
+            bee_ids = [bee.id]
+
+        # Remove all the bees
         async with self.bot.database() as db:
-            bee.owner_id = None
-            await bee.update(db)
-        return await ctx.send(
-            f"Released **{bee.display_name}** into the wild \N{PENSIVE FACE}",
+            await db(
+                """UPDATE bees SET owner_id = NULL WHERE id = ANY($1::TEXT[])""",
+                bee_ids,
+            )
+        return await send_method(
+            content=f"Released **{bee.display_name}** into the wild \N{PENSIVE FACE}",
+            components=None,
             allowed_mentions=discord.AllowedMentions.none(),
             wait=False,
         )

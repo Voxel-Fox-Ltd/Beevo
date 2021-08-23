@@ -21,6 +21,9 @@ class BeeType(object):
         self.name = value.upper()
         self.value = value.lower()
 
+    def __eq__(self, other):
+        return self.name == other.name
+
     def __repr__(self):
         return f"{self.__class__.__name__}('{self.name}')"
 
@@ -49,15 +52,15 @@ class BeeType(object):
         return getattr(cls, value.upper(), None)
 
     @staticmethod
-    def check_if_matches(compare, base):
+    def check_if_matches(item, comparable):
         """
         See if an object matches the base class (which may be an object).
         """
 
         try:
-            return isinstance(compare, base)
+            return isinstance(item, comparable)
         except TypeError:
-            return compare.value == base.value
+            return item.name == comparable.name
 
     @classmethod
     def combine(cls, first: 'BeeType', second: 'BeeType'):
@@ -65,9 +68,9 @@ class BeeType(object):
         Combine two bees and give the child type.
         """
 
-        # If they're two of the same, just combine em
+        # If they're two of the same, just send the first back
         if first.value == second.value:
-            return cls(first.value)
+            return first
 
         # Let's see how the combinations line up
         for (i, o), v in BEE_COMBINATIONS.items():

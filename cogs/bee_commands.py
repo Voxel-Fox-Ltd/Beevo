@@ -70,6 +70,9 @@ class BeeCommands(vbu.Cog):
         bee_groups = collections.defaultdict(list)
         for i in bees:
             bee_groups[i.nobility].append(i)
+        drone_types = collections.defaultdict(list)
+        for i in bee_groups[utils.Nobility.DRONE]:
+            drone_types[i.type].append(i)
 
         # Format their bees into an embed
         description = utils.format(
@@ -90,11 +93,17 @@ class BeeCommands(vbu.Cog):
             "\n".join([formatter(i) for i in bee_groups[utils.Nobility.PRINCESS]]) or "None :<",
             inline=False
         )
-        embed.add_field(
-            "Drones",
-            "\n".join([formatter(i) for i in bee_groups[utils.Nobility.DRONE]]) or "None :<",
-            inline=False
-        )
+        # embed.add_field(
+        #     "Drones",
+        #     "\n".join([formatter(i) for i in bee_groups[utils.Nobility.DRONE]]) or "None :<",
+        #     inline=False
+        # )
+        for t, bees in drone_types.items():
+            embed.add_field(
+                f"{t.value.title()} Drones",
+                "\n".join([formatter(i) for i in bees]) or "None :<",
+                inline=True
+            )
         return await ctx.send(
             embed=embed,
             allowed_mentions=discord.AllowedMentions.none(),

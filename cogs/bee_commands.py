@@ -210,7 +210,7 @@ class BeeCommands(vbu.Cog):
                 bee_ids,
             )
         return await send_method(
-            content=f"Released **{bee.display_name}** into the wild \N{PENSIVE FACE}",
+            content=utils.format("Released **{0}** {0:plural,bee,bees} into the wild \N{PENSIVE FACE}", len(bee_ids)),
             components=None,
             allowed_mentions=discord.AllowedMentions.none(),
             wait=False,

@@ -246,7 +246,7 @@ class HiveCommands(vbu.Cog):
                     WHERE
                         hive_id = $3
                     ON CONFLICT
-                        (user_id, item_name)
+                        (guild_id, user_id, item_name)
                     DO UPDATE SET
                         quantity = user_inventory.quantity + excluded.quantity
                     """,

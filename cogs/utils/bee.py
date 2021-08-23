@@ -321,6 +321,30 @@ class Bee(object):
         for bee in new_bees:
             await bee.update(db)
 
+        # Add a comb to the hive
+        await db(
+            """
+            INSERT INTO
+                hive_inventory
+                (hive_id, item_name, quantity)
+            SELECT
+                $2, INITCAP(bee_comb_type.comb || ' Comb'), 1
+            FROM
+                bees
+            LEFT JOIN
+                bee_comb_type
+            ON
+                bees.type = bee_comb_type.type
+            WHERE
+                bees.id = $1
+            ON CONFLICT
+                (hive_id, item_name)
+            DO UPDATE SET
+                quantity = hive_inventory.quantity + excluded.quantity
+            """,
+            self.id, self.hive_id,
+        )
+
         # Update (kill) our current bee
         self.owner_id = None
         self.hive_id = None

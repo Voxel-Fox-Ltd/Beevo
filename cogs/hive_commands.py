@@ -146,7 +146,7 @@ class HiveCommands(vbu.Cog):
                         )
                         bee_field_value += utils.format(line, ((i.lifetime - i.lived_lifetime) * 100) / i.lifetime)
                     else:
-                        bee_field_value += f"\n\N{BULLET} {i.name} (*{i.display_type}*)"
+                        bee_field_value += f"\n\N{BULLET} {i.name} ({i.display_type})"
 
             # If the hive has an inventory
             if h.inventory:

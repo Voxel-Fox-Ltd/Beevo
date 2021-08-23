@@ -196,7 +196,7 @@ class BeeCommands(vbu.Cog):
         components = vbu.MessageComponents(vbu.ActionRow(vbu.SelectMenu(
             custom_id="BREED BEE_SELECTION",
             options=[
-                vbu.SelectOption(label=bee.name, value=bee.id, description=bee.type_display)
+                vbu.SelectOption(label=bee.name, value=bee.id, description=bee.display_type.capitalize())
                 for bee in princesses.values()
             ],
             placeholder="Which princess would you like to breed?"
@@ -212,7 +212,7 @@ class BeeCommands(vbu.Cog):
         components = vbu.MessageComponents(vbu.ActionRow(vbu.SelectMenu(
             custom_id="BREED BEE_SELECTION",
             options=[
-                vbu.SelectOption(label=bee.name, value=bee.id, description=bee.type_display)
+                vbu.SelectOption(label=bee.name, value=bee.id, description=bee.display_type.capitalize())
                 for bee in drones.values()
             ],
             placeholder="Which princess would you like to breed?"

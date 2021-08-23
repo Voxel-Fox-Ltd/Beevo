@@ -136,7 +136,10 @@ class HiveCommands(vbu.Cog):
             if h.bees:
                 for i in h.bees:
                     if i.nobility == utils.Nobility.QUEEN:
-                        line = f"\n\N{BULLET} {i.name} (*{i.display_type}*)\n\u2800{{:progress}}"
+                        line = (
+                            f"\n\N{BULLET} {i.name} (*{i.display_type}*)\n"
+                            f"\u2800\u2800{{:progress}}"
+                        )
                         bee_field_value += utils.format(line, ((i.lifetime - i.lived_lifetime) * 100) / i.lifetime)
                     else:
                         bee_field_value += f"\n\N{BULLET} {i.name} (*{i.display_type}*)"

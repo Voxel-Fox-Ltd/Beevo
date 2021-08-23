@@ -40,7 +40,7 @@ END $$;
 
 CREATE TABLE IF NOT EXISTS bee_comb_type(
     type TEXT PRIMARY KEY,
-    comb TEXT,
+    comb TEXT
 );
 INSERT INTO bee_comb_type VALUES ('Forest', 'Honey') ON CONFLICT (type) DO NOTHING;
 INSERT INTO bee_comb_type VALUES ('Meadows', 'Honey') ON CONFLICT (type) DO NOTHING;

@@ -15,6 +15,9 @@ class Nobility(enum.Enum):
     QUEEN = 'Queen'
 
 
+BEE_COMBINATIONS = {}
+
+
 class BeeType(object):
 
     def __init__(self, value: str):
@@ -76,6 +79,7 @@ class BeeType(object):
             return first
 
         # Let's see how the combinations line up
+        global BEE_COMBINATIONS
         for (i, o), v in BEE_COMBINATIONS.items():
             checks = [
                 cls.check_if_matches(first, i) and cls.check_if_matches(second, o),
@@ -92,9 +96,6 @@ class MundaneBeeType(BeeType):
 
 class ComplexBeeType(BeeType):
     pass
-
-
-BEE_COMBINATIONS = {}
 
 
 def setup_bee_types():

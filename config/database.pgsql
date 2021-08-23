@@ -76,10 +76,11 @@ INSERT INTO bee_comb_type VALUES ('rural', 'wheaten') ON CONFLICT (type) DO NOTH
 
 
 CREATE TABLE IF NOT EXISTS user_inventory(
+    guild_id BIGINT,
     user_id BIGINT,
     item_name CITEXT,
     quantity INTEGER DEFAULT 0,
-    PRIMARY KEY (user_id, item_name)
+    PRIMARY KEY (guild_id, user_id, item_name)
 );
 
 

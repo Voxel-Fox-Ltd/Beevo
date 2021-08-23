@@ -371,7 +371,7 @@ class Bee(object):
         Gives you a list of the bees owned by the given user.
         """
 
-        rows = await db("""SELECT * FROM bees WHERE owner_id=$1 AND guild_id=$2""", user_id, guild_id)
+        rows = await db("""SELECT * FROM bees WHERE owner_id = $1 AND guild_id = $2""", user_id, guild_id)
         return [cls(**i) for i in rows]
 
     @classmethod

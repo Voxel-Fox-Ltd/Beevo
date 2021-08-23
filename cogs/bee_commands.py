@@ -251,8 +251,10 @@ class BeeCommands(vbu.Cog):
                 drones[bee.id] = bee
 
         # See if they have any available
-        if not princesses or not drones:
-            return await ctx.send("You don't have an available princess and drone to breed :<", wait=False)
+        if not princesses:
+            return await ctx.send("You don't have an available princess to breed :<", wait=False)
+        if not drones:
+            return await ctx.send("You don't have an available drone to breed :<", wait=False)
 
         # Make a check
         def get_message_check(message):

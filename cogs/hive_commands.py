@@ -231,8 +231,27 @@ class HiveCommands(vbu.Cog):
         bee_count = len(hive.bees)
         async with ctx.typing():
             async with self.bot.database() as db:
-                for bee in hive.bees:
-                    await bee.update(db, hive_id=None)
+                await db("""UPDATE bees SET hive_id = NULL WHERE hive_id = $1""", hive.id)
+                await db.start_transaction()
+                await db(
+                    """
+                    INSERT INTO
+                        user_inventory (user_id, item_name, quantity)
+                    SELECT
+                        $1, item_name, quantity
+                    FROM
+                        hive_inventory
+                    WHERE
+                        hive_id = $2
+                    ON CONFLICT
+                        (user_id, item_name)
+                    DO UPDATE SET
+                        quantity = user_inventory.quantity + excluded.quantity
+                    """,
+                    ctx.author.id, hive.id,
+                )
+                await db("""UPDATE hive_inventory SET quantity = 0 WHERE hive_id = $1""", hive.id)
+                await db.commit_transaction()
 
         # And done
         return await ctx.send(

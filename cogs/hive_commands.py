@@ -39,7 +39,9 @@ class HiveCommands(vbu.Cog):
                     hive_inventory
                     (hive_id, item_name, quantity)
                 SELECT
-                    bees.hive_id, INITCAP(bee_comb_type.comb || ' Comb'), 1
+                    bees.hive_id,
+                    INITCAP(bee_comb_type.comb || ' Comb'),
+                    RANDOM() * (FLOOR(CAST(bees.speed AS REAL) / 100) + 1) + 1
                 FROM
                     bees
                 LEFT JOIN

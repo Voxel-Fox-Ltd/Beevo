@@ -54,7 +54,7 @@ class HiveCommands(vbu.Cog):
                 ON CONFLICT
                     (hive_id, item_name)
                 DO UPDATE SET
-                    quantity = quantity + excluded.quantity
+                    quantity = hive_inventory.quantity + excluded.quantity
                 """
             )
 

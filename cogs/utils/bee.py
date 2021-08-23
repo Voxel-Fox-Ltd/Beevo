@@ -88,6 +88,8 @@ class BeeType(object):
                 cls.check_if_matches(first, o) and cls.check_if_matches(second, i),
             ]
             if any(checks):
+                if isinstance(v, (list, tuple)):
+                    return random.choice(v)
                 return v
         return random.choice([first, second])
 
@@ -137,9 +139,8 @@ def setup_bee_types():
     BeeType.BEE_COMBINATIONS = {
         (MundaneBeeType, MundaneBeeType,): BeeType.get("COMMON"),
         (BeeType.get("COMMON"), MundaneBeeType,): BeeType.get("CULTIVATED"),
-        (BeeType.get("COMMON"), BeeType.get("CULTIVATED"),): BeeType.get("NOBLE"),
+        (BeeType.get("COMMON"), BeeType.get("CULTIVATED"),): [BeeType.get("NOBLE"), BeeType.get("DILLIGENT")],
         (BeeType.get("NOBLE"), BeeType.get("CULTIVATED"),): BeeType.get("IMPERIAL"),
-        (BeeType.get("COMMON"), BeeType.get("CULTIVATED"),): BeeType.get("DILLIGENT"),
         (BeeType.get("DILLIGENT"), BeeType.get("CULTIVATED"),): BeeType.get("UNWEARY"),
         (BeeType.get("DILLIGENT"), BeeType.get("UNWEARY"),): BeeType.get("INDUSTRIOUS"),
         (BeeType.get("STEADFAST"), BeeType.get("VALIANT"),): BeeType.get("HEROIC"),

@@ -249,23 +249,22 @@ class Bee(object):
             self._type = BeeType.get(value)
 
     @staticmethod
-    def get_new_stats(mother, father=None, random_rate=(0.9, 1.2,)) -> dict:
+    def get_new_stats(mother, father=None) -> dict:
         """
         Get some new stats for the given bee.
         """
 
-        random_low, random_high = random_rate
         speed = random.randint(
-            max(math.floor(min(mother.speed, (father or mother).speed) * random_low), 1),  # always have at least a 1% chance of making honey
-            min(math.ceil(max(mother.speed, (father or mother).speed) * random_high), 100),  # can't go over 100%
+            max(math.floor(min(mother.speed, (father or mother).speed) * 0.5), 1),  # always have at least a 1% chance of making honey
+            min(math.ceil(max(mother.speed, (father or mother).speed) * 1.5), 200),  # max 5 a tick
         )
         fertility = random.randint(
-            max(math.floor(min(mother.fertility, (father or mother).fertility) * random_low), 1),  # always leave 1 bee
-            min(math.ceil(max(mother.fertility, (father or mother).fertility) * random_high), 10),  # max 10 bees
+            max(math.floor(min(mother.fertility, (father or mother).fertility) * 0.5), 1),  # always leave 1 bee
+            min(math.ceil(max(mother.fertility, (father or mother).fertility) * 1.2), 10),  # max 10 bees
         )
         lifetime = random.randint(
-            max(math.floor(min(mother.lifetime, (father or mother).lifetime) * random_low), 60),  # 5 minutes
-            min(math.ceil(max(mother.lifetime, (father or mother).lifetime) * random_high), 720),  # 1 hour
+            max(math.floor(min(mother.lifetime, (father or mother).lifetime) * 0.75), 60),  # 5 minutes
+            min(math.ceil(max(mother.lifetime, (father or mother).lifetime) * 1.25), 720),  # 1 hour
         )
         return {
             "speed": speed,

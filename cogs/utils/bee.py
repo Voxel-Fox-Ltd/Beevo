@@ -246,7 +246,7 @@ class Bee(object):
         if isinstance(value, BeeType):
             self._type = value
         else:
-            self._type = BeeType(value)
+            self._type = BeeType.get(value)
 
     @staticmethod
     def get_new_stats(mother, father=None, random_rate=(0.9, 1.2,)) -> dict:

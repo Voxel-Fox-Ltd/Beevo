@@ -1,7 +1,9 @@
 import typing
 import random
 import uuid
+import asyncio
 
+import discord
 from discord.ext import commands
 import voxelbotutils as vbu
 
@@ -161,3 +163,64 @@ class Hive(object):
     def get_hive_grid(self, width: int = 9, height: int = 9):
         r = random.Random(int(uuid.UUID(self.id).hex, 16))
         return HiveCellEmoji.get_grid(width, height, random=r)
+
+    @classmethod
+    async def send_hive_dropdown(
+            cls, ctx: vbu.Context, send_method, current_message: discord.Message,
+            check=None) -> typing.Tuple[vbu.ComponentInteractionPayload, discord.Message, 'Hive']:
+        """
+        Send a dropdown to let a user pick one of their hives.
+        """
+
+        # Grab the bees
+        async with ctx.bot.database() as db:
+            hives = await cls.fetch_hives_by_user(db, ctx.guild.id, ctx.author.id)
+
+        # Make sure a check exists
+        if check is None:
+            check = lambda _: True  # noqa
+
+        # Get the check
+        hives = {i.id: i for i in hives if check(i)}
+
+        # Make sure there are bees
+        if not hives:
+            current_message = await send_method(content="You have no available hives :<", components=None) or current_message
+            return (None, current_message, None,)
+
+        # Make components
+        components = vbu.MessageComponents(
+            vbu.ActionRow(vbu.SelectMenu(
+                custom_id="HIVE_SELECTION",
+                options=[
+                    vbu.SelectOption(label=hive.name, value=hive.id)
+                    for hive in hives.values()
+                ],
+                placeholder="Which hive would you like to choose?"
+            )),
+            vbu.ActionRow(vbu.Button(
+                label="Cancel",
+                custom_id="CANCEL",
+                style=vbu.ButtonStyle.DANGER,
+            )),
+        )
+
+        # Send message
+        current_message = await send_method(content="Which hive would you like to choose?", components=components) or current_message
+
+        # Wait for interaction
+        try:
+            payload = await ctx.bot.wait_for("component_interaction", check=vbu.component_check(ctx.author, current_message), timeout=60)
+        except asyncio.TimeoutError:
+            current_message = await send_method(content="I timed out waiting for you to select a hive :c", components=None) or current_message
+            return (None, current_message, None,)
+
+        # See if it were cancelled
+        if payload.component.custom_id == "CANCEL":
+            current_message = await payload.update_message(content="Cancelled your hive selection :<", components=None) or current_message
+            return (payload, current_message, None,)
+
+        # Return the bee
+        specified_bee = hives[payload.values[0]]
+        return (payload, current_message, specified_bee,)
+

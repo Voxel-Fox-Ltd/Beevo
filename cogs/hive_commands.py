@@ -285,16 +285,24 @@ class HiveCommands(vbu.Cog):
     @hive.command(name="clear")
     @vbu.defer()
     @commands.guild_only()
-    async def hive_clear(self, ctx: vbu.Context, hive: utils.Hive):
+    async def hive_clear(self, ctx: vbu.Context, *, hive: utils.Hive = None):
         """
         Clear out the bees from one of your hives.
         """
 
+        # Set up the send method
+        send_method = ctx.send
+
+        # Make sure they give a hive
+        if hive is None:
+            payload, message, hive = await utils.Hive.send_hive_dropdown(ctx, send_method, None, lambda hive: hive.bees)
+            send_method = payload.update_message
+
         # See if the hive has a bee
         if not hive.bees and not hive.inventory:
-            return await ctx.send(
-                f"There's nothing in **{hive.name}** :<",
-                wait=False,
+            return await send_method(
+                content=f"There's nothing in **{hive.name}** :<",
+                components=None,
             )
 
         # Alright move the bee
@@ -324,9 +332,9 @@ class HiveCommands(vbu.Cog):
                 await db.commit_transaction()
 
         # And done
-        return await ctx.send(
-            f"Moved **{bee_count}** bee{'s' if bee_count > 1 else ''} out of **{hive.name}**~",
-            wait=False,
+        return await send_method(
+            content=f"Moved **{bee_count}** bee{'s' if bee_count > 1 else ''} out of **{hive.name}**~",
+            components=None,
         )
 
 

@@ -2,7 +2,9 @@ import typing
 import enum
 import random
 import math
+import asyncio
 
+import discord
 from discord.ext import commands
 import voxelbotutils as vbu
 
@@ -481,3 +483,63 @@ class Bee(object):
         if not rows:
             raise commands.BadArgument("You don't have a bee with that name!")
         return cls(**rows[0])
+
+    @classmethod
+    async def send_bee_dropdown(
+            cls, ctx: vbu.Context, send_method, current_message: discord.Message,
+            check=None) -> typing.Tuple[vbu.ComponentInteractionPayload, discord.Message, 'Bee']:
+        """
+        Send a dropdown to let a user pick one of their bees.
+        """
+
+        # Grab the bees
+        async with ctx.bot.database() as db:
+            bees = await cls.fetch_bees_by_user(db, ctx.guild.id, ctx.author.id)
+
+        # Make sure a check exists
+        if check is None:
+            check = lambda _: True  # noqa
+
+        # Get the check
+        bees = {i.id: i for i in bees if check(i)}
+
+        # Make sure there are bees
+        if not bees:
+            current_message = await send_method(content="You have no available bees :<", components=None) or current_message
+            return (None, current_message, None,)
+
+        # Make components
+        components = vbu.MessageComponents(
+            vbu.ActionRow(vbu.SelectMenu(
+                custom_id="BEE_SELECTION",
+                options=[
+                    vbu.SelectOption(label=bee.name, value=bee.id, description=bee.display_type.capitalize())
+                    for bee in bees.values()
+                ],
+                placeholder="Which bee would you like to choose?"
+            )),
+            vbu.ActionRow(vbu.Button(
+                label="Cancel",
+                custom_id="CANCEL",
+                style=vbu.ButtonStyle.DANGER,
+            )),
+        )
+
+        # Send message
+        current_message = await send_method(content="Which bee would you like to choose?", components=components) or current_message
+
+        # Wait for interaction
+        try:
+            payload = await ctx.bot.wait_for("component_interaction", check=vbu.component_check(ctx.author, current_message), timeout=60)
+        except asyncio.TimeoutError:
+            current_message = await send_method(content="I timed out waiting for you to select a bee :c", components=None) or current_message
+            return (None, current_message, None,)
+
+        # See if it were cancelled
+        if payload.component.custom_id == "CANCEL":
+            current_message = await payload.update_message(content="Cancelled your bee selection :<", components=None) or current_message
+            return (payload, current_message, None,)
+
+        # Return the bee
+        specified_bee = bees[payload.values[0]]
+        return (payload, current_message, specified_bee,)

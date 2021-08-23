@@ -159,5 +159,5 @@ class Hive(object):
         return hives.values()
 
     def get_hive_grid(self, width: int = 9, height: int = 9):
-        r = random.Random(int(uuid.UUID(self.id), 16))
+        r = random.Random(int(uuid.UUID(self.id).hex, 16))
         return HiveCellEmoji.get_grid(width, height, random=r)

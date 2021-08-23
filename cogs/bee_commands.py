@@ -141,9 +141,9 @@ class BeeCommands(vbu.Cog):
             async with self.bot.database() as db:
                 bees = await utils.Bee.fetch_bees_by_user(db, ctx.guild.id, ctx.author.id)
             bees = [i for i in bees if i.hive_id is None]
-            queens = {i.id: i for i in bees if i.nobility == utils.Nobility.QUEEN}
-            princesses = {i.id: i for i in bees if i.nobility == utils.Nobility.PRINCESS}
-            drones = {i.id: i for i in bees if i.nobility == utils.Nobility.DRONE}
+            queens = [i for i in bees if i.nobility == utils.Nobility.QUEEN]
+            princesses = [i for i in bees if i.nobility == utils.Nobility.PRINCESS]
+            drones = [i for i in bees if i.nobility == utils.Nobility.DRONE]
 
             # Ask what kind of bee they want to get rid of
             components = vbu.MessageComponents.add_buttons_with_rows(

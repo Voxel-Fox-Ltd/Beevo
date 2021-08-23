@@ -213,7 +213,7 @@ class BeeCommands(vbu.Cog):
             custom_id="BREED BEE_SELECTION",
             options=[
                 vbu.SelectOption(label=bee.name, value=bee.id, description=bee.display_type.capitalize())
-                for bee in drones.values()
+                for index, bee in enumerate(drones.values()) if index < 25
             ],
             placeholder="Which princess would you like to breed?"
         )))

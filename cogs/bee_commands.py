@@ -103,7 +103,7 @@ class BeeCommands(vbu.Cog):
         for t, bees in drone_types:
             embed.add_field(
                 f"{t.value.title()} Drones",
-                "\n".join([f"\N{BULLET} **{i.display_name}**" for i in bees]) or "None :<",
+                "\n".join([f"\N{BULLET} {i.display_name}" for i in bees]) or "None :<",
                 inline=True
             )
         return await ctx.send(

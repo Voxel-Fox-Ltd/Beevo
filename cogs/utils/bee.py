@@ -260,7 +260,7 @@ class Bee(object):
         )
         fertility = random.randint(
             max(math.floor(min(mother.fertility, (father or mother).fertility) * 0.5), 1),  # always leave 1 bee
-            min(math.ceil(max(mother.fertility, (father or mother).fertility) * 1.2), 10),  # max 10 bees
+            min(math.ceil(max(mother.fertility, (father or mother).fertility) * 1.2), 3),  # max 10 bees
         )
         lifetime = random.randint(
             max(math.floor(min(mother.lifetime, (father or mother).lifetime) * 0.75), 60),  # 5 minutes

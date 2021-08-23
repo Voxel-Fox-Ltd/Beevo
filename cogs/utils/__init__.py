@@ -1,7 +1,9 @@
-from .bee import Bee, BeeType, Nobility
-from .hive import Hive
-from .string import Formatter as _Formatter
-from .item import Item, Inventory
+from .bee import Bee, BeeType, Nobility  # noqa
+from .hive import Hive  # noqa
+from .string import Formatter as _Formatter  # noqa
+from .item import Item, Inventory  # noqa
+from .hive_cell_emoji import HiveCellEmoji  # noqa
+
 
 _formatter = _Formatter()
 format = _formatter.format

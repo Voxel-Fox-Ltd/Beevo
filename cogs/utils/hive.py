@@ -1,10 +1,12 @@
 import typing
+import random
 
 from discord.ext import commands
 import voxelbotutils as vbu
 
 from .bee import Bee
 from .item import Item, Inventory
+from .hive_cell_emoji import HiveCellEmoji
 
 
 HIVE_NAMES = [
@@ -143,3 +145,6 @@ class Hive(object):
         # And return the hives
         return hives.values()
 
+    def get_hive_grid(self, width: int = 9, height: int = 9):
+        r = random.Random(hash(self.id))
+        return HiveCellEmoji.get_grid(width, height, random=r)

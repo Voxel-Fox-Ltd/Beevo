@@ -102,7 +102,7 @@ class HiveCommands(vbu.Cog):
             if h.bees:
                 embed.description += f"\n\N{BULLET} **{h.name}**"
                 for i in h.bees:
-                    if i.type == utils.Nobility.QUEEN:
+                    if i.nobility == utils.Nobility.QUEEN:
                         line = f"\n\u2800\u2800\N{BULLET} {i.name} (*{i.display_type}*) {{:progress}}"
                         embed.description += utils.format(line, ((i.lifetime - i.lived_lifetime) * 100) / i.lifetime)
                     else:

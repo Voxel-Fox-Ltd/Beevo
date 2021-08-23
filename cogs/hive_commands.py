@@ -1,10 +1,14 @@
 import asyncio
+import enum
 
 import voxelbotutils as vbu
 import discord
 from discord.ext import commands
 
 from cogs import utils
+
+
+HiveInclude = enum.Enum("HiveInclude", "all bees items")
 
 
 class HiveCommands(vbu.Cog):
@@ -105,7 +109,8 @@ class HiveCommands(vbu.Cog):
     @hive.command(name="list")
     @vbu.defer()
     @commands.guild_only()
-    async def hive_list(self, ctx: vbu.Context, user: discord.Member = None):
+    async def hive_list(
+            self, ctx: vbu.Context, user: discord.Member = None, include: HiveInclude = None):
         """
         Give you a list of all of your hives.
         """
@@ -126,6 +131,7 @@ class HiveCommands(vbu.Cog):
             user.mention,
         )
         embeds = []
+        include = include or HiveInclude.all
 
         # We have data for each hive
         for h in hives:
@@ -155,24 +161,26 @@ class HiveCommands(vbu.Cog):
                         item_field_value += line
 
             # Add fields
-            if bee_field_value:
-                embed.add_field(
-                    "Active Bees" if bee_is_queen else "Bees",
-                    bee_field_value,
-                    inline=False,
-                )
-            else:
-                embed.add_field(
-                    "Bees",
-                    "Empty :<",
-                    inline=False,
-                )
-            if item_field_value:
-                embed.add_field(
-                    "Inventory",
-                    item_field_value,
-                    inline=False,
-                )
+            if include in [HiveInclude.all, HiveInclude.bees]:
+                if bee_field_value:
+                    embed.add_field(
+                        "Active Bees" if bee_is_queen else "Bees",
+                        bee_field_value,
+                        inline=False,
+                    )
+                else:
+                    embed.add_field(
+                        "Bees",
+                        "Empty :<",
+                        inline=False,
+                    )
+            if include in [HiveInclude.all, HiveInclude.items]:
+                if item_field_value:
+                    embed.add_field(
+                        "Inventory",
+                        item_field_value,
+                        inline=False,
+                    )
 
             # We're done with this embed
             embeds.append(embed)

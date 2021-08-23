@@ -57,6 +57,7 @@ class BeeCommands(vbu.Cog):
         user = user or ctx.author
         async with self.bot.database() as db:
             bees = await utils.Bee.fetch_bees_by_user(db, ctx.guild.id, user.id)
+        bees = [i for i in bees if i.hive_id is None]
         if not bees:
             text = utils.format(
                 "{0:pronoun,You,{1}} {0:pronoun,don't,doesn't} have any bees! :c",

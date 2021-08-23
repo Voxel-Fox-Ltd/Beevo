@@ -204,6 +204,7 @@ class BeeCommands(vbu.Cog):
         princess_message = await ctx.send("Which of your princesses would you like to breed?", components=components)
         try:
             payload = await self.bot.wait_for("component_interaction", check=get_message_check(princess_message), timeout=60)
+            await payload.update_message(components=components.disable_components())
         except asyncio.TimeoutError:
             return await ctx.send("I timed out waiting for you to say which princess you want to breed :c", wait=False)
         princess = princesses[payload.values[0]]
@@ -220,6 +221,7 @@ class BeeCommands(vbu.Cog):
         drone_message = await payload.send("Which of your drones would you like to breed?", components=components)
         try:
             payload = await self.bot.wait_for("component_interaction", check=get_message_check(drone_message), timeout=60)
+            await payload.update_message(components=components.disable_components())
         except asyncio.TimeoutError:
             return await payload.send("I timed out waiting for you to say which drones you want to breed :c", wait=False)
         drone = drones[payload.values[0]]

@@ -110,7 +110,7 @@ class HiveCommands(vbu.Cog):
     @vbu.defer()
     @commands.guild_only()
     async def hive_list(
-            self, ctx: vbu.Context, user: discord.Member = None, show: HiveShow = None):
+            self, ctx: vbu.Context, user: discord.Member = None):
         """
         Give you a list of all of your hives.
         """
@@ -131,7 +131,6 @@ class HiveCommands(vbu.Cog):
             user.mention,
         )
         embeds = []
-        include = show or HiveShow.all
 
         # We have data for each hive
         for h in hives:
@@ -161,26 +160,18 @@ class HiveCommands(vbu.Cog):
                         item_field_value += line
 
             # Add fields
-            if include in [HiveShow.all, HiveShow.bees]:
-                if bee_field_value:
-                    embed.add_field(
-                        "Active Bees" if bee_is_queen else "Bees",
-                        bee_field_value,
-                        inline=False,
-                    )
-                else:
-                    embed.add_field(
-                        "Bees",
-                        "Empty :<",
-                        inline=False,
-                    )
-            if include in [HiveShow.all, HiveShow.items]:
-                if item_field_value:
-                    embed.add_field(
-                        "Inventory",
-                        item_field_value,
-                        inline=False,
-                    )
+            if bee_field_value:
+                embed.add_field(
+                    "Active Bees" if bee_is_queen else "Bees",
+                    bee_field_value,
+                    inline=False,
+                )
+            if item_field_value:
+                embed.add_field(
+                    "Inventory",
+                    item_field_value,
+                    inline=False,
+                )
 
             # We're done with this embed
             embeds.append(embed)

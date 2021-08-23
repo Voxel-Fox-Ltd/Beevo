@@ -201,10 +201,9 @@ class BeeCommands(vbu.Cog):
             ],
             placeholder="Which princess would you like to breed?"
         )))
-        princess_message = await ctx.send("Which of your princesses would you like to breed?", components=components)
+        dropdown_message = await ctx.send("Which of your princesses would you like to breed?", components=components)
         try:
-            payload = await self.bot.wait_for("component_interaction", check=get_message_check(princess_message), timeout=60)
-            await payload.update_message(components=components.disable_components())
+            payload = await self.bot.wait_for("component_interaction", check=get_message_check(dropdown_message), timeout=60)
         except asyncio.TimeoutError:
             return await ctx.send("I timed out waiting for you to say which princess you want to breed :c", wait=False)
         princess = princesses[payload.values[0]]
@@ -218,16 +217,15 @@ class BeeCommands(vbu.Cog):
             ],
             placeholder="Which princess would you like to breed?"
         )))
-        drone_message = await payload.send("Which of your drones would you like to breed?", components=components)
+        await payload.update_message(content="Which of your drones would you like to breed?", components=components)
         try:
-            payload = await self.bot.wait_for("component_interaction", check=get_message_check(drone_message), timeout=60)
-            await payload.update_message(components=components.disable_components())
+            payload = await self.bot.wait_for("component_interaction", check=get_message_check(dropdown_message), timeout=60)
         except asyncio.TimeoutError:
             return await payload.send("I timed out waiting for you to say which drones you want to breed :c", wait=False)
         drone = drones[payload.values[0]]
 
         # Breed the bee
-        await payload.defer()
+        await payload.defer()  # I don't think this is necessary but we'll keep it anyway
         async with self.bot.database() as db:
             try:
                 new_bee = await utils.Bee.breed(db, princess, drone)
@@ -235,8 +233,8 @@ class BeeCommands(vbu.Cog):
                 return await payload.send("You can't breed anything other than a drone and a princess! :<", wait=False)
 
         # Tell the user about their new queen
-        return await payload.send(
-            f"Your princess and drone got together and made a new {new_bee.type.value} queen, **{new_bee.display_name}**! :D",
+        return await payload.message.edit(
+            content=f"Your princess and drone got together and made a new {new_bee.type.value} queen, **{new_bee.display_name}**! :D",
             allowed_mentions=discord.AllowedMentions.none(),
             wait=False,
         )

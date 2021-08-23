@@ -17,10 +17,9 @@ class Nobility(enum.Enum):
     QUEEN = 'Queen'
 
 
-BEE_COMBINATIONS = {}
-
-
 class BeeType(object):
+
+    BEE_COMBINATIONS = {}
 
     def __init__(self, value: str):
         self.name = value.upper()
@@ -45,6 +44,8 @@ class BeeType(object):
     def get_all_bees(cls):
         items = dir(cls)
         for i in items:
+            if i == "BEE_COMBINATIONS":
+                continue
             if not i.isupper():
                 continue
             x = getattr(cls, i)
@@ -81,8 +82,7 @@ class BeeType(object):
             return first
 
         # Let's see how the combinations line up
-        global BEE_COMBINATIONS
-        for (i, o), v in BEE_COMBINATIONS.items():
+        for (i, o), v in cls.BEE_COMBINATIONS.items():
             checks = [
                 cls.check_if_matches(first, i) and cls.check_if_matches(second, o),
                 cls.check_if_matches(first, o) and cls.check_if_matches(second, i),
@@ -101,8 +101,6 @@ class ComplexBeeType(BeeType):
 
 
 def setup_bee_types():
-    global BEE_COMBINATIONS
-
     BeeType.FOREST = MundaneBeeType("forest")
     BeeType.MEADOWS = MundaneBeeType("meadows")
     BeeType.MODEST = MundaneBeeType("modest")
@@ -136,7 +134,7 @@ def setup_bee_types():
     BeeType.GLACIAL = ComplexBeeType("glacial")
     BeeType.RURAL = ComplexBeeType("rural")
 
-    BEE_COMBINATIONS = {
+    BeeType.BEE_COMBINATIONS = {
         (MundaneBeeType, MundaneBeeType,): BeeType.COMMON,
         (BeeType.COMMON, MundaneBeeType,): BeeType.CULTIVATED,
         (BeeType.COMMON, BeeType.CULTIVATED,): BeeType.NOBLE,

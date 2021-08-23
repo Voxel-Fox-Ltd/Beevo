@@ -250,7 +250,7 @@ class HiveCommands(vbu.Cog):
                     DO UPDATE SET
                         quantity = user_inventory.quantity + excluded.quantity
                     """,
-                    ctx.guid.id, ctx.author.id, hive.id,
+                    ctx.guild.id, ctx.author.id, hive.id,
                 )
                 await db("""UPDATE hive_inventory SET quantity = 0 WHERE hive_id = $1""", hive.id)
                 await db.commit_transaction()

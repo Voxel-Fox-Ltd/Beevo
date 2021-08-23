@@ -151,7 +151,7 @@ class Hive(object):
                 hives.keys(),
             )
             for r in inventory_rows:
-                hive = hives[bee.hive_id]
+                hive = hives[r['hive_id']]
                 hive.inventory[r['item_name']] += r['quantity']
 
         # And return the hives

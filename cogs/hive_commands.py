@@ -128,7 +128,7 @@ class HiveCommands(vbu.Cog):
 
         # We have data for each hive
         for h in hives:
-            embed = vbu.Embed(use_random_colour=True, title=h.name, description=hive.get_hive_grid())
+            embed = vbu.Embed(use_random_colour=True, title=h.name, description=h.get_hive_grid())
             bee_field_value = ""
             item_field_value = ""
 

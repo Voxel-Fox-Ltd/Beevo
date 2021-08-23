@@ -298,7 +298,7 @@ class BeeCommands(vbu.Cog):
             custom_id="BREED BEE_SELECTION",
             options=[
                 vbu.SelectOption(label=i.title(), value=i)
-                for i in [o.type.value for o in drones.values()]
+                for i in set([o.type.value for o in drones.values()])
             ],
             placeholder="What type of drone would you like to breed?"
         )))
@@ -314,7 +314,7 @@ class BeeCommands(vbu.Cog):
             custom_id="BREED BEE_SELECTION",
             options=[
                 vbu.SelectOption(label=bee.name, value=bee.id, description=bee.display_type.capitalize())
-                for index, bee in enumerate([o for o in drones.values() if o.type.value == drone_type]) if index < 25
+                for bee in [o for o in drones.values() if o.type.value == drone_type][:25]
             ],
             placeholder="Which drone would you like to breed?"
         )))

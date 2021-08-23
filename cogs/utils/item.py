@@ -3,7 +3,7 @@ import collections
 
 class Item(object):
 
-    def __init__(self, item_name: str, quantity: int):
+    def __init__(self, item_name: str, quantity: int, **kwargs):
         self.item_name = item_name
         self.quantity = quantity
 

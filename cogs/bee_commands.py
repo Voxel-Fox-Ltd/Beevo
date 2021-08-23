@@ -74,7 +74,7 @@ class BeeCommands(vbu.Cog):
         for i in bee_groups[utils.Nobility.DRONE]:
             drone_types[i.type].append(i)
         drone_types = list(drone_types.items())
-        drone_types = drone_types.sort(lambda item: len(item[1]), reverse=True)
+        drone_types.sort(key=lambda item: len(item[1]), reverse=True)
 
         # Format their bees into an embed
         description = utils.format(

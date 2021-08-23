@@ -225,16 +225,17 @@ class BeeCommands(vbu.Cog):
         drone = drones[payload.values[0]]
 
         # Breed the bee
-        await payload.defer()  # I don't think this is necessary but we'll keep it anyway
+        await payload.defer_update()  # I don't think this is necessary but we'll keep it anyway
         async with self.bot.database() as db:
             try:
                 new_bee = await utils.Bee.breed(db, princess, drone)
             except ValueError:
-                return await payload.send("You can't breed anything other than a drone and a princess! :<", wait=False)
+                return await payload.message.send("You can't breed anything other than a drone and a princess! :<", wait=False)
 
         # Tell the user about their new queen
         return await payload.message.edit(
             content=f"Your princess and drone got together and made a new {new_bee.type.value} queen, **{new_bee.display_name}**! :D",
+            components=None,
             allowed_mentions=discord.AllowedMentions.none(),
             wait=False,
         )

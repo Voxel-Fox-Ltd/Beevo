@@ -226,7 +226,7 @@ class HiveCommands(vbu.Cog):
         if hive is None:
             async with self.bot.database() as db:
                 hives = await utils.Hive.fetch_hives_by_user(db, ctx.guild.id, ctx.author.id, fetch_inventory=False)
-            hives = {i.id: i for i in hives if i.bee is None}
+            hives = {i.id: i for i in hives if not i.bees}
             if not hives:
                 return await send_method("You have no hives available to add bees to.", components=None)
             components = vbu.MessageComponents(
@@ -252,7 +252,7 @@ class HiveCommands(vbu.Cog):
             if payload.component.custom_id == "HIVE CANCEL":
                 return await payload.update_message(content="Cancelled your bee breed :<", components=None)
             send_method = payload.update_message
-            bee = bees[payload.values[0]]
+            hive = hives[payload.values[0]]
 
         # See if the bee is already in a hive
         if bee.hive_id:

@@ -299,7 +299,7 @@ class BeeCommands(vbu.Cog):
         except asyncio.TimeoutError:
             return await ctx.send("I timed out waiting for you to say which princess you want to breed :c", wait=False)
         if payload.component.custom_id == "BREED CANCEL":
-            return await payload.send("Cancelled your bee breed :<", wait=False)
+            return await payload.update_message(content="Cancelled your bee breed :<", components=None, wait=False)
         princess = princesses[payload.values[0]]
 
         # Ask which drone they want to breed
@@ -324,7 +324,7 @@ class BeeCommands(vbu.Cog):
         except asyncio.TimeoutError:
             return await payload.send("I timed out waiting for you to say which drones you want to breed :c", wait=False)
         if payload.component.custom_id == "BREED CANCEL":
-            return await payload.send("Cancelled your bee breed :<", wait=False)
+            return await payload.update_message(content="Cancelled your bee breed :<", components=None, wait=False)
         drone_type = payload.values[0]
 
         # Ask which drone they want to breed
@@ -349,7 +349,7 @@ class BeeCommands(vbu.Cog):
         except asyncio.TimeoutError:
             return await payload.send("I timed out waiting for you to say which drones you want to breed :c", wait=False)
         if payload.component.custom_id == "BREED CANCEL":
-            return await payload.send("Cancelled your bee breed :<", wait=False)
+            return await payload.update_message(content="Cancelled your bee breed :<", components=None, wait=False)
         drone = drones[payload.values[0]]
 
         # Breed the bee

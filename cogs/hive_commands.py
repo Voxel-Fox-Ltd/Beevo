@@ -81,13 +81,13 @@ class HiveCommands(vbu.Cog):
             # And handle those heckos
             dead_queens = [utils.Bee(**i) for i in dead_queen_rows]
             queen_death_tasks = [i.die(db) for i in dead_queens]
-            futures = await asyncio.gather(*queen_death_tasks)
+            new_bees = await asyncio.gather(*queen_death_tasks)
 
             # Get the owner IDs for every bee that's died
             results = []
-            for i in futures:
+            for i in new_bees:
                 try:
-                    results.extend(i.result())
+                    results.extend(i)
                 except Exception as e:
                     self.logger.error(e, exc_info=e)
             all_owner_ids = {i.owner_id: i.hive_id for i in results}

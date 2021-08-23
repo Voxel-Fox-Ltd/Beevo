@@ -32,8 +32,34 @@ class HiveCommands(vbu.Cog):
                 """,
             )
 
+            # Add some honey combs
+            await db(
+                """
+                INSERT INTO
+                    hive_inventory
+                    (hive_id, item_name, quantity)
+                SELECT
+                    bees.hive_id, INITCAP(bee_comb_type.comb || ' Comb'), 1
+                FROM
+                    bees
+                LEFT JOIN
+                    bee_comb_type
+                ON
+                    bees.type = bee_comb_type.type
+                WHERE
+                    hive_id IS NOT NULL
+                    AND nobility = 'Queen'
+                    AND lived_lifetime < lifetime
+                    AND RANDOM() * 100 <= speed
+                ON CONFLICT
+                    (hive_id, item_name)
+                DO UPDATE SET
+                    quantity = quantity + excluded.quantity
+                """
+            )
+
             # See which of the bees are dead
-            dead_bee_rows = await db(
+            dead_queen_rows = await db(
                 """
                 SELECT
                     *
@@ -47,9 +73,9 @@ class HiveCommands(vbu.Cog):
             )
 
             # And handle those heckos
-            dead_bees = [utils.Bee(**i) for i in dead_bee_rows]
-            bee_death_tasks = [i.die(db) for i in dead_bees]
-            await asyncio.gather(*bee_death_tasks)
+            dead_queens = [utils.Bee(**i) for i in dead_queen_rows]
+            queen_death_tasks = [i.die(db) for i in dead_queens]
+            await asyncio.gather(*queen_death_tasks)
 
     @vbu.group(invoke_without_command=False)
     @commands.guild_only()
@@ -90,26 +116,63 @@ class HiveCommands(vbu.Cog):
             await self.create_first_hive(ctx.guild.id, user.id)
             return await ctx.reinvoke()
 
-        # Format into an embed
-        description = utils.format(
+        # Make our content
+        content = utils.format(
             "{0:pronoun,You,{2}} {0:pronoun,have,has} **{1}** {1:plural,hive,hives}:",
             ctx.author == user,
             len(hives),
             user.mention,
         )
-        embed = vbu.Embed(use_random_colour=True, description=description)
+        embed = vbu.Embed(use_random_colour=True, description="")
+        embeds = []
+
+        # We have data for each hive
         for h in hives:
+            embed = vbu.Embed(use_random_colour=True, title=h.name, description="")
+            bee_field_value = ""
+            item_field_value = ""
+
+            # If the hive has bees
             if h.bees:
-                embed.description += f"\n\N{BULLET} **{h.name}**"
                 for i in h.bees:
                     if i.nobility == utils.Nobility.QUEEN:
-                        line = f"\n\u2800\u2800\N{BULLET} {i.name} (*{i.display_type}*) {{:progress}}"
-                        embed.description += utils.format(line, ((i.lifetime - i.lived_lifetime) * 100) / i.lifetime)
+                        line = f"\n\N{BULLET} {i.name} (*{i.display_type}*)\n\u2800{{:progress}}"
+                        bee_field_value += utils.format(line, ((i.lifetime - i.lived_lifetime) * 100) / i.lifetime)
                     else:
-                        embed.description += f"\n\u2800\u2800\N{BULLET} {i.name} (*{i.display_type}*)"
+                        bee_field_value += f"\n\N{BULLET} {i.name} (*{i.display_type}*)"
+
+            # If the hive has an inventory
+            if h.inventory:
+                for i in h.inventory.values():
+                    if i.quantity > 0:
+                        line = f"\n\N{BULLET} {i.name} x{i.quantity}"
+                        item_field_value += line
+
+            # Add fields
+            if bee_field_value:
+                embed.add_field(
+                    "Bees",
+                    bee_field_value,
+                    inline=False,
+                )
             else:
-                embed.description += f"\n\N{BULLET} **{h.name}** (*empty*)"
-        return await ctx.send(embed=embed, wait=False)
+                embed.add_field(
+                    "Bees",
+                    "Empty :<",
+                    inline=False,
+                )
+            if item_field_value:
+                embed.add_field(
+                    "Inventory",
+                    item_field_value,
+                    inline=False,
+                )
+
+            # We're done with this embed
+            embeds.append(embed)
+
+        # And send
+        return await ctx.send(content, embeds=embeds, wait=False)
 
     @hive.command(name="add")
     @vbu.defer()

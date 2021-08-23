@@ -4,6 +4,7 @@ from discord.ext import commands
 import voxelbotutils as vbu
 
 from .bee import Bee
+from .item import Item, Inventory
 
 
 HIVE_NAMES = [
@@ -18,7 +19,7 @@ class Hive(object):
     SLASH_COMMAND_ARG_TYPE = vbu.ApplicationCommandOptionType.STRING
 
     __slots__ = (
-        'id', 'index', 'guild_id', 'owner_id', 'bees',
+        'id', 'index', 'guild_id', 'owner_id', 'bees', 'inventory',
     )
 
     def __init__(self, id: str, index: int, guild_id: int, owner_id: int):
@@ -27,6 +28,7 @@ class Hive(object):
         self.guild_id: int = guild_id
         self.owner_id: int = owner_id
         self.bees: typing.Set[Bee] = set()
+        self.inventory: Inventory = Inventory()
 
     @property
     def name(self) -> str:
@@ -49,17 +51,46 @@ class Hive(object):
 
             # Grab the hive and the bees in it
             hive_rows = await db(
-                """SELECT h.*, b.id bee_id FROM hives h LEFT JOIN bees b ON h.id=b.hive_id
-                WHERE index=$1 AND h.guild_id=$2 AND h.owner_id=$3""",
+                """
+                SELECT
+                    h.*, b.id bee_id
+                FROM
+                    hives h
+                LEFT JOIN
+                    bees b
+                ON
+                    h.id = b.hive_id
+                WHERE
+                    index = $1
+                    AND h.guild_id = $2
+                    AND h.owner_id = $3
+                """,
                 hive_index, ctx.guild.id, ctx.author.id,
             )
             if not hive_rows:
                 raise commands.BadArgument(f"You don't have a hive with the name **{value}**.")
 
+            # Grab the items in the hive
+            inventory_rows = await db(
+                """
+                SELECT
+                    *
+                FROM
+                    hive_inventory
+                WHERE
+                    hive_id = $1
+                """,
+                hive_rows[0]['id'],
+            )
+
             # Grab the first row so that we can make a hive from it
             hive_row = dict(hive_rows[0])
             hive_row.pop("bee_id", None)  # Remove the bee ID so we can just unpack it
             hive = cls(**hive_row)
+
+            # Parse the inventory items
+            for row in inventory_rows:
+                hive.inventory[row['item_name']] += row['quantity']
 
             # Grab all the bees that are in the hive
             bee_ids = [i['bee_id'] for i in hive_rows]

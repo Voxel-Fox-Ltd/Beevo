@@ -346,6 +346,14 @@ class BeeCommands(vbu.Cog):
             except ValueError:
                 return await payload.message.send("You can't breed anything other than a drone and a princess! :<", wait=False)
 
+            # Store our cross-bred types
+            await db(
+                """INSERT INTO user_bee_combinations (guild_id, user_id, left_type, right_type, result_type)
+                VALUES ($1, $2, $3, $4, $5)""",
+                utils.get_bee_guild_id(ctx), ctx.author.id, *sorted([princess.type.value, drone.type.value]),
+                new_bee.type.value,
+            )
+
         # Tell the user about their new queen
         return await payload.message.edit(
             content=f"Your princess and drone got together and made a new {new_bee.type.value} queen, **{new_bee.display_name}**! :D",

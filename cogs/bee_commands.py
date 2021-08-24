@@ -403,6 +403,7 @@ class BeeCommands(vbu.Cog):
         except Exception as e:
             self.logger.error(f"Could not write to {dot_filename}")
             raise e
+        await ctx.send(file=discord.File(dot_filename))
 
         # Convert to an image
         image_filename = f'./.{ctx.author.id}.png'

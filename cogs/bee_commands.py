@@ -378,7 +378,7 @@ class BeeCommands(vbu.Cog):
 
         # Generate some dot lines that we can use
         output = []
-        output.append("rankdir=LR;")
+        output.append("rankdir=LR;splines=curved;overlap=scale;")
         for row in bee_rows:
             left = utils.BeeType.get(row['left_type'])
             right = utils.BeeType.get(row['right_type'])
@@ -393,9 +393,9 @@ class BeeCommands(vbu.Cog):
                 if v not in output:
                     output.append(v)
             output.append((
-                f"\"{joiner}\" [label=\"\",height=0.001,width=0.001];"
-                f"\"{left.value.title()} Bee\" -> \"{joiner}\" [dir=none];"
-                f"\"{right.value.title()} Bee\" -> \"{joiner}\" [dir=none];"
+                f"{joiner} [label=\"\",height=0.001,width=0.001];"
+                f"\"{left.value.title()} Bee\" -> {joiner} [dir=none];"
+                f"\"{right.value.title()} Bee\" -> {joiner} [dir=none];"
                 f"{joiner} -> \"{result.value.title()} Bee\";"
             ))
 
@@ -404,11 +404,11 @@ class BeeCommands(vbu.Cog):
             return await ctx.send("You've not cross-bred any bees yet :<")
 
         # Write the dot to a file
-        dot_filename = f'./.{ctx.author.id}.gz'
+        dot_filename = f'./.{ctx.author.id}.dot'
         try:
             output_string = "".join(output)
             with open(dot_filename, 'w', encoding='utf-8') as a:
-                a.write(f"digraph {{ {output_string} }}")
+                a.write(f"digraph{{{output_string}}}\n")
         except Exception as e:
             self.logger.error(f"Could not write to {dot_filename}")
             raise e
@@ -416,7 +416,8 @@ class BeeCommands(vbu.Cog):
         # Convert to an image
         image_filename = f'./.{ctx.author.id}.png'
         format_rendering_option = '-Tpng:cairo'
-        dot = await asyncio.create_subprocess_exec('dot', format_rendering_option, dot_filename, '-o', image_filename, '-Gcharset=UTF-8')
+        # dot = await asyncio.create_subprocess_exec('dot', format_rendering_option, dot_filename, '-o', image_filename, '-Gcharset=UTF-8')
+        dot = await asyncio.create_subprocess_exec('neato', format_rendering_option, dot_filename, '-o', image_filename, '-Gcharset=UTF-8')
         await asyncio.wait_for(dot.wait(), 10.0)
 
         # Kill subprocess

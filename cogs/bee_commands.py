@@ -378,18 +378,25 @@ class BeeCommands(vbu.Cog):
 
         # Generate some dot lines that we can use
         output = []
-        for t in utils.BeeType.get_mundane_bees():
-            output.append(f"\"{t.value.title()} Bee\" [color=red];")
+        output.append("rankdir=LR;")
         for row in bee_rows:
-            left = row['left_type']
-            right = row['right_type']
-            result = row['result_type']
+            left = utils.BeeType.get(row['left_type'])
+            right = utils.BeeType.get(row['right_type'])
+            result = utils.BeeType.get(row['result_type'])
             joiner = f"{left}{right}"
+            if left.is_mundane:
+                v = f"\"{left.value.title()} Bee\" [color=red];"
+                if v not in output:
+                    output.append(v)
+            if right.is_mundane:
+                v = f"\"{right.value.title()} Bee\" [color=red];"
+                if v not in output:
+                    output.append(v)
             output.append((
                 f"\"{joiner}\" [label=\"\",height=0.001,width=0.001];"
-                f"\"{left.title()} Bee\" -> \"{joiner}\" [dir=none];"
-                f"\"{right.title()} Bee\" -> \"{joiner}\" [dir=none];"
-                f"{joiner} -> \"{result.title()} Bee\";"
+                f"\"{left.value.title()} Bee\" -> \"{joiner}\" [dir=none];"
+                f"\"{right.value.title()} Bee\" -> \"{joiner}\" [dir=none];"
+                f"{joiner} -> \"{result.value.title()} Bee\";"
             ))
 
         # See if we have an output

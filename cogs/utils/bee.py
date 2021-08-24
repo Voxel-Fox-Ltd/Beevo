@@ -43,6 +43,10 @@ class BeeType(object):
             if isinstance(i, MundaneBeeType):
                 yield i
 
+    @property
+    def is_mundane(self):
+        return isinstance(self, MundaneBeeType)
+
     @classmethod
     def get_all_bees(cls):
         items = dir(cls)

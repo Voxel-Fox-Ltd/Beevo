@@ -282,6 +282,8 @@ class BeeCommands(vbu.Cog):
                 continue
             if result.is_mundane:
                 continue
+            if result in [left, right]:
+                continue
 
             # See if the breed is real
             expected_result = utils.BeeType.combine(left, right, return_all_types=True)

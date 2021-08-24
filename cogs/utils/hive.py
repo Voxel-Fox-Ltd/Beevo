@@ -168,7 +168,7 @@ class Hive(object):
     @classmethod
     async def send_hive_dropdown(
             cls, ctx: vbu.Context, send_method, current_message: discord.Message, *, max_values: int = 1,
-            check=None) -> typing.Tuple[vbu.ComponentInteractionPayload, discord.Message, typing.List['Hive']]:
+            check=None, content: str = None) -> typing.Tuple[vbu.ComponentInteractionPayload, discord.Message, typing.List['Hive']]:
         """
         Send a dropdown to let a user pick one of their hives.
         """
@@ -210,7 +210,8 @@ class Hive(object):
         )
 
         # Send message
-        current_message = await send_method(content="Which hive would you like to choose?", components=components) or current_message
+        content = content or "Which hive would you like to choose?"
+        current_message = await send_method(content=content, components=components) or current_message
 
         # Wait for interaction
         try:

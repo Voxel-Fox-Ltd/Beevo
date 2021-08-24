@@ -549,8 +549,9 @@ class Bee(object):
 
     @classmethod
     async def send_bee_dropdown(
-            cls, ctx: vbu.Context, send_method, current_message: discord.Message, max_values: int = 1, *, group_by_nobility: bool = False,
-            group_by_type: bool = False, check=None) -> typing.Tuple[vbu.ComponentInteractionPayload, discord.Message, typing.List['Bee']]:
+            cls, ctx: vbu.Context, send_method, current_message: discord.Message, max_values: int = 1, *,
+            group_by_nobility: bool = False, group_by_type: bool = False, check=None,
+            content: str = None) -> typing.Tuple[vbu.ComponentInteractionPayload, discord.Message, typing.List['Bee']]:
         """
         Send a dropdown to let a user pick one of their bees.
         """
@@ -590,7 +591,7 @@ class Bee(object):
                     ),
                 )
                 current_message = await send_method(
-                    content="What kind of bee would you like to release?",
+                    content="What kind of bee would you like to choose?",
                     components=components,
                 ) or current_message
                 try:
@@ -619,31 +620,28 @@ class Bee(object):
                 components = vbu.MessageComponents(
                     vbu.ActionRow(
                         vbu.SelectMenu(
-                            custom_id="BREED BEE_SELECTION",
+                            custom_id="BEE_SELECTION",
                             options=[
                                 vbu.SelectOption(label=i.title(), value=i)
                                 for i in bee_types
                             ],
-                            placeholder="What type of drone would you like to breed?",
+                            placeholder="What type of bee would you like to select?",
                         ),
                     ),
                     vbu.ActionRow(
                         vbu.Button("Cancel", custom_id="CANCEL", style=vbu.ButtonStyle.DANGER),
                     ),
                 )
-                current_message = await send_method(content="What type of drone would you like to breed?", components=components) or current_message
+                current_message = await send_method(content="What type of bee would you like to select?", components=components) or current_message
                 try:
                     payload = await ctx.bot.wait_for("component_interaction", check=vbu.component_check(ctx.author, current_message), timeout=60)
                 except asyncio.TimeoutError:
                     current_message = await send_method(
-                        content="I timed out waiting for you to say which drones you want to breed :c",
+                        content="I timed out waiting for you to what bee you want to select :c",
                         components=None,
                     ) or current_message
                 if payload.component.custom_id == "CANCEL":
-                    current_message = await payload.update_message(
-                        content="Cancelled your bee breed :<",
-                        components=None,
-                    ) or current_message
+                    current_message = await payload.update_message(content="Cancelled your bee selection :<", components=None) or current_message
                     return (payload, current_message, None,)
                 send_method = payload.update_message
                 bees = {i: o for i, o in bees.items() if o.type.value.casefold() == payload.values[0].casefold()}
@@ -667,7 +665,8 @@ class Bee(object):
         )
 
         # Send message
-        current_message = await send_method(content="Which bee would you like to choose?", components=components) or current_message
+        content = content or "Which bee would you like to choose?"
+        current_message = await send_method(content=content, components=components) or current_message
 
         # Wait for interaction
         try:
@@ -678,7 +677,7 @@ class Bee(object):
 
         # See if it were cancelled
         if payload.component.custom_id == "CANCEL":
-            await payload.update_message(content="Cancelled your bee selection :<", components=None)
+            current_message = await payload.update_message(content="Cancelled your bee selection :<", components=None) or current_message
             return (payload, current_message, None,)
 
         # Return the bee

@@ -349,7 +349,7 @@ class BeeCommands(vbu.Cog):
             # Store our cross-bred types
             await db(
                 """INSERT INTO user_bee_combinations (guild_id, user_id, left_type, right_type, result_type)
-                VALUES ($1, $2, $3, $4, $5)""",
+                VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING""",
                 utils.get_bee_guild_id(ctx), ctx.author.id, *sorted([princess.type.value, drone.type.value]),
                 new_bee.type.value,
             )

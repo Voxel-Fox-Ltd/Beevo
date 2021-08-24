@@ -266,7 +266,7 @@ class BeeCommands(vbu.Cog):
         output = []
         output.append((
             "rankdir=LR;"
-            "splines=curved;"
+            # "splines=curved;"
             "overlap=scale;"
             "node[color=transparent,margin=0.03,shape=box,height=0.001,width=0.001];"
         ))
@@ -304,8 +304,7 @@ class BeeCommands(vbu.Cog):
                     output.append(v)
             output.append((
                 f"{joiner}[label=\"\",height=0.001,width=0.001,color=black,shape=point];"
-                f"\"{left.value.title()} Bee\"->{joiner}[dir=none];"
-                f"\"{right.value.title()} Bee\"->{joiner}[dir=none];"
+                f"{{\"{left.value.title()} Bee\",\"{right.value.title()} Bee\"}}->{joiner}[dir=none];"
                 f"{joiner}->\"{result.value.title()} Bee\";"
             ))
 

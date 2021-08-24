@@ -384,9 +384,9 @@ class BeeCommands(vbu.Cog):
             result = row['result_type']
             joiner = f"{left}{right}"
             output.append((
-                f"{joiner} [style=invis];"
-                f"\"{left.title()} Bee\" -- {joiner};"
-                f"\"{right.title()} Bee\" -- {joiner};"
+                f"\"{joiner}\" [labe=\"\",height=0.001,width=0.001];"
+                f"\"{left.title()} Bee\" -> \"{joiner}\" [dir=none];"
+                f"\"{right.title()} Bee\" -> \"{joiner}\" [dir=none];"
                 f"{joiner} -> \"{result.title()} Bee\";"
             ))
 
@@ -403,7 +403,6 @@ class BeeCommands(vbu.Cog):
         except Exception as e:
             self.logger.error(f"Could not write to {dot_filename}")
             raise e
-        await ctx.send(file=discord.File(dot_filename))
 
         # Convert to an image
         image_filename = f'./.{ctx.author.id}.png'

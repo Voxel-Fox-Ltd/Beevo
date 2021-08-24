@@ -362,6 +362,82 @@ class BeeCommands(vbu.Cog):
             wait=False,
         )
 
+    @bee.command(name="map")
+    @vbu.defer()
+    async def bee_map(self, ctx: vbu.Context):
+        """
+        Map out the bee combinations that you've discovered.
+        """
+
+        # Grab their bee combinations
+        async with self.bot.database() as db:
+            bee_rows = await db(
+                """SELECT * FROM user_bee_combinations WHERE guild_id = $1 AND user_id = $2""",
+                utils.get_bee_guild_id(ctx), ctx.author.id,
+            )
+
+        # Generate some dot lines that we can use
+        output = []
+        for row in bee_rows:
+            left = row['left_type']
+            right = row['right_type']
+            result = row['result_type']
+            joiner = f"{left}{right}"
+            output.append((
+                f"{joiner} [style=invis];"
+                f"\"{left.title()} Bee\" -- {joiner};"
+                f"\"{right.title()} Bee\" -- {joiner};"
+                f"{joiner} -> \"{result.title()} Bee\";"
+            ))
+
+        # See if we have an output
+        if not output:
+            return await ctx.send("You've not cross-bred any bees yet :<")
+
+        # Write the dot to a file
+        dot_filename = f'./.{ctx.author.id}.gz'
+        try:
+            with open(dot_filename, 'w', encoding='utf-8') as a:
+                a.write(f"digraph {{ {"".join(output)} }}")
+        except Exception as e:
+            self.logger.error(f"Could not write to {dot_filename}")
+            raise e
+
+        # Convert to an image
+        image_filename = f'./.{ctx.author.id}.png'
+        # http://www.graphviz.org/doc/info/output.html#d:png
+        # highest quality colour, and antialiasing
+        # not using this because not much point
+        # todo: add extra level for better colour, stroke etc, basically like the one in the readme (in addition to antialiasing)
+        # if False:
+        #     format_rendering_option = '-Tpng:cairo'  # -T:png does the same thing but this is clearer
+        #     otherwise Tpng:gd is lower quality
+        # normal colour, and antialising
+        format_rendering_option = '-Tpng:cairo'
+
+        dot = await asyncio.create_subprocess_exec('dot', format_rendering_option, dot_filename, '-o', image_filename, '-Gcharset=UTF-8')
+        await asyncio.wait_for(dot.wait(), 10.0)
+
+        # Kill subprocess
+        try:
+            dot.kill()
+        except ProcessLookupError:
+            pass  # It already died
+        except Exception:
+            raise
+
+        # Send file
+        try:
+            file = discord.File(image_filename)
+        except FileNotFoundError:
+            return await ctx.send("I was unable to send your bee map image - please try again later.")
+        await ctx.send(file=file)
+        await asyncio.sleep(1)
+
+        # Delete the files
+        self.bot.loop.create_task(asyncio.create_subprocess_exec('rm', dot_filename))
+        self.bot.loop.create_task(asyncio.create_subprocess_exec('rm', image_filename))
+
 
 def setup(bot: vbu.Bot):
     x = BeeCommands(bot)

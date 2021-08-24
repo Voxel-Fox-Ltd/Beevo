@@ -101,7 +101,7 @@ class HiveCommands(vbu.Cog):
                     pass
 
     @vbu.group(invoke_without_command=False)
-    @commands.guild_only()
+    # @commands.guild_only()
     async def hive(self, ctx: vbu.Context):
         """
         The parent command for bee hive handling.
@@ -125,7 +125,7 @@ class HiveCommands(vbu.Cog):
 
     @hive.command(name="list")
     @vbu.defer()
-    @commands.guild_only()
+    # @commands.guild_only()
     async def hive_list(self, ctx: vbu.Context, user: discord.Member = None):
         """
         Give you a list of all of your hives.
@@ -197,7 +197,7 @@ class HiveCommands(vbu.Cog):
 
     @hive.command(name="add")
     @vbu.defer()
-    @commands.guild_only()
+    # @commands.guild_only()
     async def hive_add(self, ctx: vbu.Context, bee: utils.Bee = None, hive: utils.Hive = None):
         """
         Add one of your queens to a hive.
@@ -252,7 +252,7 @@ class HiveCommands(vbu.Cog):
 
     @hive.command(name="clear")
     @vbu.defer()
-    @commands.guild_only()
+    # @commands.guild_only()
     async def hive_clear(self, ctx: vbu.Context, *, hive: utils.Hive = None):
         """
         Clear out the bees from one of your hives.

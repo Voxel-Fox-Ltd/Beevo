@@ -12,7 +12,7 @@ from cogs import utils
 class BeeCommands(vbu.Cog):
 
     @vbu.group()
-    @commands.guild_only()
+    # @commands.guild_only()
     async def bee(self, ctx: vbu.Context):
         """
         The parent group for the bee commands.
@@ -23,7 +23,7 @@ class BeeCommands(vbu.Cog):
     @bee.command(name="get")
     @vbu.defer()
     @vbu.cooldown.cooldown(1, 60 * 15, commands.BucketType.user)
-    @commands.guild_only()
+    # @commands.guild_only()
     async def bee_get(self, ctx: vbu.Context):
         """
         Catch some new bees for your hive.
@@ -47,7 +47,7 @@ class BeeCommands(vbu.Cog):
 
     @bee.command(name="list")
     @vbu.defer()
-    @commands.guild_only()
+    # @commands.guild_only()
     async def bee_list(self, ctx: vbu.Context, user: discord.Member = None):
         """
         Shows you all of the bees you have.
@@ -109,7 +109,7 @@ class BeeCommands(vbu.Cog):
 
     @bee.command(name="rename")
     @vbu.defer()
-    @commands.guild_only()
+    # @commands.guild_only()
     async def bee_rename(self, ctx: vbu.Context, before: utils.Bee, *, after: str):
         """
         Renames one of your bees.
@@ -135,7 +135,7 @@ class BeeCommands(vbu.Cog):
 
     @bee.command(name="release")
     @vbu.defer()
-    @commands.guild_only()
+    # @commands.guild_only()
     async def bee_release(self, ctx: vbu.Context, *, bee: utils.Bee = None):
         """
         Releases one of your bees back into the wild.
@@ -224,7 +224,7 @@ class BeeCommands(vbu.Cog):
         )
 
     @bee.command(name="pet")
-    @commands.guild_only()
+    # @commands.guild_only()
     async def bee_pet(self, ctx: vbu.Context, bee: utils.Bee):
         """
         Pet one of your bees on their fluffy lil heads.
@@ -238,7 +238,7 @@ class BeeCommands(vbu.Cog):
 
     @bee.command(name="breed")
     @vbu.defer()
-    @commands.guild_only()
+    # @commands.guild_only()
     async def bee_breed(self, ctx: vbu.Context):
         """
         Breed one of your princesses and drones into a queen.

@@ -9,7 +9,7 @@ class UserCommands(vbu.Cog):
 
     @vbu.command()
     @vbu.defer()
-    @commands.guild_only()
+    # @commands.guild_only()
     async def inventory(self, ctx: vbu.Context, user: discord.Member = None):
         """
         Get the inventory for a given user.

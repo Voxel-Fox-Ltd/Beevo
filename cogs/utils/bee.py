@@ -22,6 +22,7 @@ class BeeType(object):
 
     BEE_COMBINATIONS = {}
     BEE_TYPE_VALUES = {}
+    BEE_TYPE_COMBS = {}
 
     def __init__(self, value: str):
         self.name = value.upper()
@@ -46,7 +47,7 @@ class BeeType(object):
     def get_all_bees(cls):
         items = dir(cls)
         for i in items:
-            if i == ["BEE_COMBINATIONS", "BEE_TYPE_VALUES"]:
+            if i == ["BEE_COMBINATIONS", "BEE_TYPE_VALUES", "BEE_TYPE_COMBS"]:
                 continue
             if not i.isupper():
                 continue
@@ -61,6 +62,16 @@ class BeeType(object):
         """
 
         return getattr(cls, value.upper(), None)
+
+    def get_comb(self) -> str:
+        return self.BEE_TYPE_COMBS[self]
+
+    def get_value(self) -> int:
+        return self.BEE_TYPE_VALUES[self]
+
+    def get_comb_value(self) -> int:
+        this_comb = self.get_comb()
+        return min((o for i, o in self.BEE_TYPE_VALUES.items() if self.get_comb(i) == this_comb))
 
     @staticmethod
     def check_if_matches(item, comparable):
@@ -105,6 +116,11 @@ class ComplexBeeType(BeeType):
 
 
 def setup_bee_types():
+    """
+    Set up the bee types that the bot uses.
+    """
+
+    # Mundane bees
     BeeType.FOREST = MundaneBeeType("forest")
     BeeType.MEADOWS = MundaneBeeType("meadows")
     BeeType.MODEST = MundaneBeeType("modest")
@@ -118,6 +134,7 @@ def setup_bee_types():
     BeeType.STEADFAST = MundaneBeeType("steadfast")
     BeeType.VALIANT = MundaneBeeType("valiant")
 
+    # Complex bees
     BeeType.COMMON = ComplexBeeType("common")
     BeeType.CULTIVATED = ComplexBeeType("cultivated")
     BeeType.NOBLE = ComplexBeeType("noble")
@@ -138,6 +155,7 @@ def setup_bee_types():
     BeeType.GLACIAL = ComplexBeeType("glacial")
     BeeType.RURAL = ComplexBeeType("rural")
 
+    # Bee combinations
     BeeType.BEE_COMBINATIONS = {
         (MundaneBeeType, MundaneBeeType,): BeeType.get("COMMON"),
         (BeeType.get("COMMON"), MundaneBeeType,): BeeType.get("CULTIVATED"),
@@ -162,13 +180,51 @@ def setup_bee_types():
         (BeeType.get("MEADOWS"), BeeType.get("DILLIGENT"),): BeeType.get("RURAL"),
     }
 
-    # To account for dicts being unordered
+    # Bee values
     for _ in range(5):
         for (left, right), result in BeeType.BEE_COMBINATIONS.items():
             if not isinstance(result, (list, tuple)):
                 result = [result]
             for r in result:
-                BeeType.BEE_TYPE_VALUES[r] = max(BeeType.BEE_TYPE_VALUES.get(left, 1), BeeType.BEE_TYPE_VALUES.get(right, 1)) + 1
+                BeeType.BEE_TYPE_VALUES[r] = max(
+                    BeeType.BEE_TYPE_VALUES.get(left, 1),
+                    BeeType.BEE_TYPE_VALUES.get(right, 1),
+                ) + 1
+
+    # Bee combs
+    BeeType.BEE_TYPE_COMBS = {
+        BeeType.get("FOREST"): "honey",
+        BeeType.get("MEADOWS"): "honey",
+        BeeType.get("MODEST"): "parched",
+        BeeType.get("TROPICAL"): "silky",
+        BeeType.get("WINTRY"): "frozen",
+        BeeType.get("MARSHY"): "mossy",
+        BeeType.get("WATER"): "wet",
+        BeeType.get("ROCKY"): "rocky",
+        BeeType.get("EMBITTERED"): "simmering",
+        BeeType.get("MARBLED"): "honey",
+        BeeType.get("VALIANT"): "cocoa",
+        BeeType.get("STEADFAST"): "cocoa",
+        BeeType.get("COMMON"): "honey",
+        BeeType.get("CULTIVATED"): "honey",
+        BeeType.get("NOBLE"): "dripping",
+        BeeType.get("MAJESTIC"): "dripping",
+        BeeType.get("IMPERIAL"): "dripping",
+        BeeType.get("DILLIGENT"): "stringy",
+        BeeType.get("UNWEARY"): "stringy",
+        BeeType.get("INDUSTRIOUS"): "stringy",
+        BeeType.get("HEROIC"): "cocoa",
+        BeeType.get("SINISTER"): "simmering",
+        BeeType.get("FIENDISH"): "simmering",
+        BeeType.get("DEMONIC"): "simmering",
+        BeeType.get("FRUGAL"): "parched",
+        BeeType.get("AUSTERE"): "parched",
+        BeeType.get("EXOTIC"): "silky",
+        BeeType.get("EDENIC"): "silky",
+        BeeType.get("ICY"): "frozen",
+        BeeType.get("GLACIAL"): "frozen",
+        BeeType.get("RURAL"): "wheaten",
+    }
 
 
 setup_bee_types()
@@ -349,22 +405,14 @@ class Bee(object):
             INSERT INTO
                 hive_inventory
                 (hive_id, item_name, quantity)
-            SELECT
-                $2, INITCAP(bee_comb_type.comb || ' Comb'), 1
-            FROM
-                bees
-            LEFT JOIN
-                bee_comb_type
-            ON
-                bees.type = bee_comb_type.type
-            WHERE
-                bees.id = $1
+            VALUES
+                $1, INITCAP($2 || ' Comb'), 1
             ON CONFLICT
                 (hive_id, item_name)
             DO UPDATE SET
                 quantity = hive_inventory.quantity + excluded.quantity
             """,
-            self.id, self.hive_id,
+            self.hive_id, self.type.get_comb(),
         )
 
         # Update (kill) our current bee

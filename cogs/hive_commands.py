@@ -37,31 +37,38 @@ class HiveCommands(vbu.Cog):
             )
 
             # Add some honey combs
-            await db(
+            comb_rows = await db(
                 """
-                INSERT INTO
-                    hive_inventory
-                    (hive_id, item_name, quantity)
                 SELECT
-                    bees.hive_id,
-                    INITCAP(bee_comb_type.comb || ' Comb'),
-                    FLOOR(RANDOM() * (FLOOR(CAST(bees.speed AS REAL) / 100) + 1) + 1)
+                    hive_id,
+                    type,
+                    FLOOR(RANDOM() * (FLOOR(CAST(bees.speed AS REAL) / 100) + 1) + 1) quantity
                 FROM
                     bees
-                LEFT JOIN
-                    bee_comb_type
-                ON
-                    bees.type = bee_comb_type.type
                 WHERE
                     hive_id IS NOT NULL
                     AND nobility = 'Queen'
                     AND lived_lifetime < lifetime
                     AND RANDOM() * 100 <= speed
+                """
+            )
+            comb_adds = [
+                (row['hive_id'], utils.BeeType.get(row['type']).get_comb(), row['quantity'],)
+                for row in comb_rows
+            ]
+            await db.execute_many(
+                """
+                INSERT INTO
+                    hive_inventory
+                    (hive_id, item_name, quantity)
+                VALUES
+                    ($1, INITCAP($2 || ' Comb'), $3)
                 ON CONFLICT
                     (hive_id, item_name)
                 DO UPDATE SET
                     quantity = hive_inventory.quantity + excluded.quantity
-                """
+                """,
+                *comb_adds,
             )
 
             # See which of the bees are dead

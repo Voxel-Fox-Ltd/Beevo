@@ -384,7 +384,7 @@ class BeeCommands(vbu.Cog):
             result = row['result_type']
             joiner = f"{left}{right}"
             output.append((
-                f"\"{joiner}\" [labe=\"\",height=0.001,width=0.001];"
+                f"\"{joiner}\" [label=\"\",height=0.001,width=0.001];"
                 f"\"{left.title()} Bee\" -> \"{joiner}\" [dir=none];"
                 f"\"{right.title()} Bee\" -> \"{joiner}\" [dir=none];"
                 f"{joiner} -> \"{result.title()} Bee\";"

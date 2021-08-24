@@ -378,6 +378,8 @@ class BeeCommands(vbu.Cog):
 
         # Generate some dot lines that we can use
         output = []
+        for t in utils.BeeType.get_mundane_bees():
+            output.append(f"\"{t.value.title()} Bee\" [color=red];")
         for row in bee_rows:
             left = row['left_type']
             right = row['right_type']
@@ -406,16 +408,7 @@ class BeeCommands(vbu.Cog):
 
         # Convert to an image
         image_filename = f'./.{ctx.author.id}.png'
-        # http://www.graphviz.org/doc/info/output.html#d:png
-        # highest quality colour, and antialiasing
-        # not using this because not much point
-        # todo: add extra level for better colour, stroke etc, basically like the one in the readme (in addition to antialiasing)
-        # if False:
-        #     format_rendering_option = '-Tpng:cairo'  # -T:png does the same thing but this is clearer
-        #     otherwise Tpng:gd is lower quality
-        # normal colour, and antialising
         format_rendering_option = '-Tpng:cairo'
-
         dot = await asyncio.create_subprocess_exec('dot', format_rendering_option, dot_filename, '-o', image_filename, '-Gcharset=UTF-8')
         await asyncio.wait_for(dot.wait(), 10.0)
 

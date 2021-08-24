@@ -71,7 +71,7 @@ class BeeType(object):
 
     def get_comb_value(self) -> int:
         this_comb = self.get_comb()
-        return min((o for i, o in self.BEE_TYPE_VALUES.items() if self.get_comb(i) == this_comb))
+        return min((o for i, o in self.BEE_TYPE_VALUES.items() if i.get_comb() == this_comb))
 
     @staticmethod
     def check_if_matches(item, comparable):

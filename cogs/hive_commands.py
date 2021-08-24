@@ -230,8 +230,10 @@ class HiveCommands(vbu.Cog):
                 ctx=ctx, send_method=send_method, current_message=dropdown_message,
                 check=lambda hive: not hive.bees,
             )
-            if hive is None:
+            if not hive:
                 return
+            else:
+                hive = hive[0]
             if payload:
                 send_method = payload.update_message
 
@@ -278,8 +280,10 @@ class HiveCommands(vbu.Cog):
                 ctx=ctx, send_method=send_method, current_message=None,
                 check=lambda hive: hive.bees,
             )
-            if hive is None:
+            if not hive:
                 return
+            else:
+                hive = hive[0]
             if payload:
                 send_method = payload.update_message
 

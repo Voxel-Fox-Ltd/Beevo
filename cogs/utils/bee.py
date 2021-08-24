@@ -9,6 +9,7 @@ from discord.ext import commands
 import voxelbotutils as vbu
 
 from .name_utils import get_random_name
+from .utils import get_bee_guild_id
 
 
 class Nobility(enum.Enum):
@@ -486,7 +487,7 @@ class Bee(object):
         async with ctx.bot.database() as db:
             rows = await db(
                 """SELECT * FROM bees WHERE owner_id=$1 AND (id=$2 OR LOWER(name)=LOWER($2)) AND guild_id=$3""",
-                ctx.author.id, value, utils.get_bee_guild_id(ctx),
+                ctx.author.id, value, get_bee_guild_id(ctx),
             )
         if not rows:
             raise commands.BadArgument("You don't have a bee with that name!")
@@ -502,7 +503,7 @@ class Bee(object):
 
         # Grab the bees
         async with ctx.bot.database() as db:
-            bees = await cls.fetch_bees_by_user(db, utils.get_bee_guild_id(ctx), ctx.author.id)
+            bees = await cls.fetch_bees_by_user(db, get_bee_guild_id(ctx), ctx.author.id)
 
         # Make sure a check exists
         if check is None:

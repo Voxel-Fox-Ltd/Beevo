@@ -268,7 +268,7 @@ class BeeCommands(vbu.Cog):
             "rankdir=LR;"
             "splines=curved;"
             "overlap=scale;"
-            "node [color=transparent,margin=0,shape=box,height=0.001,width=0.001];"
+            "node[color=transparent,margin=0.03,shape=box,height=0.001,width=0.001];"
         ))
 
         # Make some DOT for each of our combinations
@@ -295,18 +295,18 @@ class BeeCommands(vbu.Cog):
             # Make our actual DOT
             joiner = f"{left.value}{right.value}"
             if left.is_mundane:
-                v = f"\"{left.value.title()} Bee\" [color=red,margin=0.05,shape=ellipse];"
+                v = f"\"{left.value.title()} Bee\"[color=red,margin=0.05,shape=ellipse];"
                 if v not in output:
                     output.append(v)
             if right.is_mundane:
-                v = f"\"{right.value.title()} Bee\" [color=red,margin=0.05,shape=ellipse];"
+                v = f"\"{right.value.title()} Bee\"[color=red,margin=0.05,shape=ellipse];"
                 if v not in output:
                     output.append(v)
             output.append((
-                f"{joiner} [label=\"\",height=0.001,width=0.001,color=black];"
-                f"\"{left.value.title()} Bee\" -> {joiner} [dir=none];"
-                f"\"{right.value.title()} Bee\" -> {joiner} [dir=none];"
-                f"{joiner} -> \"{result.value.title()} Bee\";"
+                f"{joiner}[label=\"\",height=0.001,width=0.001,color=black,shape=point];"
+                f"\"{left.value.title()} Bee\"->{joiner}[dir=none];"
+                f"\"{right.value.title()} Bee\"->{joiner}[dir=none];"
+                f"{joiner}->\"{result.value.title()} Bee\";"
             ))
 
         # See if we have an output

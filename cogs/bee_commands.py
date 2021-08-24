@@ -262,7 +262,7 @@ class BeeCommands(vbu.Cog):
                 utils.get_bee_guild_id(ctx), ctx.author.id,
             )
 
-        # Generate some dot lines that we can use
+        # Generate our starting DOT lines
         output = []
         output.append((
             "rankdir=LR;"
@@ -270,10 +270,27 @@ class BeeCommands(vbu.Cog):
             "overlap=scale;"
             "node [color=transparent,margin=0,shape=box,height=0.001,width=0.001];"
         ))
+
+        # Make some DOT for each of our combinations
         for row in bee_rows:
+
+            # See if it's a cross-breed combo
             left = utils.BeeType.get(row['left_type'])
             right = utils.BeeType.get(row['right_type'])
             result = utils.BeeType.get(row['result_type'])
+            if left == right:
+                continue
+            if result.is_mundane:
+                continue
+
+            # See if the breed is real
+            expected_result = utils.BeeType.combine(left, right, return_all_types=True)
+            if not isinstance(expected_result, (list, tuple)):
+                expected_result = [expected_result]
+            if result not in expected_result:
+                continue
+
+            # Make our actual DOT
             joiner = f"{left.value}{right.value}"
             if left.is_mundane:
                 v = f"\"{left.value.title()} Bee\" [color=red,margin=0.05,shape=ellipse];"

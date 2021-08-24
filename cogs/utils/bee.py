@@ -89,7 +89,7 @@ class BeeType(object):
             return item.name == comparable.name
 
     @classmethod
-    def combine(cls, first: 'BeeType', second: 'BeeType'):
+    def combine(cls, first: 'BeeType', second: 'BeeType', *, return_all_types: bool = False):
         """
         Combine two bees and give the child type.
         """
@@ -105,7 +105,7 @@ class BeeType(object):
                 cls.check_if_matches(first, o) and cls.check_if_matches(second, i),
             ]
             if any(checks):
-                if isinstance(v, (list, tuple)):
+                if isinstance(v, (list, tuple)) and not return_all_types:
                     return random.choice(v)
                 return v
         return random.choice([first, second])
@@ -161,7 +161,7 @@ def setup_bee_types():
 
     # Bee combinations
     BeeType.BEE_COMBINATIONS = {
-        (MundaneBeeType, MundaneBeeType,): BeeType.get("COMMON"),
+        # (MundaneBeeType, MundaneBeeType,): BeeType.get("COMMON"),
         (BeeType.get("COMMON"), MundaneBeeType,): BeeType.get("CULTIVATED"),
         (BeeType.get("COMMON"), BeeType.get("CULTIVATED"),): [BeeType.get("NOBLE"), BeeType.get("DILLIGENT")],
         (BeeType.get("NOBLE"), BeeType.get("CULTIVATED"),): BeeType.get("IMPERIAL"),
@@ -183,6 +183,11 @@ def setup_bee_types():
         (BeeType.get("ICY"), BeeType.get("WINTRY"),): BeeType.get("GLACIAL"),
         (BeeType.get("MEADOWS"), BeeType.get("DILLIGENT"),): BeeType.get("RURAL"),
     }
+    for left in BeeType.get_mundane_bees():
+        for right in BeeType.get_mundane_bees():
+            if left == right:
+                continue
+            BeeType.BEE_COMBINATIONS.update({(left, right,): BeeType.get("COMMON")})
 
     # Bee values
     for i in BeeType.get_mundane_bees():

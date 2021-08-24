@@ -33,7 +33,7 @@ class BeeCommands(vbu.Cog):
         async with self.bot.database() as db:
             drone = await utils.Bee.create_bee(db, utils.get_bee_guild_id(ctx), ctx.author.id, nobility=utils.Nobility.DRONE)
             await drone.update(db)
-            princess = await utils.Bee.create_bee(db, utils.get_bee_guild_id(ctx), ctx.author.id, nobility=utils.Nobility.PRINCESS)
+            princess = await utils.Bee.create_bee(db, utils.get_bee_guild_id(ctx), ctx.author.id, bee_type=drone.type, nobility=utils.Nobility.PRINCESS)
             await princess.update(db)
 
         # And respond

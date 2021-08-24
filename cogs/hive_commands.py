@@ -303,8 +303,12 @@ class HiveCommands(vbu.Cog):
                 await db.commit_transaction()
 
         # And done
+        item_names = [utils.format("{0} {0:plural,bee,bees}", bee_count)]
+        for item in hive.inventory.values():
+            item_names.append(utils.format("{0.quantity} {0.name:plural,{0.name},{0.name}s}", item))
+        item_names = [f"**{i}**" for i in item_names]
         return await send_method(
-            content=f"Moved **{bee_count}** bee{'s' if bee_count > 1 else ''} out of **{hive.name}**~",
+            content=utils.format("Moved {0:humanjoin} out of **{1.name}**~", item_names, hive),
             components=None,
         )
 

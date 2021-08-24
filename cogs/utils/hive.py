@@ -8,8 +8,9 @@ from discord.ext import commands
 import voxelbotutils as vbu
 
 from .bee import Bee
-from .item import Item, Inventory
+from .item import Inventory
 from .hive_cell_emoji import HiveCellEmoji
+from .utils import get_bee_guild_id
 
 
 HIVE_NAMES = [
@@ -70,7 +71,7 @@ class Hive(object):
                     AND h.guild_id = $2
                     AND h.owner_id = $3
                 """,
-                hive_index, ctx.guild.id, ctx.author.id,
+                hive_index, get_bee_guild_id(ctx), ctx.author.id,
             )
             if not hive_rows:
                 raise commands.BadArgument(f"You don't have a hive with the name **{value}**.")
@@ -174,7 +175,7 @@ class Hive(object):
 
         # Grab the bees
         async with ctx.bot.database() as db:
-            hives = await cls.fetch_hives_by_user(db, ctx.guild.id, ctx.author.id)
+            hives = await cls.fetch_hives_by_user(db, get_bee_guild_id(ctx), ctx.author.id)
 
         # Make sure a check exists
         if check is None:

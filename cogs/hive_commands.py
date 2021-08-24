@@ -134,9 +134,9 @@ class HiveCommands(vbu.Cog):
         # Grab their hives
         user = user or ctx.author
         async with self.bot.database() as db:
-            hives = await utils.Hive.fetch_hives_by_user(db, ctx.guild.id, user.id)
+            hives = await utils.Hive.fetch_hives_by_user(db, utils.get_bee_guild_id(ctx), user.id)
         if not hives:
-            await self.create_first_hive(ctx.guild.id, user.id)
+            await self.create_first_hive(utils.get_bee_guild_id(ctx), user.id)
             return await ctx.reinvoke()
 
         # Make our content
@@ -297,7 +297,7 @@ class HiveCommands(vbu.Cog):
                     DO UPDATE SET
                         quantity = user_inventory.quantity + excluded.quantity
                     """,
-                    ctx.guild.id, ctx.author.id, hive.id,
+                    utils.get_bee_guild_id(ctx), ctx.author.id, hive.id,
                 )
                 await db("""UPDATE hive_inventory SET quantity = 0 WHERE hive_id = $1""", hive.id)
                 await db.commit_transaction()

@@ -31,9 +31,9 @@ class BeeCommands(vbu.Cog):
 
         # Get a new bee for the user
         async with self.bot.database() as db:
-            drone = await utils.Bee.create_bee(db, ctx.guild.id, ctx.author.id, nobility=utils.Nobility.DRONE)
+            drone = await utils.Bee.create_bee(db, utils.get_bee_guild_id(ctx), ctx.author.id, nobility=utils.Nobility.DRONE)
             await drone.update(db)
-            princess = await utils.Bee.create_bee(db, ctx.guild.id, ctx.author.id, nobility=utils.Nobility.PRINCESS)
+            princess = await utils.Bee.create_bee(db, utils.get_bee_guild_id(ctx), ctx.author.id, nobility=utils.Nobility.PRINCESS)
             await princess.update(db)
 
         # And respond
@@ -56,7 +56,7 @@ class BeeCommands(vbu.Cog):
         # Get the bees for the given user
         user = user or ctx.author
         async with self.bot.database() as db:
-            bees = await utils.Bee.fetch_bees_by_user(db, ctx.guild.id, user.id)
+            bees = await utils.Bee.fetch_bees_by_user(db, utils.get_bee_guild_id(ctx), user.id)
         bees = [i for i in bees if i.hive_id is None]
         if not bees:
             text = utils.format(
@@ -146,7 +146,7 @@ class BeeCommands(vbu.Cog):
         # If they didn't give a bee then give them a dropdown
         if bee is None:
             async with self.bot.database() as db:
-                bees = await utils.Bee.fetch_bees_by_user(db, ctx.guild.id, ctx.author.id)
+                bees = await utils.Bee.fetch_bees_by_user(db, utils.get_bee_guild_id(ctx), ctx.author.id)
             bees = [i for i in bees if i.hive_id is None]
             queens = [i for i in bees if i.nobility == utils.Nobility.QUEEN]
             princesses = [i for i in bees if i.nobility == utils.Nobility.PRINCESS]
@@ -246,7 +246,7 @@ class BeeCommands(vbu.Cog):
 
         # Work out what bees they have available to breed
         async with self.bot.database() as db:
-            bees = await utils.Bee.fetch_bees_by_user(db, ctx.guild.id, ctx.author.id)
+            bees = await utils.Bee.fetch_bees_by_user(db, utils.get_bee_guild_id(ctx), ctx.author.id)
         princesses = {}
         drones = {}
         for bee in bees:

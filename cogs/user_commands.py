@@ -19,7 +19,7 @@ class UserCommands(vbu.Cog):
         async with self.bot.database() as db:
             inventory_rows = await db(
                 """SELECT * FROM user_inventory WHERE guild_id = $1 AND user_id = $2 AND quantity > 0""",
-                ctx.guild.id, user.id,
+                utils.get_bee_guild_id(ctx), user.id,
             )
         if not inventory_rows:
             return await ctx.send(

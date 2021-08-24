@@ -264,22 +264,27 @@ class BeeCommands(vbu.Cog):
 
         # Generate some dot lines that we can use
         output = []
-        output.append("rankdir=LR;splines=curved;overlap=scale;")
+        output.append((
+            "rankdir=LR;"
+            "splines=curved;"
+            "overlap=scale;"
+            "node [color=transparent,margin=0,shape=box,height=0.001,width=0.001];"
+        ))
         for row in bee_rows:
             left = utils.BeeType.get(row['left_type'])
             right = utils.BeeType.get(row['right_type'])
             result = utils.BeeType.get(row['result_type'])
             joiner = f"{left.value}{right.value}"
             if left.is_mundane:
-                v = f"\"{left.value.title()} Bee\" [color=red];"
+                v = f"\"{left.value.title()} Bee\" [color=red,margin=0.05,shape=ellipse];"
                 if v not in output:
                     output.append(v)
             if right.is_mundane:
-                v = f"\"{right.value.title()} Bee\" [color=red];"
+                v = f"\"{right.value.title()} Bee\" [color=red,margin=0.05,shape=ellipse];"
                 if v not in output:
                     output.append(v)
             output.append((
-                f"{joiner} [label=\"\",height=0.001,width=0.001];"
+                f"{joiner} [label=\"\",height=0.001,width=0.001,color=black];"
                 f"\"{left.value.title()} Bee\" -> {joiner} [dir=none];"
                 f"\"{right.value.title()} Bee\" -> {joiner} [dir=none];"
                 f"{joiner} -> \"{result.value.title()} Bee\";"

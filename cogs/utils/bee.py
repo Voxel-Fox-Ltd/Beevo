@@ -614,7 +614,7 @@ class Bee(object):
 
         # See if we want to group by type
         if group_by_type:
-            bee_types = sorted(list(set([o.type.value for o in drones.values()])))
+            bee_types = sorted(list(set([o.type.value for o in bees.values()])))
             if len(bee_types) > 1:
                 components = vbu.MessageComponents(
                     vbu.ActionRow(

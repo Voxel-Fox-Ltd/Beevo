@@ -167,8 +167,8 @@ class Hive(object):
 
     @classmethod
     async def send_hive_dropdown(
-            cls, ctx: vbu.Context, send_method, current_message: discord.Message,
-            check=None) -> typing.Tuple[vbu.ComponentInteractionPayload, discord.Message, 'Hive']:
+            cls, ctx: vbu.Context, send_method, current_message: discord.Message, *, max_values: int = 1,
+            check=None) -> typing.Tuple[vbu.ComponentInteractionPayload, discord.Message, typing.List['Hive']]:
         """
         Send a dropdown to let a user pick one of their hives.
         """
@@ -189,7 +189,7 @@ class Hive(object):
             current_message = await send_method(content="You have no available hives :<", components=None) or current_message
             return (None, current_message, None,)
         if len(hives) == 1:
-            return (None, current_message, list(hives.values())[0],)
+            return (None, current_message, [list(hives.values())[0]],)
 
         # Make components
         components = vbu.MessageComponents(
@@ -199,7 +199,8 @@ class Hive(object):
                     vbu.SelectOption(label=hive.name, value=hive.id)
                     for hive in hives.values()
                 ],
-                placeholder="Which hive would you like to choose?"
+                placeholder="Which hive would you like to choose?",
+                max_values=min(max_values, len(hives), 25),
             )),
             vbu.ActionRow(vbu.Button(
                 label="Cancel",
@@ -224,6 +225,6 @@ class Hive(object):
             return (payload, current_message, None,)
 
         # Return the bee
-        specified_bee = hives[payload.values[0]]
+        specified_bee = [hives[i] for i in payload.values]
         return (payload, current_message, specified_bee,)
 

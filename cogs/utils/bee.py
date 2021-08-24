@@ -181,6 +181,8 @@ def setup_bee_types():
     }
 
     # Bee values
+    for i in BeeType.get_mundane_bees():
+        BeeType.BEE_TYPE_VALUES[i] = 1
     for _ in range(5):
         for (left, right), result in BeeType.BEE_COMBINATIONS.items():
             if not isinstance(result, (list, tuple)):

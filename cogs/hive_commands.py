@@ -108,7 +108,6 @@ class HiveCommands(vbu.Cog):
                     pass
 
     @vbu.group(invoke_without_command=False)
-    # @commands.guild_only()
     async def hive(self, ctx: vbu.Context):
         """
         The parent command for bee hive handling.
@@ -132,7 +131,6 @@ class HiveCommands(vbu.Cog):
 
     @hive.command(name="list")
     @vbu.defer()
-    # @commands.guild_only()
     async def hive_list(self, ctx: vbu.Context, user: discord.Member = None):
         """
         Give you a list of all of your hives.
@@ -204,7 +202,6 @@ class HiveCommands(vbu.Cog):
 
     @hive.command(name="add")
     @vbu.defer()
-    # @commands.guild_only()
     async def hive_add(self, ctx: vbu.Context, bee: utils.Bee = None, hive: utils.Hive = None):
         """
         Add one of your queens to a hive.
@@ -220,7 +217,10 @@ class HiveCommands(vbu.Cog):
                 ctx=ctx, send_method=send_method, current_message=dropdown_message,
                 check=lambda bee: bee.nobility == utils.Nobility.QUEEN,
             )
-            send_method = payload.update_message
+            if bee is None:
+                return
+            if payload:
+                send_method = payload.update_message
 
         # See that they gave a hive
         if hive is None:
@@ -228,7 +228,10 @@ class HiveCommands(vbu.Cog):
                 ctx=ctx, send_method=send_method, current_message=dropdown_message,
                 check=lambda hive: not hive.bees,
             )
-            send_method = payload.update_message
+            if hive is None:
+                return
+            if payload:
+                send_method = payload.update_message
 
         # See if the bee is already in a hive
         if bee.hive_id:
@@ -259,7 +262,6 @@ class HiveCommands(vbu.Cog):
 
     @hive.command(name="clear")
     @vbu.defer()
-    # @commands.guild_only()
     async def hive_clear(self, ctx: vbu.Context, *, hive: utils.Hive = None):
         """
         Clear out the bees from one of your hives.
@@ -274,7 +276,10 @@ class HiveCommands(vbu.Cog):
                 ctx=ctx, send_method=send_method, current_message=None,
                 check=lambda hive: hive.bees,
             )
-            send_method = payload.update_message
+            if hive is None:
+                return
+            if payload:
+                send_method = payload.update_message
 
         # See if the hive has a bee
         if not hive.bees and not hive.inventory:

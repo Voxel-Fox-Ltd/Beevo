@@ -188,6 +188,8 @@ class Hive(object):
         if not hives:
             current_message = await send_method(content="You have no available hives :<", components=None) or current_message
             return (None, current_message, None,)
+        if len(hives) == 1:
+            return (None, current_message, list(hives.values())[0],)
 
         # Make components
         components = vbu.MessageComponents(
@@ -218,7 +220,7 @@ class Hive(object):
 
         # See if it were cancelled
         if payload.component.custom_id == "CANCEL":
-            current_message = await payload.update_message(content="Cancelled your hive selection :<", components=None) or current_message
+            await payload.update_message(content="Cancelled your hive selection :<", components=None)
             return (payload, current_message, None,)
 
         # Return the bee

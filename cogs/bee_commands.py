@@ -383,7 +383,7 @@ class BeeCommands(vbu.Cog):
             left = utils.BeeType.get(row['left_type'])
             right = utils.BeeType.get(row['right_type'])
             result = utils.BeeType.get(row['result_type'])
-            joiner = f"{left}{right}"
+            joiner = f"{left.value}{right.value}"
             if left.is_mundane:
                 v = f"\"{left.value.title()} Bee\" [color=red];"
                 if v not in output:

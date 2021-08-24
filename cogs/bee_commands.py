@@ -397,8 +397,9 @@ class BeeCommands(vbu.Cog):
         # Write the dot to a file
         dot_filename = f'./.{ctx.author.id}.gz'
         try:
+            output_string = "".join(output)
             with open(dot_filename, 'w', encoding='utf-8') as a:
-                a.write(f"digraph {{ {"".join(output)} }}")
+                a.write(f"digraph {{ {output_string} }}")
         except Exception as e:
             self.logger.error(f"Could not write to {dot_filename}")
             raise e

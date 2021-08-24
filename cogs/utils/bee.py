@@ -20,6 +20,7 @@ class Nobility(enum.Enum):
 class BeeType(object):
 
     BEE_COMBINATIONS = {}
+    BEE_TYPE_VALUES = {}
 
     def __init__(self, value: str):
         self.name = value.upper()
@@ -44,7 +45,7 @@ class BeeType(object):
     def get_all_bees(cls):
         items = dir(cls)
         for i in items:
-            if i == "BEE_COMBINATIONS":
+            if i == ["BEE_COMBINATIONS", "BEE_TYPE_VALUES"]:
                 continue
             if not i.isupper():
                 continue
@@ -159,6 +160,14 @@ def setup_bee_types():
         (BeeType.get("ICY"), BeeType.get("WINTRY"),): BeeType.get("GLACIAL"),
         (BeeType.get("MEADOWS"), BeeType.get("DILLIGENT"),): BeeType.get("RURAL"),
     }
+
+    # To account for dicts being unordered
+    for _ in range(5):
+        for (left, right), result in BeeType.BEE_COMBINATIONS.items():
+            if not isinstance(result, (list, tuple)):
+                result = [result]
+            for r in result:
+                BeeType.BEE_TYPE_VALUES[r] = max(BeeType.BEE_TYPE_VALUES.get(left, 1), BeeType.BEE_TYPE_VALUES.get(right, 1)) + 1
 
 
 setup_bee_types()

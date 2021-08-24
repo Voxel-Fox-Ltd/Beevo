@@ -106,28 +106,44 @@ class BeeCommands(vbu.Cog):
 
     @bee.command(name="rename")
     @vbu.defer()
-    async def bee_rename(self, ctx: vbu.Context, before: utils.Bee, *, after: str):
+    async def bee_rename(self, ctx: vbu.Context, before: utils.Bee = None, *, after: str = None):
         """
         Renames one of your bees.
         """
 
+        # Set up our send method
+        send_method = ctx.send
+
         # Check name length
-        if len(after) < 1:
-            return await ctx.send("That bee name is too short!", wait=False)
+        if after is None or len(after) < 1:
+            return await send_method(content="That bee name is too short!")
         if len(after) > 50:
-            return await ctx.send("That bee name is too long!", wait=False)
+            return await send_method(content="That bee name is too long!")
+
+        # See if they gave a bee
+        if not before:
+            payload, _, before = await utils.Bee.send_bee_dropdown(
+                ctx=ctx, send_method=send_method, current_message=None,
+                group_by_nobility=True, group_by_type=True,
+            )
+            if not before:
+                return
+            else:
+                before = before[0]
+            if payload:
+                send_method = payload.update_message
 
         # Save bee
         async with self.bot.database() as db:
             try:
                 await before.update(db, name=after)
             except asyncpg.UniqueViolationError:
-                return await ctx.send(
-                    f"You already have a bee with the name **{after}**! >:c",
+                return await send_method(
+                    content=f"You already have a bee with the name **{after}**! >:c",
                     allowed_mentions=discord.AllowedMentions.none(),
-                    wait=False,
+                    components=None,
                 )
-        return await ctx.send("Updated!", wait=False)
+        return await send_method(content="Updated!", components=None)
 
     @bee.command(name="release")
     @vbu.defer()
@@ -136,70 +152,18 @@ class BeeCommands(vbu.Cog):
         Releases one of your bees back into the wild.
         """
 
+        # Set up our send method
         send_method = ctx.send
 
         # If they didn't give a bee then give them a dropdown
         if bee is None:
-            async with self.bot.database() as db:
-                bees = await utils.Bee.fetch_bees_by_user(db, utils.get_bee_guild_id(ctx), ctx.author.id)
-            bees = [i for i in bees if i.hive_id is None]
-            queens = [i for i in bees if i.nobility == utils.Nobility.QUEEN]
-            princesses = [i for i in bees if i.nobility == utils.Nobility.PRINCESS]
-            drones = [i for i in bees if i.nobility == utils.Nobility.DRONE]
-
-            # Ask what kind of bee they want to get rid of
-            components = vbu.MessageComponents.add_buttons_with_rows(
-                vbu.Button("Queen", custom_id="RELEASE QUEEN", disabled=not bool(queens)),
-                vbu.Button("Princess", custom_id="RELEASE PRINCESS", disabled=not bool(princesses)),
-                vbu.Button("Drone", custom_id="RELEASE DRONES", disabled=not bool(drones)),
+            payload, _, bees = await utils.Bee.send_bee_dropdown(
+                ctx=ctx, send_method=send_method, current_message=None, group_by_nobility=True,
+                group_by_type=True, max_values=25,
             )
-            release_message = await ctx.send(
-                "What kind of bee would you like to release?",
-                components=components,
-            )
-            try:
-                payload = await self.bot.wait_for("component_interaction", check=vbu.component_check(ctx.author, release_message), timeout=60)
-            except asyncio.TimeoutError:
-                return await ctx.send(
-                    "I timed out waiting for you to say what kind of bee you want to release :<",
-                    wait=False,
-                )
-
-            # Give them a dropdown to click on
-            chosen_list = None
-            if payload.component.custom_id == "RELEASE QUEEN":
-                chosen_list = queens
-            elif payload.component.custom_id == "RELEASE PRINCESS":
-                chosen_list = princesses
-            elif payload.component.custom_id == "RELEASE DRONES":
-                chosen_list = drones
-            components = vbu.MessageComponents(vbu.ActionRow(vbu.SelectMenu(
-                custom_id="RELEASE SELECT",
-                options=[
-                    vbu.SelectOption(label=i.name, description=i.display_type, value=i.id)
-                    for index, i in enumerate(chosen_list) if index < 25
-                ],
-                placeholder="Select all the bees that you'd like to release.",
-                max_values=min(len(chosen_list), 25),
-            )))
-            await payload.update_message(
-                content="Which bee would you like to disown?",
-                components=components,
-            )
-
-            # Wait for them to select some bee IDs
-            try:
-                payload = await self.bot.wait_for("component_interaction", check=vbu.component_check(ctx.author, release_message), timeout=60)
-            except asyncio.TimeoutError:
-                return await payload.send(
-                    "I timed out waiting for you to say which bees you want to release :<",
-                    wait=False,
-                )
-
-            # Make the bee IDs that we want to remove
             await payload.defer_update()
             send_method = payload.message.edit
-            bee_ids = payload.values
+            bee_ids = [i.id for i in bees]
 
         # They specified a bee ID initially in the command
         else:
@@ -237,107 +201,35 @@ class BeeCommands(vbu.Cog):
         Breed one of your princesses and drones into a queen.
         """
 
-        # Work out what bees they have available to breed
-        async with self.bot.database() as db:
-            bees = await utils.Bee.fetch_bees_by_user(db, utils.get_bee_guild_id(ctx), ctx.author.id)
-        princesses = {}
-        drones = {}
-        for bee in bees:
-            if bee.hive_id:
-                continue
-            if bee.nobility == utils.Nobility.PRINCESS:
-                princesses[bee.id] = bee
-            elif bee.nobility == utils.Nobility.DRONE:
-                drones[bee.id] = bee
+        # Set the send method
+        send_method = ctx.send
 
-        # See if they have any available
-        if not princesses:
-            return await ctx.send("You don't have an available princess to breed :<", wait=False)
-        if not drones:
-            return await ctx.send("You don't have an available drone to breed :<", wait=False)
-
-        # Ask which princess they want to breed
-        components = vbu.MessageComponents(
-            vbu.ActionRow(vbu.SelectMenu(
-                custom_id="BREED BEE_SELECTION",
-                options=[
-                    vbu.SelectOption(label=bee.name, value=bee.id, description=bee.display_type.capitalize())
-                    for bee in princesses.values()
-                ],
-                placeholder="Which princess would you like to breed?"
-            )),
-            vbu.ActionRow(vbu.Button(
-                label="Cancel",
-                custom_id="BREED CANCEL",
-                style=vbu.ButtonStyle.DANGER,
-            )),
+        # Get the princess
+        payload, current_message, bees = await utils.Bee.send_bee_dropdown(
+            ctx=ctx, send_method=send_method, current_message=None, group_by_nobility=True,
+            group_by_type=True, max_values=25, check=lambda bee: bee.nobility == utils.Nobility.PRINCESS,
         )
-        dropdown_message = await ctx.send("Which of your princesses would you like to breed?", components=components)
-        try:
-            payload = await self.bot.wait_for("component_interaction", check=vbu.component_check(ctx.author, dropdown_message), timeout=60)
-        except asyncio.TimeoutError:
-            return await ctx.send("I timed out waiting for you to say which princess you want to breed :c", wait=False)
-        if payload.component.custom_id == "BREED CANCEL":
-            return await payload.update_message(content="Cancelled your bee breed :<", components=None)
-        princess = princesses[payload.values[0]]
+        send_method = payload.update_message
+        princess = bees[0]
 
-        # Ask which drone they want to breed
-        components = vbu.MessageComponents(
-            vbu.ActionRow(vbu.SelectMenu(
-                custom_id="BREED BEE_SELECTION",
-                options=[
-                    vbu.SelectOption(label=i.title(), value=i)
-                    for i in set([o.type.value for o in drones.values()])
-                ],
-                placeholder="What type of drone would you like to breed?"
-            )),
-            vbu.ActionRow(vbu.Button(
-                label="Cancel",
-                custom_id="BREED CANCEL",
-                style=vbu.ButtonStyle.DANGER,
-            )),
+        # Get the drone
+        payload, current_message, bees = await utils.Bee.send_bee_dropdown(
+            ctx=ctx, send_method=send_method, current_message=current_message, group_by_nobility=True,
+            group_by_type=True, max_values=25, check=lambda bee: bee.nobility == utils.Nobility.DRONE,
         )
-        await payload.update_message(content="What type of drone would you like to breed?", components=components)
-        try:
-            payload = await self.bot.wait_for("component_interaction", check=vbu.component_check(ctx.author, dropdown_message), timeout=60)
-        except asyncio.TimeoutError:
-            return await payload.send("I timed out waiting for you to say which drones you want to breed :c", wait=False)
-        if payload.component.custom_id == "BREED CANCEL":
-            return await payload.update_message(content="Cancelled your bee breed :<", components=None)
-        drone_type = payload.values[0]
+        send_method = payload.update_message
+        drone = bees[0]
 
-        # Ask which drone they want to breed
-        components = vbu.MessageComponents(
-            vbu.ActionRow(vbu.SelectMenu(
-                custom_id="BREED BEE_SELECTION",
-                options=[
-                    vbu.SelectOption(label=bee.name, value=bee.id, description=bee.display_type.capitalize())
-                    for bee in [o for o in drones.values() if o.type.value == drone_type][:25]
-                ],
-                placeholder="Which drone would you like to breed?"
-            )),
-            vbu.ActionRow(vbu.Button(
-                label="Cancel",
-                custom_id="BREED CANCEL",
-                style=vbu.ButtonStyle.DANGER,
-            )),
-        )
-        await payload.update_message(content="Which of your drones would you like to breed?", components=components)
-        try:
-            payload = await self.bot.wait_for("component_interaction", check=vbu.component_check(ctx.author, dropdown_message), timeout=60)
-        except asyncio.TimeoutError:
-            return await payload.send("I timed out waiting for you to say which drones you want to breed :c", wait=False)
-        if payload.component.custom_id == "BREED CANCEL":
-            return await payload.update_message(content="Cancelled your bee breed :<", components=None)
-        drone = drones[payload.values[0]]
+        # Defer the response
+        await payload.defer_update()
+        send_method = payload.message.edit
 
         # Breed the bee
-        await payload.defer_update()  # I don't think this is necessary but we'll keep it anyway
         async with self.bot.database() as db:
             try:
                 new_bee = await utils.Bee.breed(db, princess, drone)
             except ValueError:
-                return await payload.message.send("You can't breed anything other than a drone and a princess! :<", wait=False)
+                return await send_method(content="You can't breed anything other than a drone and a princess! :<", components=None)
 
             # Store our cross-bred types
             await db(
@@ -348,11 +240,10 @@ class BeeCommands(vbu.Cog):
             )
 
         # Tell the user about their new queen
-        return await payload.message.edit(
+        return await send_method(
             content=f"Your princess and drone got together and made a new {new_bee.type.value} queen, **{new_bee.display_name}**! :D",
             components=None,
             allowed_mentions=discord.AllowedMentions.none(),
-            wait=False,
         )
 
     @bee.command(name="map")

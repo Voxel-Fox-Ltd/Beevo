@@ -550,7 +550,7 @@ class Bee(object):
     @classmethod
     async def send_bee_dropdown(
             cls, ctx: vbu.Context, send_method, current_message: discord.Message, max_values: int = 1, *, group_by_nobility: bool = False,
-            group_by_type: bool = False, check=None) -> typing.Tuple[vbu.ComponentInteractionPayload, discord.Message, 'Bee']:
+            group_by_type: bool = False, check=None) -> typing.Tuple[vbu.ComponentInteractionPayload, discord.Message, typing.List['Bee']]:
         """
         Send a dropdown to let a user pick one of their bees.
         """
@@ -573,7 +573,7 @@ class Bee(object):
 
         # See if we want to group by royalty
         if group_by_nobility:
-            if len(set([i.nobility for i in bees.values()])):
+            if len(set([i.nobility for i in bees.values()])) > 1:
                 queens = {i.id: i for i in bees if i.nobility == Nobility.QUEEN}
                 princesses = {i.id: i for i in bees if i.nobility == Nobility.PRINCESS}
                 drones = {i.id: i for i in bees if i.nobility == Nobility.DRONE}
@@ -615,7 +615,7 @@ class Bee(object):
         # See if we want to group by type
         if group_by_type:
             bee_types = sorted(list(set([o.type.value for o in drones.values()])))
-            if len(bee_types) > 2:
+            if len(bee_types) > 1:
                 components = vbu.MessageComponents(
                     vbu.ActionRow(
                         vbu.SelectMenu(
@@ -682,5 +682,5 @@ class Bee(object):
             return (payload, current_message, None,)
 
         # Return the bee
-        specified_bee = bees[payload.values[0]]
-        return (payload, current_message, specified_bee,)
+        specified_bees = [bees[i] for i in payload.values]
+        return (payload, current_message, specified_bees,)

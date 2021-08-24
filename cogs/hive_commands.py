@@ -215,10 +215,12 @@ class HiveCommands(vbu.Cog):
         if bee is None:
             payload, dropdown_message, bee = await utils.Bee.send_bee_dropdown(
                 ctx=ctx, send_method=send_method, current_message=dropdown_message,
-                check=lambda bee: bee.nobility == utils.Nobility.QUEEN,
+                group_by_type=True, check=lambda bee: bee.nobility == utils.Nobility.QUEEN,
             )
-            if bee is None:
+            if not bee:
                 return
+            else:
+                bee = bee[0]
             if payload:
                 send_method = payload.update_message
 

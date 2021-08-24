@@ -408,7 +408,7 @@ class Bee(object):
                 hive_inventory
                 (hive_id, item_name, quantity)
             VALUES
-                $1, INITCAP($2 || ' Comb'), 1
+                ($1, INITCAP($2 || ' Comb'), 1)
             ON CONFLICT
                 (hive_id, item_name)
             DO UPDATE SET

@@ -230,7 +230,7 @@ class HiveCommands(vbu.Cog):
             )
 
         # See if the hive already has a bee
-        if hive.bees:
+        if not [i for i in hive.bees if i.nobility == utils.Nobility.QUEEN]:
             return await send_method(
                 content=f"There's already a bee in **{hive.name}**!",
                 components=None,

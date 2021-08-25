@@ -40,7 +40,9 @@ class BeeCommands(vbu.Cog):
                 f"Created your new bees: a {drone.display_type}, **{drone.display_name}**; "
                 f"and a {princess.display_type}, **{princess.display_name}**!"
             ),
-            components=vbu.MessageComponents(vbu.ActionRow(vbu.Button("Breed your bees", custom_id="RUNCOMMAND bee breed"))),
+            components=vbu.MessageComponents(vbu.ActionRow(
+                vbu.Button("Breed your bees", custom_id="RUNCOMMAND bee breed", style=vbu.ButtonStyle.SECONDARY),
+            )),
         )
 
     @bee.command(name="analyze", aliases=["analyse"])
@@ -288,7 +290,9 @@ class BeeCommands(vbu.Cog):
                 f"Your {princess.type.value} princess and {drone.type.value} drone got "
                 f"together and made a new {new_bee.type.value} queen, **{new_bee.display_name}**! :D"
             ),
-            components=vbu.MessageComponents(vbu.ActionRow(vbu.Button("Add your bees to a hive", custom_id="RUNCOMMAND hive add"))),
+            components=vbu.MessageComponents(vbu.ActionRow(
+                vbu.Button("Add your bees to a hive", custom_id="RUNCOMMAND hive add", style=vbu.ButtonStyle.SECONDARY),
+            )),
             allowed_mentions=discord.AllowedMentions.none(),
         )
 

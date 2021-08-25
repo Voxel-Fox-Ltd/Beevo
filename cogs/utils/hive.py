@@ -113,6 +113,19 @@ class Hive(object):
         return hive
 
     @classmethod
+    async def create_first_hive(cls, db, guild_id: int, user_id: int):
+        """
+        Generate the first hive for a given user.
+        """
+
+        rows = await db(
+            """INSERT INTO hives (id, index, guild_id, owner_id) VALUES
+            (GEN_RANDOM_UUID(), 0, $1, $2) RETURNING *""",
+            guild_id, user_id,
+        )
+        return cls(**rows[0])
+
+    @classmethod
     async def fetch_hives_by_user(
             cls, db, guild_id: int, user_id: int, *, fetch_bees: bool = True,
             fetch_inventory: bool = True) -> typing.List['Hive']:
@@ -128,13 +141,17 @@ class Hive(object):
         )
         hives = {}
         bee_ids = []
-        for r in hive_rows:
-            r = dict(r)
-            bee_id = r.pop('bee_id', None)
-            hive = cls(**r)
-            if bee_id:
-                bee_ids.append(bee_id)
-            hives[hive.id] = hive
+        if hive_rows:
+            for r in hive_rows:
+                r = dict(r)
+                bee_id = r.pop('bee_id', None)
+                hive = cls(**r)
+                if bee_id:
+                    bee_ids.append(bee_id)
+                hives[hive.id] = hive
+        else:
+            new_hive = await cls.create_first_hive(db, guild_id, user_id)
+            hives[new_hive.id] = new_hive
 
         # Get bees
         if fetch_bees:

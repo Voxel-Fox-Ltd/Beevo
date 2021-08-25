@@ -116,19 +116,6 @@ class HiveCommands(vbu.Cog):
         if ctx.invoked_subcommand is None:
             return await ctx.send_help(ctx.command)
 
-    async def create_first_hive(self, guild_id: int, user_id: int):
-        """
-        Generate the first hive for a given user.
-        """
-
-        async with self.bot.database() as db:
-            rows = await db(
-                """INSERT INTO hives (id, index, guild_id, owner_id) VALUES
-                (GEN_RANDOM_UUID(), 0, $1, $2) RETURNING *""",
-                guild_id, user_id,
-            )
-        return utils.Hive(**rows[0])
-
     @hive.command(name="list")
     @vbu.defer()
     async def hive_list(self, ctx: vbu.Context, user: discord.Member = None):
@@ -140,9 +127,6 @@ class HiveCommands(vbu.Cog):
         user = user or ctx.author
         async with self.bot.database() as db:
             hives = await utils.Hive.fetch_hives_by_user(db, utils.get_bee_guild_id(ctx), user.id)
-        if not hives:
-            await self.create_first_hive(utils.get_bee_guild_id(ctx), user.id)
-            return await ctx.reinvoke()
 
         # Make our content
         content = utils.format(

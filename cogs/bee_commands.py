@@ -161,6 +161,8 @@ class BeeCommands(vbu.Cog):
                 ctx=ctx, send_method=send_method, current_message=None, group_by_nobility=True,
                 group_by_type=True, max_values=25,
             )
+            if not bees:
+                return
             await payload.defer_update()
             send_method = payload.message.edit
             bee_ids = [i.id for i in bees]

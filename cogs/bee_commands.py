@@ -267,16 +267,19 @@ class BeeCommands(vbu.Cog):
             current_user_bees = await utils.Bee.fetch_bees_by_user(db, utils.get_bee_guild_id(ctx), ctx.author.id)
 
         # Generate our starting DOT lines
+        mundane_count = 0
         mundane_output = []
         mundane_output.append((
             "style=rounded;"
             "node[color=red,margin=0.05,shape=ellipse];"
         ))
+        added_joiners = set()
         output = []
         output.append((
             # "rankdir=LR;"
             "overlap=scale;"
             "compound=true;"
+            "splines=false;"
             "node[color=transparent,margin=0.03,shape=box,height=0.001,width=0.001];"
         ))
 
@@ -320,35 +323,44 @@ class BeeCommands(vbu.Cog):
                 if v not in mundane_output:
                     mundane_output.append(v)
             if [left.is_mundane, right.is_mundane].count(True) == 2:
+                if "mundanemundane" in added_joiners:
+                    continue
                 v = (
                     f"mundanemundane[label=\"\",height=0.001,width=0.001,color=black,shape=point];"
-                    f"mundane->mundanemundane[dir=none,ltail=cluster_0];"
-                    f"mundane->mundanemundane[dir=none,ltail=cluster_0];"
+                    f"mundane{{}}->mundanemundane[dir=none,ltail=cluster_0];"
+                    f"mundane{{}}->mundanemundane[dir=none,ltail=cluster_0];"
                     f"mundanemundane->\"{result.value.title()} Bee\";"
                 )
-                if v not in output:
-                    output.append(v)
+                output.append(v.format(mundane_count + 1, mundane_count + 2))
+                added_joiners.add("mundanemundane")
+                mundane_count += 2
             elif [left.is_mundane, right.is_mundane].count(True) == 1 and (utils.BeeType.get("CULTIVATED") in [left, right] or utils.BeeType.get("COMMON") in [left, right]):
                 if left.is_mundane:
                     joiner = f"mundane{right.value.lower()}"
+                    if joiner in added_joiners:
+                        continue
                     v = (
                         f"{joiner}[label=\"\",height=0.001,width=0.001,color=black,shape=point];"
-                        f"mundane->{joiner}[dir=none,ltail=cluster_0];"
+                        f"mundane{{}}->{joiner}[dir=none,ltail=cluster_0];"
                         f"\"{right.value.title()} Bee\"->{joiner}[dir=none];"
                         f"{joiner}->\"{result.value.title()} Bee\";"
                     )
-                    if v not in output:
-                        output.append(v)
+                    output.append(v.format(mundane_count + 1))
+                    added_joiners.add(joiner)
+                    mundane_count += 1
                 else:
                     joiner = f"mundane{left.value.lower()}"
+                    if joiner in added_joiners:
+                        continue
                     v = (
                         f"{joiner}[label=\"\",height=0.001,width=0.001,color=black,shape=point];"
                         f"\"{left.value.title()} Bee\"->{joiner}[dir=none];"
                         f"mundane->{joiner}[dir=none,ltail=cluster_0];"
                         f"{joiner}->\"{result.value.title()} Bee\";"
                     )
-                    if v not in output:
-                        output.append(v)
+                    output.append(v.format(mundane_count + 1))
+                    added_joiners.add(joiner)
+                    mundane_count += 1
             else:
                 output.append((
                     f"{joiner}[label=\"\",height=0.001,width=0.001,color=black,shape=point];"
@@ -357,10 +369,13 @@ class BeeCommands(vbu.Cog):
                     f"{joiner}->\"{result.value.title()} Bee\";"
                 ))
 
-            # Make our subgraph DOT
-
         # See if we have an output
-        mundane_output.insert(math.ceil(len(mundane_output) / 2), "mundane[shape=point,margin=0,height=0.001,width=0.001];")
+        try:
+            sections = len(mundane_output) - 1 // mundane_count
+            for i in range(mundane_count):
+                mundane_output.insert((sections * i // 2), f"mundane{i + 1}[shape=point,margin=0,height=0.001,width=0.001];")
+        except Exception:
+            pass
         output.insert(1, f"subgraph cluster_0{{{''.join(mundane_output)}}};")
         if len(output) <= 2:
             return await ctx.send("You've not cross-bred any bees yet :<")

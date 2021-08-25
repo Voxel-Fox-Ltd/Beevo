@@ -86,8 +86,9 @@ class HiveCommands(vbu.Cog):
             )
 
             # And handle those heckos
-            dead_queens = [utils.Bee(**i) for i in dead_queen_rows]
-            queen_death_tasks = [i.die(db) for i in dead_queens]
+            dead_queen_list = [utils.Bee(**i) for i in dead_queen_rows]
+            dead_queens = {i.hive_id: i for i in dead_queen_list}
+            queen_death_tasks = [i.die(db) for i in dead_queens.values()]
             new_bees = await asyncio.gather(*queen_death_tasks)
 
             # Get the owner IDs for every bee that's died
@@ -97,13 +98,18 @@ class HiveCommands(vbu.Cog):
                     results.extend(i)
                 except Exception as e:
                     self.logger.error(e, exc_info=e)
-            all_owner_ids = {i.owner_id: i.hive_id for i in results}
+            all_owner_ids = {i.owner_id: i.hive for i in results}
 
             # DM authors who want to know when the bees die
-            for owner_id, hive_id in all_owner_ids.items():
+            for owner_id, hive in all_owner_ids.items():
                 try:
                     owner = self.bot.get_user(owner_id) or await self.bot.fetch_user(owner_id)
-                    await owner.send(f"Your bee in hive **{hive_id}** has perished :<")
+                    await owner.send(
+                        f"**{dead_queens[hive_id].display_name}** in hive **{hive.name}** has perished :<",
+                        components=vbu.MessageComponents(vbu.ActionRow(
+                            vbu.Button("See your hives", custom_id="RUNCOMMAND hive list", style=vbu.ButtonStyle.SECONDARY),
+                        )),
+                    )
                 except discord.HTTPException:
                     pass
 

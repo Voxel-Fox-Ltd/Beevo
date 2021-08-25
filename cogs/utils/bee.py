@@ -391,7 +391,7 @@ class Bee(object):
 
         # Generate our new bees
         def make_new_bee(nobility):
-            return self.__class__(
+            v = self.__class__(
                 id=None,
                 parent_ids=[self.id],
                 hive_id=self.hive_id,
@@ -403,6 +403,8 @@ class Bee(object):
                 lived_lifetime=0,
                 **self.get_new_stats(self),
             )
+            v.hive = self
+            return v
         new_bees = [make_new_bee(Nobility.PRINCESS)]
         new_bees.extend((make_new_bee(Nobility.DRONE) for _ in range(self.fertility)))
 

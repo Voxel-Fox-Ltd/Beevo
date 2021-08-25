@@ -178,6 +178,58 @@ class Hive(object):
         # And return the hives
         return hives.values()
 
+    @classmethod
+    async def fetch_hive_by_id(
+            cls, db, hive_id: str, *, fetch_bees: bool = True,
+            fetch_inventory: bool = True) -> typing.Optional['Hive']:
+        """
+        Get all the hives for a given user.
+        """
+
+        # Get hives
+        hive_rows = await db(
+            """SELECT h.*, b.id bee_id FROM hives h LEFT JOIN bees b ON h.id = b.hive_id
+            WHERE h.id = $1""",
+            hive_id,
+        )
+        hives = {}
+        bee_ids = []
+        if hive_rows:
+            for r in hive_rows:
+                r = dict(r)
+                bee_id = r.pop('bee_id', None)
+                hive = cls(**r)
+                if bee_id:
+                    bee_ids.append(bee_id)
+                hives[hive.id] = hive
+        else:
+            return None
+
+        # Get bees
+        if fetch_bees:
+            bee_rows = await db(
+                """SELECT * FROM bees WHERE id=ANY($1::TEXT[])""",
+                bee_ids,
+            )
+            for r in bee_rows:
+                bee = Bee(**r)
+                hive = hives[bee.hive_id]
+                hive.bees.add(bee)
+                bee.hive = hive
+
+        # Get inventory
+        if fetch_inventory:
+            inventory_rows = await db(
+                """SELECT * FROM hive_inventory WHERE hive_id=ANY($1::TEXT[])""",
+                hives.keys(),
+            )
+            for r in inventory_rows:
+                hive = hives[r['hive_id']]
+                hive.inventory[r['item_name']] += r['quantity']
+
+        # And return the hives
+        return list(hives.values())[0]
+
     def get_hive_grid(self, width: int = 9, height: int = 9):
         r = random.Random(uuid.UUID(self.id).int % 100_000_000)
         return HiveCellEmoji.get_grid(width, height, random=r)

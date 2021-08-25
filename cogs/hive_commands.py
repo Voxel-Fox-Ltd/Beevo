@@ -98,10 +98,11 @@ class HiveCommands(vbu.Cog):
                     results.extend(i)
                 except Exception as e:
                     self.logger.error(e, exc_info=e)
-            all_owner_ids = {i.hive: i.owner_id for i in results}
+            all_owner_ids = {i.hive_id: i.owner_id for i in results}
 
             # DM authors who want to know when the bees die
-            for hive, owner_id in all_owner_ids.items():
+            for hive_id, owner_id in all_owner_ids.items():
+                hive = await utils.Hive.fetch_hive_by_id(db, hive_id)
                 try:
                     owner = self.bot.get_user(owner_id) or await self.bot.fetch_user(owner_id)
                     try:

@@ -11,7 +11,7 @@ class ButtonCommandRedirect(vbu.Cog):
         command = self.bot.get_command(command_name)
         if command:
             await payload.defer()
-            await command.invoke(payload)
+            await payload.invoke(command)
 
 
 def setup(bot: vbu.Bot):

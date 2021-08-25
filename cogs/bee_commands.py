@@ -484,18 +484,18 @@ class BeeCommands(vbu.Cog):
 
         # Grab all the bees that have ever been in that bee's family
         bee_parent_ids = bee.parent_ids
-        bees = []
+        bees = {bee.id: bee}
         async with self.bot.database() as db:
             while bee_parent_ids:
                 rows = await db(
                     """SELECT * FROM bees WHERE guild_id = $1 AND id = ANY($2::TEXT[])""",
                     utils.get_bee_guild_id(ctx), bee_parent_ids,
                 )
-                new_bees = [utils.Bee(**i) for i in rows]
+                new_bees = {i['id']: utils.Bee(**i) for i in rows}
                 bee_parent_ids = []
-                for b in new_bees:
+                for b in new_bees.values():
                     bee_parent_ids.extend(b.parent_ids)
-                bees.extend(new_bees)
+                bees.update(new_bees)
 
         # Generate our starting DOT lines
         output = []
@@ -507,12 +507,13 @@ class BeeCommands(vbu.Cog):
         ))
 
         # And add our bee friends
-        for bee in bees:
+        for bee in bees.values():
             bee_name = bee.display_name.replace('"', '\\"')
             output.append((
                 f"BEE_{bee.id.replace('-', '_')}[label=\"{bee_name} ({bee.display_type})\"]"
             ))
-            for parent in bee.parent_ids:
+            for parent_id in bee.parent_ids:
+                parent = bees[parent_id]
                 bee_name = parent.display_name.replace('"', '\\"')
                 output.append((
                     f"BEE_{parent.id.replace('-', '_')}[label=\"{bee_name} ({parent.display_type})\"]"

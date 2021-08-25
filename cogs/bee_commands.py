@@ -502,7 +502,7 @@ class BeeCommands(vbu.Cog):
         output.append((
             "overlap=scale;"
             "compound=true;"
-            "splines=false;"
+            "splines=true;"
             "node[color=transparent,margin=0.03,shape=box,height=0.001,width=0.001];"
         ))
 
@@ -510,13 +510,13 @@ class BeeCommands(vbu.Cog):
         for bee in bees.values():
             bee_name = bee.display_name.replace('"', '\\"')
             output.append((
-                f"BEE_{bee.id.replace('-', '_')}[label=\"{bee_name}\\n({bee.display_type})\"]"
+                f"BEE_{bee.id.replace('-', '_')}[label=\"{bee_name}\\n({bee.display_type})\"];"
             ))
             for parent_id in bee.parent_ids:
                 parent = bees[parent_id]
                 bee_name = parent.display_name.replace('"', '\\"')
                 output.append((
-                    f"BEE_{parent.id.replace('-', '_')}[label=\"{bee_name} ({parent.display_type})\"]"
+                    f"BEE_{parent.id.replace('-', '_')}[label=\"{bee_name} ({parent.display_type})\"];"
                     f"BEE_{parent.id.replace('-', '_')}->BEE_{bee.id.replace('-', '_')};"
                 ))
 

@@ -11,6 +11,7 @@ class ButtonCommandRedirect(vbu.Cog):
         command = self.bot.get_command(command_name)
         if command:
             await payload.defer()
+            payload.author = payload.user
             if command.cog:
                 await command.callback(command.cog, payload)
             else:

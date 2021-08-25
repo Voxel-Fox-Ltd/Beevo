@@ -299,7 +299,7 @@ class BeeCommands(vbu.Cog):
         )
 
     @bee.command(name="map")
-    @vbu.defer(ephemeral=True)
+    @vbu.defer()
     async def bee_map(self, ctx: vbu.Context):
         """
         Map out the bee combinations that you've discovered.
@@ -425,7 +425,7 @@ class BeeCommands(vbu.Cog):
             pass
         output.insert(1, f"subgraph cluster_0{{{''.join(mundane_output)}}};")
         if len(output) <= 2:
-            return await ctx.send("You've not cross-bred any bees yet :<", ephemeral=True)
+            return await ctx.send("You've not cross-bred any bees yet :<")
 
         # Write the dot to a file
         dot_filename = f'./.{ctx.author.id}.dot'
@@ -456,8 +456,8 @@ class BeeCommands(vbu.Cog):
         try:
             file = discord.File(image_filename)
         except FileNotFoundError:
-            return await ctx.send("I was unable to send your bee map image - please try again later.", ephemeral=True)
-        await ctx.send(file=file, ephemeral=True)
+            return await ctx.send("I was unable to send your bee map image - please try again later.")
+        await ctx.send(file=file)
         await asyncio.sleep(1)
 
         # Delete the files

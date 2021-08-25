@@ -4,6 +4,7 @@ import random
 import math
 import asyncio
 
+import asyncpg
 import discord
 from discord.ext import commands
 import voxelbotutils as vbu
@@ -465,11 +466,17 @@ class Bee(object):
         """
 
         bee_type = bee_type or random.choice(list(BeeType.get_mundane_bees()))
-        rows = await db(
-            """INSERT INTO bees (id, guild_id, owner_id, type, nobility, name) VALUES
-            (GEN_RANDOM_UUID()::TEXT, $1, $2, $3, $4, $5) RETURNING *""",
-            guild_id, user_id, bee_type.value, nobility.value, get_random_name(),
-        )
+        while True:
+            try:
+                rows = await db(
+                    """INSERT INTO bees (id, guild_id, owner_id, type, nobility, name) VALUES
+                    (GEN_RANDOM_UUID()::TEXT, $1, $2, $3, $4, $5) RETURNING *""",
+                    guild_id, user_id, bee_type.value, nobility.value, get_random_name(),
+                )
+            except asyncpg.UniqueViolationError:
+                pass
+            else:
+                break
         return cls(**rows[0])
 
     async def update(self, db, **kwargs):
@@ -501,6 +508,7 @@ class Bee(object):
         if self.id is None:
             new_bee = await self.create_bee(db, self.guild_id, self.owner_id)
             self.id = new_bee.id
+            self.name = self.name or new_bee.name
         if self.name is None:
             self.name = get_random_name()
 

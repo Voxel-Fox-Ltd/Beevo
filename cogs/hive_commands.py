@@ -354,7 +354,11 @@ class HiveCommands(vbu.Cog):
         item_names = [f"**{i}**" for i in item_names]
         return await send_method(
             content=utils.format("Moved {0:humanjoin} out of **{1.name}**~", item_names, hive),
-            components=None,
+            components=vbu.MessageComponents(vbu.ActionRow(
+                vbu.Button("See your bees", custom_id="RUNCOMMAND bee list", style=vbu.ButtonStyle.SECONDARY),
+                vbu.Button("See your hives", custom_id="RUNCOMMAND hive list", style=vbu.ButtonStyle.SECONDARY),
+                vbu.Button("See your inventory", custom_id="RUNCOMMAND inventory", style=vbu.ButtonStyle.SECONDARY),
+            )),
         )
 
 

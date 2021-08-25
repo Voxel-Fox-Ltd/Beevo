@@ -375,8 +375,8 @@ class Bee(object):
             bee_type=BeeType.combine(princess.type, drone.type),
             nobility=Nobility.QUEEN,
         )
-        await new_bee.update(db, **new_stats, parent_ids=[princess.id, drone.id])
         await princess.update(db, owner_id=None)
+        await new_bee.update(db, **new_stats, name=princess.name, parent_ids=[princess.id, drone.id])
         await drone.update(db, owner_id=None)
         return new_bee
 
@@ -406,10 +406,6 @@ class Bee(object):
         new_bees = [make_new_bee(Nobility.PRINCESS)]
         new_bees.extend((make_new_bee(Nobility.DRONE) for _ in range(self.fertility)))
 
-        # Save the new bees to database
-        for bee in new_bees:
-            await bee.update(db)
-
         # Add a comb to the hive
         await db(
             """
@@ -430,6 +426,11 @@ class Bee(object):
         self.owner_id = None
         self.hive_id = None
         await self.update(db)
+
+        # Save the new bees to database
+        new_bees[0].name = self.name
+        for bee in new_bees:
+            await bee.update(db)
 
         # And return the new ones
         return new_bees

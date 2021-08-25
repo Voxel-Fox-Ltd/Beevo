@@ -403,7 +403,7 @@ class Bee(object):
                 lived_lifetime=0,
                 **self.get_new_stats(self),
             )
-            v.hive = self
+            v.hive = self.hive
             return v
         new_bees = [make_new_bee(Nobility.PRINCESS)]
         new_bees.extend((make_new_bee(Nobility.DRONE) for _ in range(self.fertility)))

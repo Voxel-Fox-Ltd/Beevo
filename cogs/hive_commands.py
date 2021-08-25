@@ -105,9 +105,9 @@ class HiveCommands(vbu.Cog):
                 try:
                     owner = self.bot.get_user(owner_id) or await self.bot.fetch_user(owner_id)
                     try:
-                        text = f"**{dead_queens[hive.id].display_name}** in hive **{hive.name}** has perished :<",
+                        text = f"**{dead_queens[hive.id].display_name}** in hive **{hive.name}** has perished :<"
                     except KeyError:
-                        text = f"Your queen in hive **{hive.name}** has perished :<",
+                        text = f"Your queen in hive **{hive.name}** has perished :<"
                     await owner.send(
                         content=text,
                         components=vbu.MessageComponents(vbu.ActionRow(

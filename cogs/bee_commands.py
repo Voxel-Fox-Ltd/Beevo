@@ -510,7 +510,7 @@ class BeeCommands(vbu.Cog):
         for bee in bees.values():
             bee_name = bee.display_name.replace('"', '\\"')
             output.append((
-                f"BEE_{bee.id.replace('-', '_')}[label=\"{bee_name} ({bee.display_type})\"]"
+                f"BEE_{bee.id.replace('-', '_')}[label=\"{bee_name}\\n({bee.display_type})\"]"
             ))
             for parent_id in bee.parent_ids:
                 parent = bees[parent_id]

@@ -580,9 +580,9 @@ class Bee(object):
         # See if we want to group by royalty
         if group_by_nobility:
             if len(set([i.nobility for i in bees.values()])) > 1:
-                queens = {i.id: i for i in bees if i.nobility == Nobility.QUEEN}
-                princesses = {i.id: i for i in bees if i.nobility == Nobility.PRINCESS}
-                drones = {i.id: i for i in bees if i.nobility == Nobility.DRONE}
+                queens = {i: i for i, o in bees.items() if o.nobility == Nobility.QUEEN}
+                princesses = {i: i for i, o in bees.items() if o.nobility == Nobility.PRINCESS}
+                drones = {i: i for i, o in bees.items() if o.nobility == Nobility.DRONE}
 
                 # Ask what kind of bee they want to get rid of
                 components = vbu.MessageComponents(

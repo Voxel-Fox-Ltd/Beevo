@@ -209,7 +209,7 @@ class BeeCommands(vbu.Cog):
         # Get the princess
         payload, current_message, bees = await utils.Bee.send_bee_dropdown(
             ctx=ctx, send_method=send_method, current_message=None, group_by_nobility=True,
-            group_by_type=True, max_values=25, check=lambda bee: bee.nobility == utils.Nobility.PRINCESS,
+            group_by_type=True, check=lambda bee: bee.nobility == utils.Nobility.PRINCESS,
             content="Which princess would you like to breed?",
         )
         send_method = payload.update_message
@@ -218,7 +218,7 @@ class BeeCommands(vbu.Cog):
         # Get the drone
         payload, current_message, bees = await utils.Bee.send_bee_dropdown(
             ctx=ctx, send_method=send_method, current_message=current_message, group_by_nobility=True,
-            group_by_type=True, max_values=25, check=lambda bee: bee.nobility == utils.Nobility.DRONE,
+            group_by_type=True, check=lambda bee: bee.nobility == utils.Nobility.DRONE,
             content="Which drone would you like to breed?",
         )
         send_method = payload.update_message

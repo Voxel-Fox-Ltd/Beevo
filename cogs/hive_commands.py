@@ -268,12 +268,13 @@ class HiveCommands(vbu.Cog):
 
         # Set up the send method
         send_method = ctx.send
+        current_message = None
 
         # Make sure they give a hive
         if hive is None:
-            payload, message, hive = await utils.Hive.send_hive_dropdown(
+            payload, current_message, hive = await utils.Hive.send_hive_dropdown(
                 ctx=ctx, send_method=send_method, current_message=None,
-                check=lambda hive: hive.bees,
+                check=lambda hive: hive.bees or hive.inventory,
             )
             if not hive:
                 return
@@ -288,6 +289,22 @@ class HiveCommands(vbu.Cog):
                 content=f"There's nothing in **{hive.name}** :<",
                 components=None,
             )
+
+        # See if the hive has a queen in it
+        hive_queens = [i for i in hive.bees if i.nobility == utils.Nobility.QUEEN]
+        if hive_queens:
+            current_message = await send_method(
+                content=f"Are you sure? There's an active queen in **{hive.name}** :<",
+                components=vbu.MessageComponents.boolean_buttons(),
+            ) or current_message
+            try:
+                payload = await self.bot.wait_for("component_interaction", check=vbu.component_check(ctx.author, current_message), timeout=60)
+            except asyncio.TimeoutError:
+                return await current_message.edit(content="Timed out waiting for you to confirm hive clear :<", components=None)
+            if payload.component.custom_id == "NO":
+                return await payload.update_message(content="Alright, cancelling you hive clear!", components=None)
+            current_message = payload.message
+            send_method = payload.update_message
 
         # Alright move the bee
         bee_count = len(hive.bees)

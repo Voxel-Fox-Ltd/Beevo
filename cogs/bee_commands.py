@@ -263,6 +263,7 @@ class BeeCommands(vbu.Cog):
                 """SELECT * FROM user_bee_combinations WHERE guild_id = $1 AND user_id = $2""",
                 utils.get_bee_guild_id(ctx), ctx.author.id,
             )
+            current_user_bees = await utils.Bee.fetch_bees_by_user(db, utils.get_bee_guild_id(ctx), ctx.author.id)
 
         # Generate our starting DOT lines
         output = []
@@ -272,6 +273,14 @@ class BeeCommands(vbu.Cog):
             "overlap=scale;"
             "node[color=transparent,margin=0.03,shape=box,height=0.001,width=0.001];"
         ))
+
+        # Make some DOT for each of the user's current bees
+        for bee in current_user_bees:
+            left = bee.type
+            if left.is_mundane:
+                v = f"\"{left.value.title()} Bee\"[color=red,margin=0.05,shape=ellipse];"
+                if v not in output:
+                    output.append(v)
 
         # Make some DOT for each of our combinations
         for row in bee_rows:
@@ -311,7 +320,7 @@ class BeeCommands(vbu.Cog):
             ))
 
         # See if we have an output
-        if not output:
+        if len(output) <= 1:
             return await ctx.send("You've not cross-bred any bees yet :<")
 
         # Write the dot to a file

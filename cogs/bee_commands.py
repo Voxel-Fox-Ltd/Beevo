@@ -145,6 +145,7 @@ class BeeCommands(vbu.Cog):
             vbu.Button("Breed some of your bees", custom_id="RUNCOMMAND bee breed", style=vbu.ButtonStyle.SECONDARY),
             vbu.Button("Add one of your queens to a hive", custom_id="RUNCOMMAND hive add", style=vbu.ButtonStyle.SECONDARY),
             vbu.Button("Release some of your bees", custom_id="RUNCOMMAND bee release", style=vbu.ButtonStyle.SECONDARY),
+            vbu.Button("See your discovered cross-breeds", custom_id="RUNCOMMAND bee map", style=vbu.ButtonStyle.SECONDARY),
         ))
         return await ctx.send(
             embed=embed,

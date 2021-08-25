@@ -267,7 +267,7 @@ class HiveCommands(vbu.Cog):
             content=f"**{bee.name}** buzzes on happily and flys into **{hive.name}* :>",
             allowed_mentions=discord.AllowedMentions.none(),
             components=vbu.MessageComponents(vbu.ActionRow(
-                vbu.Button("View your hive", custom_id="RUNCOMMAND hive list", style=vbu.ButtonStyle.SECONDARY)
+                vbu.Button("View your hive", custom_id="RUNCOMMAND hive list", style=vbu.ButtonStyle.SECONDARY),
             )),
         )
 

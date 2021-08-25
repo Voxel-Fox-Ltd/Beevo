@@ -139,9 +139,16 @@ class BeeCommands(vbu.Cog):
                 "\n".join([f"\N{BULLET} {i.display_name}" for i in bees]) or "None :<",
                 inline=True
             )
+
+        # Make the components to send
+        components = vbu.MessageComponents(vbu.ActionRow(
+            vbu.Button("Breed some of your bees", custom_id="RUNCOMMAND bee breed", style=vbu.ButtonStyle.SECONDARY),
+            vbu.Button("Add one of your queens to a hive", custom_id="RUNCOMMAND hive add", style=vbu.ButtonStyle.SECONDARY),
+        ))
         return await ctx.send(
             embed=embed,
             allowed_mentions=discord.AllowedMentions.none(),
+            components=components,
             wait=False,
         )
 
@@ -293,7 +300,7 @@ class BeeCommands(vbu.Cog):
                 f"together and made a new {new_bee.type.value} queen, **{new_bee.display_name}**! :D"
             ),
             components=vbu.MessageComponents(vbu.ActionRow(
-                vbu.Button("Add your bees to a hive", custom_id="RUNCOMMAND hive add", style=vbu.ButtonStyle.SECONDARY),
+                vbu.Button("Add your queen to a hive", custom_id="RUNCOMMAND hive add", style=vbu.ButtonStyle.SECONDARY),
             )),
             allowed_mentions=discord.AllowedMentions.none(),
         )

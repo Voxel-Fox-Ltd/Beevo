@@ -285,7 +285,10 @@ class BeeCommands(vbu.Cog):
 
         # Tell the user about their new queen
         return await send_method(
-            content=f"Your princess and drone got together and made a new {new_bee.type.value} queen, **{new_bee.display_name}**! :D",
+            content=(
+                f"Your {princess.type.value} princess and {drone.type.value} drone got "
+                f"together and made a new {new_bee.type.value} queen, **{new_bee.display_name}**! :D"
+            ),
             components=None,
             allowed_mentions=discord.AllowedMentions.none(),
         )

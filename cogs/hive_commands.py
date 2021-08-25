@@ -105,7 +105,7 @@ class HiveCommands(vbu.Cog):
                 try:
                     owner = self.bot.get_user(owner_id) or await self.bot.fetch_user(owner_id)
                     await owner.send(
-                        f"**{dead_queens[hive_id].display_name}** in hive **{hive.name}** has perished :<",
+                        f"**{dead_queens[hive.id].display_name}** in hive **{hive.name}** has perished :<",
                         components=vbu.MessageComponents(vbu.ActionRow(
                             vbu.Button("See your hives", custom_id="RUNCOMMAND hive list", style=vbu.ButtonStyle.SECONDARY),
                         )),

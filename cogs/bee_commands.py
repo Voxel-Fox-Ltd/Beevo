@@ -327,8 +327,8 @@ class BeeCommands(vbu.Cog):
         # Convert to an image
         image_filename = f'./.{ctx.author.id}.png'
         format_rendering_option = '-Tpng:cairo'
-        # dot = await asyncio.create_subprocess_exec('dot', format_rendering_option, dot_filename, '-o', image_filename, '-Gcharset=UTF-8')
-        dot = await asyncio.create_subprocess_exec('neato', format_rendering_option, dot_filename, '-o', image_filename, '-Gcharset=UTF-8')
+        dot = await asyncio.create_subprocess_exec('dot', format_rendering_option, dot_filename, '-o', image_filename, '-Gcharset=UTF-8')
+        # dot = await asyncio.create_subprocess_exec('neato', format_rendering_option, dot_filename, '-o', image_filename, '-Gcharset=UTF-8')
         await asyncio.wait_for(dot.wait(), 10.0)
 
         # Kill subprocess

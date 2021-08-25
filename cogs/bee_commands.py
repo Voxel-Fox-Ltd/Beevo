@@ -288,7 +288,7 @@ class BeeCommands(vbu.Cog):
                 f"Your {princess.type.value} princess and {drone.type.value} drone got "
                 f"together and made a new {new_bee.type.value} queen, **{new_bee.display_name}**! :D"
             ),
-            components=None,
+            components=vbu.MessageComponents(vbu.ActionRow(vbu.Button("Add your bees to a hive", custom_id="RUNCOMMAND hive add"))),
             allowed_mentions=discord.AllowedMentions.none(),
         )
 

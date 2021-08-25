@@ -142,6 +142,7 @@ class BeeCommands(vbu.Cog):
 
         # Make the components to send
         components = vbu.MessageComponents(vbu.ActionRow(
+            vbu.Button("Get new bees", custom_id="RUNCOMMAND bee get", style=vbu.ButtonStyle.SECONDARY),
             vbu.Button("Breed some of your bees", custom_id="RUNCOMMAND bee breed", style=vbu.ButtonStyle.SECONDARY),
             vbu.Button("Add one of your queens to a hive", custom_id="RUNCOMMAND hive add", style=vbu.ButtonStyle.SECONDARY),
             vbu.Button("Release some of your bees", custom_id="RUNCOMMAND bee release", style=vbu.ButtonStyle.SECONDARY),

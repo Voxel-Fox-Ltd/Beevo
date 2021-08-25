@@ -315,7 +315,8 @@ class BeeCommands(vbu.Cog):
                     output.append(v)
             output.append((
                 f"{joiner}[label=\"\",height=0.001,width=0.001,color=black,shape=point];"
-                f"{{\"{left.value.title()} Bee\",\"{right.value.title()} Bee\"}}->{joiner}[dir=none];"
+                f"\"{left.value.title()} Bee\"->{joiner}[dir=none];"
+                f"\"{right.value.title()} Bee\"->{joiner}[dir=none];"
                 f"{joiner}->\"{result.value.title()} Bee\";"
             ))
 

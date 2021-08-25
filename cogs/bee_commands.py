@@ -44,6 +44,45 @@ class BeeCommands(vbu.Cog):
             wait=False,
         )
 
+    @bee.command(name="annalyze")
+    @vbu.defer()
+    @commands.is_owner()
+    async def bee_analyze(self, ctx: vbu.Context, bee: utils.Bee = None):
+        """
+        Give you the stats for one of your bees.
+        """
+
+        # Set the send method
+        send_method = ctx.send
+
+        # See if they gave a bee
+        if not bee:
+            payload, _, bee = await utils.Bee.send_bee_dropdown(
+                ctx=ctx, send_method=send_method, current_message=None,
+                group_by_nobility=True, group_by_type=True,
+            )
+            if not bee:
+                return
+            else:
+                bee = bee[0]
+            if payload:
+                send_method = payload.update_message
+
+        # Work out the stats
+        embed = vbu.Embed(use_random_colour=True, title=f"{bee.name}; {bee.display_type}")
+        embed.description = (
+            f"**Speed**: {bee.speed}\n"
+            f"**Fertility**: {bee.fertility}\n"
+            f"**Lifetime**: {bee.lifetime}\n"
+        )
+
+        # And respond
+        return await send_method(
+            content=None,
+            embed=embed,
+            components=None,
+        )
+
     @bee.command(name="list")
     @vbu.defer()
     async def bee_list(self, ctx: vbu.Context, user: discord.Member = None):

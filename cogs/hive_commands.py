@@ -212,7 +212,7 @@ class HiveCommands(vbu.Cog):
         if hive is None:
             payload, dropdown_message, hive = await utils.Hive.send_hive_dropdown(
                 ctx=ctx, send_method=send_method, current_message=dropdown_message,
-                check=lambda hive: not hive.bees,
+                check=lambda hive: not [i for i in hive.bees if i.nobility == utils.Nobility.QUEEN],
             )
             if not hive:
                 return

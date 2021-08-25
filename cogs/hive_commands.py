@@ -98,14 +98,18 @@ class HiveCommands(vbu.Cog):
                     results.extend(i)
                 except Exception as e:
                     self.logger.error(e, exc_info=e)
-            all_owner_ids = {i.owner_id: i.hive for i in results}
+            all_owner_ids = {i.hive: i.owner_id for i in results}
 
             # DM authors who want to know when the bees die
-            for owner_id, hive in all_owner_ids.items():
+            for hive, owner_id in all_owner_ids.items():
                 try:
                     owner = self.bot.get_user(owner_id) or await self.bot.fetch_user(owner_id)
+                    try:
+                        text = f"**{dead_queens[hive.id].display_name}** in hive **{hive.name}** has perished :<",
+                    except KeyError:
+                        text = f"Your queen in hive **{hive.name}** has perished :<",
                     await owner.send(
-                        f"**{dead_queens[hive.id].display_name}** in hive **{hive.name}** has perished :<",
+                        content=text,
                         components=vbu.MessageComponents(vbu.ActionRow(
                             vbu.Button("See your hives", custom_id="RUNCOMMAND hive list", style=vbu.ButtonStyle.SECONDARY),
                         )),

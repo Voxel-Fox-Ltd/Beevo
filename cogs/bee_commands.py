@@ -1,5 +1,6 @@
 import collections
 import asyncio
+import math
 
 import voxelbotutils as vbu
 import discord
@@ -270,11 +271,10 @@ class BeeCommands(vbu.Cog):
         mundane_output.append((
             "style=rounded;"
             "node[color=red,margin=0.05,shape=ellipse];"
-            "mundane[shape=point,margin=0,height=0.001,width=0.001];"
         ))
         output = []
         output.append((
-            "rankdir=LR;"
+            # "rankdir=LR;"
             "overlap=scale;"
             "compound=true;"
             "node[color=transparent,margin=0.03,shape=box,height=0.001,width=0.001];"
@@ -360,6 +360,7 @@ class BeeCommands(vbu.Cog):
             # Make our subgraph DOT
 
         # See if we have an output
+        mundane_output.insert(math.ceil(len(mundane_output) / 2), "mundane[shape=point,margin=0,height=0.001,width=0.001];")
         output.insert(1, f"subgraph cluster_0{{{''.join(mundane_output)}}};")
         if len(output) <= 2:
             return await ctx.send("You've not cross-bred any bees yet :<")

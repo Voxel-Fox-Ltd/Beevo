@@ -1,6 +1,5 @@
 import collections
 import asyncio
-import math
 
 import voxelbotutils as vbu
 import discord
@@ -32,7 +31,7 @@ class BeeCommands(vbu.Cog):
         async with self.bot.database() as db:
             drone = await utils.Bee.create_bee(db, utils.get_bee_guild_id(ctx), ctx.author.id, nobility=utils.Nobility.DRONE)
             await drone.update(db)
-            princess = await utils.Bee.create_bee(db, utils.get_bee_guild_id(ctx), ctx.author.id, bee_type=drone.type, nobility=utils.Nobility.PRINCESS)
+            princess = await utils.Bee.create_bee(db, utils.get_bee_guild_id(ctx), ctx.author.id, nobility=utils.Nobility.PRINCESS)
             await princess.update(db)
 
         # And respond
@@ -41,7 +40,7 @@ class BeeCommands(vbu.Cog):
                 f"Created your new bees: a {drone.display_type}, **{drone.display_name}**; "
                 f"and a {princess.display_type}, **{princess.display_name}**!"
             ),
-            wait=False,
+            components=vbu.MessageComponents(vbu.ActionRow(vbu.Button("Breed your bees", custom_id="RUNCOMMAND bee breed"))),
         )
 
     @bee.command(name="analyze", aliases=["analyse"])

@@ -44,7 +44,7 @@ class BeeCommands(vbu.Cog):
             wait=False,
         )
 
-    @bee.command(name="annalyze")
+    @bee.command(name="analyze", aliases=["analyse"])
     @vbu.defer()
     @commands.is_owner()
     async def bee_analyze(self, ctx: vbu.Context, bee: utils.Bee = None):

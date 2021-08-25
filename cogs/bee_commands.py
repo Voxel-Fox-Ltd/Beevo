@@ -276,6 +276,7 @@ class BeeCommands(vbu.Cog):
         output.append((
             "rankdir=LR;"
             "overlap=scale;"
+            "compound=true;"
             "node[color=transparent,margin=0.03,shape=box,height=0.001,width=0.001];"
         ))
 
@@ -327,7 +328,7 @@ class BeeCommands(vbu.Cog):
                 )
                 if v not in output:
                     output.append(v)
-            elif [left.is_mundane, right.is_mundane].count(True) == 1 and [left, right].count(utils.BeeType.get("CULTIVATED")):
+            elif [left.is_mundane, right.is_mundane].count(True) == 1 and (utils.BeeType.get("CULTIVATED") in [left, right] or utils.BeeType.get("COMMON") in [left, right]):
                 if left.is_mundane:
                     joiner = f"mundane{right.value.lower()}"
                     v = (

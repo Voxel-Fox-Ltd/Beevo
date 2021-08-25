@@ -334,7 +334,7 @@ class BeeCommands(vbu.Cog):
                 output.append(v.format(mundane_count + 1, mundane_count + 2))
                 added_joiners.add("mundanemundane")
                 mundane_count += 2
-            elif [left.is_mundane, right.is_mundane].count(True) == 1 and (utils.BeeType.get("CULTIVATED") in [left, right] or utils.BeeType.get("COMMON") in [left, right]):
+            elif [left.is_mundane, right.is_mundane].count(True) == 1 and utils.BeeType.get("CULTIVATED") in [left, right]:
                 if left.is_mundane:
                     joiner = f"mundane{right.value.lower()}"
                     if joiner in added_joiners:

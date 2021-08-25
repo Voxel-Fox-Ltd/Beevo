@@ -459,6 +459,102 @@ class BeeCommands(vbu.Cog):
         self.bot.loop.create_task(asyncio.create_subprocess_exec('rm', dot_filename))
         self.bot.loop.create_task(asyncio.create_subprocess_exec('rm', image_filename))
 
+    @bee.command(name="tree")
+    @vbu.defer()
+    async def bee_tree(self, ctx: vbu.Context, bee: utils.Bee = None):
+        """
+        Map out the family tree for a given bee.
+        """
+
+        # Set the send method
+        send_method = ctx.send
+
+        # See if they gave a bee
+        if not bee:
+            payload, _, bee = await utils.Bee.send_bee_dropdown(
+                ctx=ctx, send_method=send_method, current_message=None,
+                group_by_nobility=True, group_by_type=True,
+            )
+            if not bee:
+                return
+            else:
+                bee = bee[0]
+            if payload:
+                send_method = payload.update_message
+
+        # Grab all the bees that have ever been in that bee's family
+        bee_parent_ids = bee.parent_ids
+        bees = []
+        async with self.bot.database() as db:
+            while bee_parent_ids:
+                rows = await db(
+                    """SELECT * FROM bees WHERE guild_id = $1 AND id = ANY($2::TEXT[])""",
+                    utils.get_bee_guild_id(ctx), bee_parent_ids,
+                )
+                new_bees = [utils.Bee(**i) for i in rows]
+                bee_parent_ids = []
+                for b in new_bees:
+                    bee_parent_ids.extend(b.parent_ids)
+                bees.extend(new_bees)
+
+        # Generate our starting DOT lines
+        output = []
+        output.append((
+            "overlap=scale;"
+            "compound=true;"
+            "splines=false;"
+            "node[color=transparent,margin=0.03,shape=box,height=0.001,width=0.001];"
+        ))
+
+        # And add our bee friends
+        for bee in bees:
+            bee_name = bee.display_name.replace('"', '\\"')
+            output.append((
+                f"BEE_{bee.id.replace('-', '_')}[label=\"{bee_name} ({bee.display_type})\"]"
+            ))
+            for parent in bee.parent_ids:
+                bee_name = parent.display_name.replace('"', '\\"')
+                output.append((
+                    f"BEE_{parent.id.replace('-', '_')}[label=\"{bee_name} ({parent.display_type})\"]"
+                    f"BEE_{parent.id.replace('-', '_')}->BEE_{bee.id.replace('-', '_')};"
+                ))
+
+        # Write the dot to a file
+        dot_filename = f'./.{ctx.author.id}.dot'
+        try:
+            output_string = "".join(output)
+            with open(dot_filename, 'w', encoding='utf-8') as a:
+                a.write(f"digraph{{{output_string}}}\n")
+        except Exception as e:
+            self.logger.error(f"Could not write to {dot_filename}")
+            raise e
+
+        # Convert to an image
+        image_filename = f'./.{ctx.author.id}.png'
+        format_rendering_option = '-Tpng:cairo'
+        dot = await asyncio.create_subprocess_exec('dot', format_rendering_option, dot_filename, '-o', image_filename, '-Gcharset=UTF-8')
+        await asyncio.wait_for(dot.wait(), 10.0)
+
+        # Kill subprocess
+        try:
+            dot.kill()
+        except ProcessLookupError:
+            pass  # It already died
+        except Exception:
+            raise
+
+        # Send file
+        try:
+            file = discord.File(image_filename)
+        except FileNotFoundError:
+            return await ctx.send("I was unable to send your bee map image - please try again later.")
+        await ctx.send(file=file)
+        await asyncio.sleep(1)
+
+        # Delete the files
+        self.bot.loop.create_task(asyncio.create_subprocess_exec('rm', dot_filename))
+        self.bot.loop.create_task(asyncio.create_subprocess_exec('rm', image_filename))
+
 
 def setup(bot: vbu.Bot):
     x = BeeCommands(bot)

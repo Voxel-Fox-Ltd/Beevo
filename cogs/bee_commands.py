@@ -266,10 +266,15 @@ class BeeCommands(vbu.Cog):
             current_user_bees = await utils.Bee.fetch_bees_by_user(db, utils.get_bee_guild_id(ctx), ctx.author.id)
 
         # Generate our starting DOT lines
+        mundane_output = []
+        mundane_output.append((
+            "style=rounded;"
+            "node[color=red,margin=0.05,shape=ellipse];"
+            "mundane[shape=point,margin=0,height=0.001,width=0.001];"
+        ))
         output = []
         output.append((
             "rankdir=LR;"
-            # "splines=curved;"
             "overlap=scale;"
             "node[color=transparent,margin=0.03,shape=box,height=0.001,width=0.001];"
         ))
@@ -278,9 +283,9 @@ class BeeCommands(vbu.Cog):
         for bee in current_user_bees:
             left = bee.type
             if left.is_mundane:
-                v = f"\"{left.value.title()} Bee\"[color=red,margin=0.05,shape=ellipse];"
+                v = f"\"{left.value.title()} Bee\";"
                 if v not in output:
-                    output.append(v)
+                    mundane_output.append(v)
 
         # Make some DOT for each of our combinations
         for row in bee_rows:
@@ -306,22 +311,50 @@ class BeeCommands(vbu.Cog):
             # Make our actual DOT
             joiner = f"{left.value}{right.value}"
             if left.is_mundane:
-                v = f"\"{left.value.title()} Bee\"[color=red,margin=0.05,shape=ellipse];"
-                if v not in output:
-                    output.append(v)
+                v = f"\"{left.value.title()} Bee\";"
+                if v not in mundane_output:
+                    mundane_output.append(v)
             if right.is_mundane:
-                v = f"\"{right.value.title()} Bee\"[color=red,margin=0.05,shape=ellipse];"
-                if v not in output:
-                    output.append(v)
-            output.append((
-                f"{joiner}[label=\"\",height=0.001,width=0.001,color=black,shape=point];"
-                f"\"{left.value.title()} Bee\"->{joiner}[dir=none];"
-                f"\"{right.value.title()} Bee\"->{joiner}[dir=none];"
-                f"{joiner}->\"{result.value.title()} Bee\";"
-            ))
+                v = f"\"{right.value.title()} Bee\";"
+                if v not in mundane_output:
+                    mundane_output.append(v)
+            if [left.is_mundane, right.is_mundane].count(True) == 2:
+                output.append((
+                    f"mundanemundane[label=\"\",height=0.001,width=0.001,color=black,shape=point];"
+                    f"mundane->mundanemundane[dir=none,ltail=cluster_0];"
+                    f"mundane->mundanemundane[dir=none,ltail=cluster_0];"
+                    f"mundanemundane->\"{result.value.title()} Bee\";"
+                ))
+            elif [left.is_mundane, right.is_mundane].count(True) == 1 and [left, right].count(utils.BeeType.get("CULTIVATED")):
+                if left.is_mundane:
+                    joiner = f"mundane{right.value.lower()}"
+                    output.append((
+                        f"{joiner}[label=\"\",height=0.001,width=0.001,color=black,shape=point];"
+                        f"mundane->{joiner}[dir=none,ltail=cluster_0];"
+                        f"\"{right.value.title()} Bee\"->{joiner}[dir=none];"
+                        f"{joiner}->\"{result.value.title()} Bee\";"
+                    ))
+                else:
+                    joiner = f"mundane{left.value.lower()}"
+                    output.append((
+                        f"{joiner}[label=\"\",height=0.001,width=0.001,color=black,shape=point];"
+                        f"\"{left.value.title()} Bee\"->{joiner}[dir=none];"
+                        f"mundane->{joiner}[dir=none,ltail=cluster_0];"
+                        f"{joiner}->\"{result.value.title()} Bee\";"
+                    ))
+            else:
+                output.append((
+                    f"{joiner}[label=\"\",height=0.001,width=0.001,color=black,shape=point];"
+                    f"\"{left.value.title()} Bee\"->{joiner}[dir=none];"
+                    f"\"{right.value.title()} Bee\"->{joiner}[dir=none];"
+                    f"{joiner}->\"{result.value.title()} Bee\";"
+                ))
+
+            # Make our subgraph DOT
 
         # See if we have an output
-        if len(output) <= 1:
+        output.insert(1, f"subgraph cluster_0{{{''.join(mundane_output)}}};")
+        if len(output) <= 2:
             return await ctx.send("You've not cross-bred any bees yet :<")
 
         # Write the dot to a file

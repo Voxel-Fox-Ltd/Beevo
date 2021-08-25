@@ -556,7 +556,7 @@ class Bee(object):
     async def send_bee_dropdown(
             cls, ctx: vbu.Context, send_method, current_message: discord.Message, max_values: int = 1, *,
             group_by_nobility: bool = False, group_by_type: bool = False, check=None,
-            content: str = None) -> typing.Tuple[vbu.ComponentInteractionPayload, discord.Message, typing.List['Bee']]:
+            content: str = None, no_available_bees_content: str = None) -> typing.Tuple[vbu.ComponentInteractionPayload, discord.Message, typing.List['Bee']]:
         """
         Send a dropdown to let a user pick one of their bees.
         """
@@ -574,7 +574,8 @@ class Bee(object):
 
         # Make sure there are bees
         if not bees:
-            current_message = await send_method(content="You have no available bees :<", components=None) or current_message
+            no_available_bees_content = no_available_bees_content or "You have no available bees :<"
+            current_message = await send_method(content=no_available_bees_content, components=None) or current_message
             return (None, current_message, None,)
 
         # See if we want to group by royalty

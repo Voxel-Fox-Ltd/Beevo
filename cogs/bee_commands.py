@@ -355,7 +355,7 @@ class BeeCommands(vbu.Cog):
                     v = (
                         f"{joiner}[label=\"\",height=0.001,width=0.001,color=black,shape=point];"
                         f"\"{left.value.title()} Bee\"->{joiner}[dir=none];"
-                        f"mundane->{joiner}[dir=none,ltail=cluster_0];"
+                        f"mundane{{}}->{joiner}[dir=none,ltail=cluster_0];"
                         f"{joiner}->\"{result.value.title()} Bee\";"
                     )
                     output.append(v.format(mundane_count + 1))

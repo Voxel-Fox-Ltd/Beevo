@@ -284,7 +284,7 @@ class HiveCommands(vbu.Cog):
                 send_method = payload.update_message
 
         # See if the hive has a bee
-        if not hive.bees and not hive.inventory:
+        if not hive.bees and hive.inventory.is_empty():
             return await send_method(
                 content=f"There's nothing in **{hive.name}** :<",
                 components=None,
@@ -333,7 +333,9 @@ class HiveCommands(vbu.Cog):
                 await db.commit_transaction()
 
         # And done
-        item_names = [utils.format("{0} {0:plural,bee,bees}", bee_count)]
+        item_names = []
+        if bee_count:
+            item_names.append(utils.format("{0} {0:plural,bee,bees}", bee_count))
         for item in hive.inventory.values():
             if item.quantity:
                 item_names.append(utils.format("{0.quantity} {0.quantity:plural,{1},{1}s}", item, item.name.lower()))

@@ -31,3 +31,9 @@ class Inventory(collections.defaultdict):
     def __missing__(self, key):
         self[key] = Item(key, 0)
         return self[key]
+
+    def is_empty(self):
+        for i, o in self.items():
+            if o.quantity > 0:
+                return False
+        return True

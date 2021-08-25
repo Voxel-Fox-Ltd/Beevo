@@ -138,6 +138,7 @@ class HiveCommands(vbu.Cog):
         embeds = []
 
         # We have data for each hive
+        hive_queen_count = 0
         for h in hives:
             embed = vbu.Embed(use_random_colour=True, title=h.name, description=h.get_hive_grid())
             bee_field_value = ""
@@ -149,6 +150,7 @@ class HiveCommands(vbu.Cog):
                 for i in h.bees:
                     if i.nobility == utils.Nobility.QUEEN:
                         bee_is_queen = True
+                        hive_queen_count += 1
                         line = (
                             f"**{i.name}** (*{i.display_type}*)\n"
                             f"{{:progress,9}}"
@@ -182,7 +184,16 @@ class HiveCommands(vbu.Cog):
             embeds.append(embed)
 
         # And send
-        return await ctx.send(content, embeds=embeds, wait=False)
+        components = None
+        if hive_queen_count != len(hives):
+            components = vbu.MessageComponents(vbu.ActionRow(
+                vbu.Button("Clear your hives", custom_id="RUNCOMMAND hive clear", style=vbu.ButtonStyle.SECONDARY),
+            ))
+        return await ctx.send(
+            content,
+            embeds=embeds,
+            components=components,
+        )
 
     @hive.command(name="add")
     @vbu.defer()

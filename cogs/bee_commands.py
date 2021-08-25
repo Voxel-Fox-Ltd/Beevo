@@ -319,29 +319,35 @@ class BeeCommands(vbu.Cog):
                 if v not in mundane_output:
                     mundane_output.append(v)
             if [left.is_mundane, right.is_mundane].count(True) == 2:
-                output.append((
+                v = (
                     f"mundanemundane[label=\"\",height=0.001,width=0.001,color=black,shape=point];"
                     f"mundane->mundanemundane[dir=none,ltail=cluster_0];"
                     f"mundane->mundanemundane[dir=none,ltail=cluster_0];"
                     f"mundanemundane->\"{result.value.title()} Bee\";"
-                ))
+                )
+                if v not in output:
+                    output.append(v)
             elif [left.is_mundane, right.is_mundane].count(True) == 1 and [left, right].count(utils.BeeType.get("CULTIVATED")):
                 if left.is_mundane:
                     joiner = f"mundane{right.value.lower()}"
-                    output.append((
+                    v = (
                         f"{joiner}[label=\"\",height=0.001,width=0.001,color=black,shape=point];"
                         f"mundane->{joiner}[dir=none,ltail=cluster_0];"
                         f"\"{right.value.title()} Bee\"->{joiner}[dir=none];"
                         f"{joiner}->\"{result.value.title()} Bee\";"
-                    ))
+                    )
+                    if v not in output:
+                        output.append(v)
                 else:
                     joiner = f"mundane{left.value.lower()}"
-                    output.append((
+                    v = (
                         f"{joiner}[label=\"\",height=0.001,width=0.001,color=black,shape=point];"
                         f"\"{left.value.title()} Bee\"->{joiner}[dir=none];"
                         f"mundane->{joiner}[dir=none,ltail=cluster_0];"
                         f"{joiner}->\"{result.value.title()} Bee\";"
-                    ))
+                    )
+                    if v not in output:
+                        output.append(v)
             else:
                 output.append((
                     f"{joiner}[label=\"\",height=0.001,width=0.001,color=black,shape=point];"

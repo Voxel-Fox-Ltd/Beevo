@@ -97,7 +97,7 @@ class BeeCommands(vbu.Cog):
             bees = await utils.Bee.fetch_bees_by_user(db, utils.get_bee_guild_id(ctx), user.id)
         bees = [i for i in bees if i.hive_id is None]
         if not bees:
-            text = utils.format(
+            text = vbu.format(
                 "{0:pronoun,You,{1}} {0:pronoun,don't,doesn't} have any bees! :c",
                 ctx.author == user,
                 user.mention,
@@ -115,7 +115,7 @@ class BeeCommands(vbu.Cog):
         drone_types.sort(key=lambda item: len(item[1]), reverse=True)
 
         # Format their bees into an embed
-        description = utils.format(
+        description = vbu.format(
             "{0:pronoun,You,{2}} {0:pronoun,have,has} **{1}** total {1:plural,bee,bees}",
             ctx.author == user,
             len(bees),
@@ -142,7 +142,7 @@ class BeeCommands(vbu.Cog):
 
         # Make the components to send
         components = vbu.MessageComponents(vbu.ActionRow(
-            # vbu.Button("Get new bees", custom_id="RUNCOMMAND bee get", style=vbu.ButtonStyle.SECONDARY),
+            vbu.Button("Get new bees", custom_id="RUNCOMMAND bee get", style=vbu.ButtonStyle.SECONDARY),
             vbu.Button("Breed some of your bees", custom_id="RUNCOMMAND bee breed", style=vbu.ButtonStyle.SECONDARY),
             vbu.Button("Add one of your queens to a hive", custom_id="RUNCOMMAND hive add", style=vbu.ButtonStyle.SECONDARY),
             vbu.Button("Release some of your bees", custom_id="RUNCOMMAND bee release", style=vbu.ButtonStyle.SECONDARY),
@@ -229,7 +229,7 @@ class BeeCommands(vbu.Cog):
                 bee_ids,
             )
         return await send_method(
-            content=utils.format("Released **{0}** {0:plural,bee,bees} into the wild \N{PENSIVE FACE}", len(bee_ids)),
+            content=vbu.format("Released **{0}** {0:plural,bee,bees} into the wild \N{PENSIVE FACE}", len(bee_ids)),
             components=None,
             allowed_mentions=discord.AllowedMentions.none(),
             wait=False,

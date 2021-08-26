@@ -3,7 +3,6 @@ import enum
 
 import voxelbotutils as vbu
 import discord
-from discord.ext import commands
 
 from cogs import utils
 
@@ -140,7 +139,7 @@ class HiveCommands(vbu.Cog):
             hives = await utils.Hive.fetch_hives_by_user(db, utils.get_bee_guild_id(ctx), user.id)
 
         # Make our content
-        content = utils.format(
+        content = vbu.format(
             "{0:pronoun,You,{2}} {0:pronoun,have,has} **{1}** {1:plural,hive,hives}:",
             ctx.author == user,
             len(hives),
@@ -166,7 +165,7 @@ class HiveCommands(vbu.Cog):
                             f"**{i.name}** (*{i.display_type}*)\n"
                             f"{{:progress,9}}"
                         )
-                        bee_field_value += utils.format(line, ((i.lifetime - i.lived_lifetime) * 100) / i.lifetime)
+                        bee_field_value += vbu.format(line, ((i.lifetime - i.lived_lifetime) * 100) / i.lifetime)
                     else:
                         bee_field_value += f"\n\N{BULLET} {i.name} ({i.display_type})"
 
@@ -348,13 +347,13 @@ class HiveCommands(vbu.Cog):
         # And done
         item_names = []
         if bee_count:
-            item_names.append(utils.format("{0} {0:plural,bee,bees}", bee_count))
+            item_names.append(vbu.format("{0} {0:plural,bee,bees}", bee_count))
         for item in hive.inventory.values():
             if item.quantity:
-                item_names.append(utils.format("{0.quantity} {0.quantity:plural,{1},{1}s}", item, item.name.lower()))
+                item_names.append(vbu.format("{0.quantity} {0.quantity:plural,{1},{1}s}", item, item.name.lower()))
         item_names = [f"**{i}**" for i in item_names]
         return await send_method(
-            content=utils.format("Moved {0:humanjoin} out of **{1.name}**~", item_names, hive),
+            content=vbu.format("Moved {0:humanjoin} out of **{1.name}**~", item_names, hive),
             components=vbu.MessageComponents(vbu.ActionRow(
                 vbu.Button("See your bees", custom_id="RUNCOMMAND bee list", style=vbu.ButtonStyle.SECONDARY),
                 vbu.Button("See your hives", custom_id="RUNCOMMAND hive list", style=vbu.ButtonStyle.SECONDARY),

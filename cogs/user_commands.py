@@ -23,7 +23,7 @@ class UserCommands(vbu.Cog):
             )
         if not inventory_rows:
             return await ctx.send(
-                utils.format(
+                vbu.format(
                     "{0:pronoun,You,{1}} {0:pronoun,have,has} nothing in {0:pronoun,your,their} inventory :<",
                     ctx.author == user,
                     user.mention,

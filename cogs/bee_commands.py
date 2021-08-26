@@ -274,6 +274,8 @@ class BeeCommands(vbu.Cog):
             group_by_type=True, check=lambda bee: bee.nobility == utils.Nobility.DRONE,
             content="Which drone would you like to breed?",
         )
+        if not bees:
+            return
         send_method = payload.update_message
         drone = bees[0]
 

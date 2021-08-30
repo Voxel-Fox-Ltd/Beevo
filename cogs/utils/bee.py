@@ -1,4 +1,12 @@
-import typing
+from typing import (
+    List, 
+    Optional, 
+    Union, 
+    Awaitable, 
+    Callable, 
+    Tuple, 
+    TypeVar,
+)
 import enum
 import random
 import math
@@ -17,6 +25,11 @@ class Nobility(enum.Enum):
     DRONE = 'Drone'
     PRINCESS = 'Princess'
     QUEEN = 'Queen'
+
+
+BT = TypeVar("BT", bound="BeeType")
+B = TypeVar("B", bound="Bee")
+H = TypeVar("H", bound="Hive")
 
 
 class BeeType(object):
@@ -61,12 +74,12 @@ class BeeType(object):
                 yield x
 
     @classmethod
-    def get(cls, value: str):
+    def get(cls, value: str) -> BT:
         """
         Get a given bee type.
         """
 
-        return getattr(cls, value.upper(), None)
+        return getattr(cls, value.upper())
 
     def get_comb(self) -> str:
         return self.BEE_TYPE_COMBS[self]
@@ -79,7 +92,7 @@ class BeeType(object):
         return min((o for i, o in self.BEE_TYPE_VALUES.items() if i.get_comb() == this_comb))
 
     @staticmethod
-    def check_if_matches(item, comparable):
+    def check_if_matches(item, comparable) -> bool:
         """
         See if an object matches the base class (which may be an object).
         """
@@ -90,7 +103,7 @@ class BeeType(object):
             return item.name == comparable.name
 
     @classmethod
-    def combine(cls, first: 'BeeType', second: 'BeeType', *, return_all_types: bool = False):
+    def combine(cls, first: BT, second: BT, *, return_all_types: bool = False) -> BT:
         """
         Combine two bees and give the child type.
         """
@@ -243,8 +256,38 @@ setup_bee_types()
 
 
 class Bee(object):
+    """
+    Attributes
+    ------------
+    id: Optional[str]
+        The ID of this bee.
+    parent_ids: List[:class:`str`]
+        The IDs of this bee's parents - can be empty but cannot be null.
+    guild_id: :class:`int`
+        The guild that this bee belongs to.
+    owner_id: Optional[:class:`int`]
+        The owner of this particular bee.
+    hive_id: Optional[:class:`str`]
+        The ID of the hive that this bee lives in.
+    hive: Optional[:class:`Hive`]
+        The hive object that this bee lives in.
+    name: Optional[:class:`str`]
+        The name that the owner gave to this bee.
+    type: :class:`BeeType`
+        The type of bee that this is
+    nobility: :class:`Nobility`
+        The nobility of this bee - this says if it's a queen, princess, or drone.
+    speed: :class:`int`
+        How quickly this bee can produce honey. Only used for queens but can be bred down from anywhere.
+    fertility: :class:`int`
+        How many drones this bee produces when it dies. Only used for queens but can be bred down from anywhere.
+    lifetime: :class:`int`
+        How many ticks this bee stays alive for when it's in a hive.
+    lived_lifetime: :class:`int`
+        How many ticks this bee has been in a hive for.
+    """
 
-    SLASH_COMMAND_ARG_TYPE = vbu.ApplicationCommandOptionType.STRING
+    SLASH_COMMAND_ARG_TYPE = discord.enums.ApplicationCommandOptionType.string
 
     __slots__ = (
         'id', 'parent_ids', 'guild_id', 'owner_id', 'name', '_type',
@@ -253,75 +296,49 @@ class Bee(object):
     )
 
     def __init__(
-            self, id: str, parent_ids: typing.List[str], hive_id: str,
-            nobility: typing.Union[str, Nobility], speed: int, fertility: int,
-            owner_id: int, name: str, type: typing.Union[str, BeeType],
+            self, id: Optional[str], parent_ids: List[str], hive_id: Optional[str],
+            nobility: Union[str, Nobility], speed: int, fertility: int,
+            owner_id: Optional[int], name: Optional[str], type: Union[str, BeeType],
             guild_id: int, lifetime: int, lived_lifetime: int):
-
-        #: The ID of this bee.
-        self.id: str = id
-
-        #: The IDs of this bee's parents - can be empty but cannot be null.
-        self.parent_ids: typing.List[str] = parent_ids or list()
-
-        #: The guild that this bee belongs to.
+        self.id: Optional[str] = id
+        self.parent_ids: List[str] = parent_ids or list()
         self.guild_id: int = guild_id
-
-        #: The owner of this particular bee.
-        self.owner_id: int = owner_id
-
-        #: The ID of the hive that this bee lives in.
-        self.hive_id: str = hive_id
-
-        #: The hive object that this bee lives in.
-        self.hive: 'Hive' = None
-
-        #: The name that the owner gave to this bee.
-        self.name: str = name
-
-        #: The type of bee that this is
-        self.type: BeeType = type  # Added as _type
-
-        #: The nobility of this bee - this says if it's a queen, princess, or drone.
-        self.nobility: Nobility = nobility  # Added as _nobility
-
-        #: How quickly this bee can produce honey. Only used for queens but can be bred down from anywhere.
+        self.owner_id: Optional[int] = owner_id
+        self.hive_id: Optional[str] = hive_id
+        self.hive: Optional[H] = None
+        self.name: Optional[str] = name
+        self.type = type  # Added as _type
+        self.nobility = nobility  # Added as _nobility
         self.speed: int = speed
-
-        #: How many drones this bee produces when it dies. Only used for queens but can be bred down from anywhere.
         self.fertility: int = fertility
-
-        #: How many ticks this bee stays alive for when it's in a hive.
         self.lifetime: int = lifetime
-
-        #: How many ticks this bee has been in a hive for.
         self.lived_lifetime: int = lived_lifetime
 
     @property
-    def display_name(self):
-        return self.name or self.id
+    def display_name(self) -> str:
+        return self.name or self.id or ""
 
     @property
-    def display_type(self):
+    def display_type(self) -> str:
         return f"{self.type.value.lower()} {self.nobility.value.lower()}"
 
     @property
-    def nobility(self):
+    def nobility(self) -> Nobility:
         return self._nobility
 
     @nobility.setter
-    def nobility(self, value: typing.Union[str, Nobility]):
+    def nobility(self, value: Union[str, Nobility]):
         if isinstance(value, Nobility):
             self._nobility = value
         else:
             self._nobility = Nobility(value)
 
     @property
-    def type(self):
+    def type(self) -> BeeType:
         return self._type
 
     @type.setter
-    def type(self, value: typing.Union[str, BeeType]):
+    def type(self, value: Union[str, BeeType]):
         if isinstance(value, BeeType):
             self._type = value
         else:
@@ -352,7 +369,7 @@ class Bee(object):
         }
 
     @classmethod
-    async def breed(cls, db, mother: 'Bee', father: 'Bee'):
+    async def breed(cls, db, mother: B, father: B):
         """
         Breed two bees together to make a queen, which will be automatically added to the user, as well
         as both parents being removed from the user.
@@ -381,7 +398,7 @@ class Bee(object):
         await drone.update(db, owner_id=None)
         return new_bee
 
-    async def die(self, db) -> typing.List['Bee']:
+    async def die(self, db) -> List[B]:
         """
         Have this bee die, leaving behind a princess and a series of drones.
         """
@@ -439,7 +456,7 @@ class Bee(object):
         return new_bees
 
     @classmethod
-    async def fetch_bee_by_id(cls, db, bee_id: str) -> typing.Optional['Bee']:
+    async def fetch_bee_by_id(cls, db, bee_id: str) -> Optional[B]:
         """
         Get a bee instance by its ID.
         """
@@ -451,7 +468,7 @@ class Bee(object):
             return None
 
     @classmethod
-    async def fetch_bees_by_user(cls, db, guild_id: int, user_id: int) -> typing.List['Bee']:
+    async def fetch_bees_by_user(cls, db, guild_id: int, user_id: int) -> List[B]:
         """
         Gives you a list of the bees owned by the given user.
         """
@@ -460,7 +477,7 @@ class Bee(object):
         return [cls(**i) for i in rows]
 
     @classmethod
-    async def create_bee(cls, db, guild_id: int, user_id: int, bee_type: BeeType = None, nobility: Nobility = Nobility.DRONE) -> 'Bee':
+    async def create_bee(cls, db, guild_id: int, user_id: int, bee_type: BeeType = None, nobility: Nobility = Nobility.DRONE) -> B:
         """
         Create a new bee.
         """
@@ -554,7 +571,7 @@ class Bee(object):
         Get a bee instance from its name.
         """
 
-        async with ctx.bot.database() as db:
+        async with vbu.Database() as db:
             rows = await db(
                 """SELECT * FROM bees WHERE owner_id=$1 AND (id=$2 OR LOWER(name)=LOWER($2)) AND guild_id=$3""",
                 ctx.author.id, value, get_bee_guild_id(ctx),
@@ -565,23 +582,26 @@ class Bee(object):
 
     @classmethod
     async def send_bee_dropdown(
-            cls, ctx: vbu.Context, send_method, current_message: discord.Message, max_values: int = 1, *,
+            cls, ctx: vbu.Context, send_method: Callable[..., Awaitable[Optional[discord.Message]]], 
+            current_message: Optional[discord.Message], max_values: int = 1, *,
             group_by_nobility: bool = False, group_by_type: bool = False, check=None,
-            content: str = None, no_available_bees_content: str = None) -> typing.Tuple[vbu.ComponentInteractionPayload, discord.Message, typing.List['Bee']]:
+            content: str = None, 
+            no_available_bees_content: str = None) -> Tuple[Optional[discord.Interaction], Optional[discord.Message], Optional[List[B]]]:
         """
         Send a dropdown to let a user pick one of their bees.
         """
 
         # Grab the bees
-        async with ctx.bot.database() as db:
-            bees = await cls.fetch_bees_by_user(db, get_bee_guild_id(ctx), ctx.author.id)
+        async with vbu.Database() as db:
+            bee_list = await cls.fetch_bees_by_user(db, get_bee_guild_id(ctx), ctx.author.id)
 
-        # Make sure a check exists
+        # Make sure our vars exist
         if check is None:
-            check = lambda _: True  # noqa
+            check = lambda _: True
+        payload: discord.Interaction
 
         # Get the check
-        bees = {i.id: i for i in bees if check(i)}
+        bees: Dict[str, B] = {i.id: i for i in bee_list if check(i)}
 
         # Make sure there are bees
         if not bees:
@@ -597,14 +617,14 @@ class Bee(object):
                 drones = {i: o for i, o in bees.items() if o.nobility == Nobility.DRONE}
 
                 # Ask what kind of bee they want to get rid of
-                components = vbu.MessageComponents(
-                    vbu.ActionRow(
-                        vbu.Button("Queen", custom_id="CHOOSE_QUEEN", disabled=not bool(queens)),
-                        vbu.Button("Princess", custom_id="CHOOSE_PRINCESS", disabled=not bool(princesses)),
-                        vbu.Button("Drone", custom_id="CHOOSE_DRONES", disabled=not bool(drones)),
+                components = discord.ui.MessageComponents(
+                    discord.ui.ActionRow(
+                        discord.ui.Button(label="Queen", custom_id="CHOOSE_QUEEN", disabled=not bool(queens)),
+                        discord.ui.Button(label="Princess", custom_id="CHOOSE_PRINCESS", disabled=not bool(princesses)),
+                        discord.ui.Button(label="Drone", custom_id="CHOOSE_DRONES", disabled=not bool(drones)),
                     ),
-                    vbu.ActionRow(
-                        vbu.Button("Cancel", custom_id="CANCEL", style=vbu.ButtonStyle.DANGER)
+                    discord.ui.ActionRow(
+                        discord.ui.Button(label="Cancel", custom_id="CANCEL", style=discord.ui.ButtonStyle.danger)
                     ),
                 )
                 current_message = await send_method(
@@ -612,7 +632,11 @@ class Bee(object):
                     components=components,
                 ) or current_message
                 try:
-                    payload = await ctx.bot.wait_for("component_interaction", check=vbu.component_check(ctx.author, current_message), timeout=60)
+                    payload = await ctx.bot.wait_for(
+                        "component_interaction", 
+                        check=vbu.component_check(ctx.author, current_message), 
+                        timeout=60,
+                    )
                 except asyncio.TimeoutError:
                     current_message = await send_method(
                         content="I timed out waiting for you to say what nobility of bee you want to select :<",
@@ -626,58 +650,63 @@ class Bee(object):
                 elif payload.component.custom_id == "CHOOSE_DRONES":
                     bees = drones
                 else:
-                    current_message = await payload.update_message(content="Cancelled your bee selection :<", components=None) or current_message
+                    current_message = await payload.response.edit_message(content="Cancelled your bee selection :<", components=None) or current_message
                     return (payload, current_message, None,)
-                send_method = payload.update_message
+                send_method = payload.response.edit_message
 
         # See if we want to group by type
         if group_by_type:
             bee_types = sorted(list(set([o.type.value for o in bees.values()])))
             if len(bee_types) > 1:
-                components = vbu.MessageComponents(
-                    vbu.ActionRow(
-                        vbu.SelectMenu(
+                components = discord.ui.MessageComponents(
+                    discord.ui.ActionRow(
+                        discord.ui.SelectMenu(
                             custom_id="BEE_SELECTION",
                             options=[
-                                vbu.SelectOption(label=i.title(), value=i)
+                                discord.ui.SelectOption(label=i.title(), value=i)
                                 for i in bee_types
                             ],
                             placeholder="What type of bee would you like to select?",
                         ),
                     ),
-                    vbu.ActionRow(
-                        vbu.Button("Cancel", custom_id="CANCEL", style=vbu.ButtonStyle.DANGER),
+                    discord.ui.ActionRow(
+                        discord.ui.Button(label="Cancel", custom_id="CANCEL", style=discord.ui.ButtonStyle.danger),
                     ),
                 )
                 current_message = await send_method(content="What type of bee would you like to select?", components=components) or current_message
                 try:
-                    payload = await ctx.bot.wait_for("component_interaction", check=vbu.component_check(ctx.author, current_message), timeout=60)
+                    payload = await ctx.bot.wait_for(
+                        "component_interaction", 
+                        check=vbu.component_check(ctx.author, current_message), 
+                        timeout=60,
+                    )
                 except asyncio.TimeoutError:
                     current_message = await send_method(
                         content="I timed out waiting for you to what bee you want to select :c",
                         components=None,
                     ) or current_message
-                if payload.component.custom_id == "CANCEL":
-                    current_message = await payload.update_message(content="Cancelled your bee selection :<", components=None) or current_message
                     return (payload, current_message, None,)
-                send_method = payload.update_message
+                if payload.component.custom_id == "CANCEL":
+                    current_message = await payload.response.edit_message(content="Cancelled your bee selection :<", components=None) or current_message
+                    return (payload, current_message, None,)
+                send_method = payload.response.edit_message
                 bees = {i: o for i, o in bees.items() if o.type.value.casefold() == payload.values[0].casefold()}
 
         # Make components
-        components = vbu.MessageComponents(
-            vbu.ActionRow(vbu.SelectMenu(
+        components = discord.ui.MessageComponents(
+            discord.ui.ActionRow(discord.ui.SelectMenu(
                 custom_id="BEE_SELECTION",
                 options=[
-                    vbu.SelectOption(label=bee.name, value=bee.id, description=bee.display_type.capitalize())
+                    discord.ui.SelectOption(label=bee.name, value=bee.id, description=bee.display_type.capitalize())
                     for bee in list(bees.values())[:25]
                 ],
                 max_values=min(max_values, len(bees), 25),
                 placeholder="Which bee would you like to choose?"
             )),
-            vbu.ActionRow(vbu.Button(
+            discord.ui.ActionRow(discord.ui.Button(
                 label="Cancel",
                 custom_id="CANCEL",
-                style=vbu.ButtonStyle.DANGER,
+                style=discord.ui.ButtonStyle.danger,
             )),
         )
 
@@ -687,16 +716,20 @@ class Bee(object):
 
         # Wait for interaction
         try:
-            payload = await ctx.bot.wait_for("component_interaction", check=vbu.component_check(ctx.author, current_message), timeout=60)
+            payload = await ctx.bot.wait_for(
+                "component_interaction", 
+                check=vbu.component_check(ctx.author, current_message), 
+                timeout=60,
+            )
         except asyncio.TimeoutError:
             current_message = await send_method(content="I timed out waiting for you to select a bee :c", components=None) or current_message
             return (None, current_message, None,)
 
         # See if it were cancelled
         if payload.component.custom_id == "CANCEL":
-            current_message = await payload.update_message(content="Cancelled your bee selection :<", components=None) or current_message
+            current_message = await payload.response.edit_message(content="Cancelled your bee selection :<", components=None) or current_message
             return (payload, current_message, None,)
 
         # Return the bee
-        specified_bees = [bees[i] for i in payload.values]
+        specified_bees: List[B] = [bees[i] for i in payload.values]
         return (payload, current_message, specified_bees,)

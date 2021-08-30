@@ -1,6 +1,6 @@
-import voxelbotutils as vbu
 import discord
 from discord.ext import commands
+import voxelbotutils as vbu
 
 from cogs import utils
 
@@ -8,15 +8,14 @@ from cogs import utils
 class UserCommands(vbu.Cog):
 
     @vbu.command()
-    @vbu.defer()
-    # @commands.guild_only()
+    @commands.defer()
     async def inventory(self, ctx: vbu.Context, user: discord.Member = None):
         """
         Get the inventory for a given user.
         """
 
         user = user or ctx.author
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             inventory_rows = await db(
                 """SELECT * FROM user_inventory WHERE guild_id = $1 AND user_id = $2 AND quantity > 0""",
                 utils.get_bee_guild_id(ctx), user.id,
@@ -28,7 +27,6 @@ class UserCommands(vbu.Cog):
                     ctx.author == user,
                     user.mention,
                 ),
-                wait=False,
             )
 
         inventory = [utils.Item(**i) for i in inventory_rows]
@@ -37,7 +35,7 @@ class UserCommands(vbu.Cog):
         embed.description = "\n".join([
             f"\N{BULLET} {i.name} x{i.quantity}" for i in inventory
         ])
-        return await ctx.send(embed=embed, wait=False)
+        return await ctx.send(embed=embed)
 
 
 def setup(bot: vbu.Bot):

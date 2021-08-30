@@ -1,5 +1,8 @@
 import operator
 import random as random_module
+import typing
+
+HCE = typing.TypeVar("HCE", bound="HiveCellEmoji")
 
 
 class HiveCellEmoji(object):
@@ -25,7 +28,7 @@ class HiveCellEmoji(object):
         """
 
         # Make our initial grid
-        grid = [[None for inner in range(width)] for outer in range(height)]
+        grid: typing.List[typing.List[HCE]] = [[None for inner in range(width)] for outer in range(height)]
 
         # Go through each grid cell
         for y in range(0, height):

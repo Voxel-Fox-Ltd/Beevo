@@ -1,9 +1,9 @@
 import collections
 import asyncio
 
-import voxelbotutils as vbu
 import discord
 from discord.ext import commands
+import voxelbotutils as vbu
 import asyncpg
 
 from cogs import utils
@@ -17,18 +17,16 @@ class BeeCommands(vbu.Cog):
         The parent group for the bee commands.
         """
 
-        pass
-
     @bee.command(name="get")
-    @vbu.defer()
-    @vbu.cooldown.cooldown(1, 60 * 15, commands.BucketType.user)
+    @commands.defer()
+    @commands.cooldown(1, 60 * 15, commands.BucketType.user)
     async def bee_get(self, ctx: vbu.Context):
         """
         Catch some new bees for your hive.
         """
 
         # Get a new bee for the user
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             drone = await utils.Bee.create_bee(db, utils.get_bee_guild_id(ctx), ctx.author.id, nobility=utils.Nobility.DRONE)
             await drone.update(db)
             princess = await utils.Bee.create_bee(db, utils.get_bee_guild_id(ctx), ctx.author.id, nobility=utils.Nobility.PRINCESS)
@@ -40,13 +38,13 @@ class BeeCommands(vbu.Cog):
                 f"Created your new bees: a {drone.display_type}, **{drone.display_name}**; "
                 f"and a {princess.display_type}, **{princess.display_name}**!"
             ),
-            components=vbu.MessageComponents(vbu.ActionRow(
-                vbu.Button("Breed your bees", custom_id="RUNCOMMAND bee breed", style=vbu.ButtonStyle.SECONDARY),
+            components=discord.ui.MessageComponents(discord.ui.ActionRow(
+                discord.ui.Button(label="Breed your bees", custom_id="RUNCOMMAND bee breed", style=discord.ui.ButtonStyle.secondary),
             )),
         )
 
     @bee.command(name="analyze", aliases=["analyse"])
-    @vbu.defer()
+    @commands.defer()
     @commands.is_owner()
     async def bee_analyze(self, ctx: vbu.Context, bee: utils.Bee = None):
         """
@@ -58,16 +56,16 @@ class BeeCommands(vbu.Cog):
 
         # See if they gave a bee
         if not bee:
-            payload, _, bee = await utils.Bee.send_bee_dropdown(
+            payload, _, bees = await utils.Bee.send_bee_dropdown(
                 ctx=ctx, send_method=send_method, current_message=None,
                 group_by_nobility=True, group_by_type=True,
             )
-            if not bee:
+            if not bees:
                 return
             else:
-                bee = bee[0]
+                bee = bees[0]
             if payload:
-                send_method = payload.update_message
+                send_method = payload.response.edit_message
 
         # Work out the stats
         embed = vbu.Embed(use_random_colour=True, title=f"{bee.name}; {bee.display_type}")
@@ -85,7 +83,7 @@ class BeeCommands(vbu.Cog):
         )
 
     @bee.command(name="list")
-    @vbu.defer()
+    @commands.defer()
     async def bee_list(self, ctx: vbu.Context, user: discord.Member = None):
         """
         Shows you all of the bees you have.
@@ -93,7 +91,7 @@ class BeeCommands(vbu.Cog):
 
         # Get the bees for the given user
         user = user or ctx.author
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             bees = await utils.Bee.fetch_bees_by_user(db, utils.get_bee_guild_id(ctx), user.id)
         bees = [i for i in bees if i.hive_id is None]
         if not bees:
@@ -102,7 +100,7 @@ class BeeCommands(vbu.Cog):
                 ctx.author == user,
                 user.mention,
             )
-            return await ctx.send(text, wait=False)
+            return await ctx.send(text)
 
         # Collate their bees
         bee_groups = collections.defaultdict(list)
@@ -141,22 +139,21 @@ class BeeCommands(vbu.Cog):
             )
 
         # Make the components to send
-        components = vbu.MessageComponents(vbu.ActionRow(
-            vbu.Button("Get new bees", custom_id="RUNCOMMAND bee get", style=vbu.ButtonStyle.SECONDARY),
-            vbu.Button("Breed some of your bees", custom_id="RUNCOMMAND bee breed", style=vbu.ButtonStyle.SECONDARY),
-            vbu.Button("Add one of your queens to a hive", custom_id="RUNCOMMAND hive add", style=vbu.ButtonStyle.SECONDARY),
-            vbu.Button("Release some of your bees", custom_id="RUNCOMMAND bee release", style=vbu.ButtonStyle.SECONDARY),
-            vbu.Button("See your discovered cross-breeds", custom_id="RUNCOMMAND bee map", style=vbu.ButtonStyle.SECONDARY),
+        components = discord.ui.MessageComponents(discord.ui.ActionRow(
+            discord.ui.Button(label="Get new bees", custom_id="RUNCOMMAND bee get", style=discord.ui.ButtonStyle.secondary),
+            discord.ui.Button(label="Breed some of your bees", custom_id="RUNCOMMAND bee breed", style=discord.ui.ButtonStyle.secondary),
+            discord.ui.Button(label="Add one of your queens to a hive", custom_id="RUNCOMMAND hive add", style=discord.ui.ButtonStyle.secondary),
+            discord.ui.Button(label="Release some of your bees", custom_id="RUNCOMMAND bee release", style=discord.ui.ButtonStyle.secondary),
+            discord.ui.Button(label="See your discovered cross-breeds", custom_id="RUNCOMMAND bee map", style=discord.ui.ButtonStyle.secondary),
         ))
         return await ctx.send(
             embed=embed,
             allowed_mentions=discord.AllowedMentions.none(),
             components=components,
-            wait=False,
         )
 
     @bee.command(name="rename")
-    @vbu.defer()
+    @commands.defer()
     async def bee_rename(self, ctx: vbu.Context, before: utils.Bee = None, *, after: str = None):
         """
         Renames one of your bees.
@@ -182,10 +179,10 @@ class BeeCommands(vbu.Cog):
             else:
                 before = before[0]
             if payload:
-                send_method = payload.update_message
+                send_method = payload.response.edit_message
 
         # Save bee
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             try:
                 await before.update(db, name=after)
             except asyncpg.UniqueViolationError:
@@ -197,7 +194,7 @@ class BeeCommands(vbu.Cog):
         return await send_method(content="Updated!", components=None)
 
     @bee.command(name="release")
-    @vbu.defer()
+    @commands.defer()
     async def bee_release(self, ctx: vbu.Context, *, bee: utils.Bee = None):
         """
         Releases one of your bees back into the wild.
@@ -214,8 +211,9 @@ class BeeCommands(vbu.Cog):
             )
             if not bees:
                 return
-            await payload.defer_update()
-            send_method = payload.message.edit
+            if payload:
+                await payload.response.defer_update()
+                send_method = payload.edit_original_message
             bee_ids = [i.id for i in bees]
 
         # They specified a bee ID initially in the command
@@ -223,7 +221,7 @@ class BeeCommands(vbu.Cog):
             bee_ids = [bee.id]
 
         # Remove all the bees
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             await db(
                 """UPDATE bees SET owner_id = NULL WHERE id = ANY($1::TEXT[])""",
                 bee_ids,
@@ -232,7 +230,6 @@ class BeeCommands(vbu.Cog):
             content=vbu.format("Released **{0}** {0:plural,bee,bees} into the wild \N{PENSIVE FACE}", len(bee_ids)),
             components=None,
             allowed_mentions=discord.AllowedMentions.none(),
-            wait=False,
         )
 
     @bee.command(name="pet")
@@ -244,11 +241,10 @@ class BeeCommands(vbu.Cog):
         return await ctx.send(
             f"**{bee.display_name}**: *Happy buzzing noises* \N{HONEYBEE}",
             allowed_mentions=discord.AllowedMentions.none(),
-            wait=False,
         )
 
     @bee.command(name="breed")
-    @vbu.defer()
+    @commands.defer()
     async def bee_breed(self, ctx: vbu.Context):
         """
         Breed one of your princesses and drones into a queen.
@@ -265,7 +261,8 @@ class BeeCommands(vbu.Cog):
         )
         if not bees:
             return
-        send_method = payload.update_message
+        if payload:
+            send_method = payload.response.edit_message
         princess = bees[0]
 
         # Get the drone
@@ -276,15 +273,13 @@ class BeeCommands(vbu.Cog):
         )
         if not bees:
             return
-        send_method = payload.update_message
+        if payload:
+            await payload.response.defer_update()
+            send_method = payload.edit_original_message
         drone = bees[0]
 
-        # Defer the response
-        await payload.defer_update()
-        send_method = payload.message.edit
-
         # Breed the bee
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             try:
                 new_bee = await utils.Bee.breed(db, princess, drone)
             except ValueError:
@@ -304,21 +299,21 @@ class BeeCommands(vbu.Cog):
                 f"Your {princess.type.value} princess and {drone.type.value} drone got "
                 f"together and made a new {new_bee.type.value} queen, **{new_bee.display_name}**! :D"
             ),
-            components=vbu.MessageComponents(vbu.ActionRow(
-                vbu.Button("Add your queen to a hive", custom_id="RUNCOMMAND hive add", style=vbu.ButtonStyle.SECONDARY),
+            components=discord.ui.MessageComponents(discord.ui.ActionRow(
+                discord.ui.Button(label="Add your queen to a hive", custom_id="RUNCOMMAND hive add", style=discord.ui.ButtonStyle.secondary),
             )),
             allowed_mentions=discord.AllowedMentions.none(),
         )
 
     @bee.command(name="map")
-    @vbu.defer()
+    @commands.defer()
     async def bee_map(self, ctx: vbu.Context):
         """
         Map out the bee combinations that you've discovered.
         """
 
         # Grab their bee combinations
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             bee_rows = await db(
                 """SELECT * FROM user_bee_combinations WHERE guild_id = $1 AND user_id = $2""",
                 utils.get_bee_guild_id(ctx), ctx.author.id,
@@ -354,9 +349,9 @@ class BeeCommands(vbu.Cog):
         for row in bee_rows:
 
             # See if it's a cross-breed combo
-            left = utils.BeeType.get(row['left_type'])
-            right = utils.BeeType.get(row['right_type'])
-            result = utils.BeeType.get(row['result_type'])
+            left: utils.BeeType = utils.BeeType.get(row['left_type'])
+            right: utils.BeeType = utils.BeeType.get(row['right_type'])
+            result: utils.BeeType = utils.BeeType.get(row['result_type'])
             if left == right:
                 continue
             if result.is_mundane:
@@ -477,7 +472,7 @@ class BeeCommands(vbu.Cog):
         self.bot.loop.create_task(asyncio.create_subprocess_exec('rm', image_filename))
 
     @bee.command(name="tree")
-    @vbu.defer()
+    @commands.defer()
     async def bee_tree(self, ctx: vbu.Context, bee: utils.Bee = None):
         """
         Map out the family tree for a given bee.
@@ -488,21 +483,22 @@ class BeeCommands(vbu.Cog):
 
         # See if they gave a bee
         if not bee:
-            payload, _, bee = await utils.Bee.send_bee_dropdown(
+            payload, _, bees = await utils.Bee.send_bee_dropdown(
                 ctx=ctx, send_method=send_method, current_message=None,
                 group_by_nobility=True, group_by_type=True,
             )
-            if not bee:
+            if not bees:
                 return
             else:
-                bee = bee[0]
+                bee = bees[0]
             if payload:
-                send_method = payload.update_message
+                await payload.response.defer()
+                send_method = payload.edit_original_message
 
         # Grab all the bees that have ever been in that bee's family
         bee_parent_ids = bee.parent_ids
         bees = {bee.id: bee}
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             while bee_parent_ids:
                 rows = await db(
                     """SELECT * FROM bees WHERE guild_id = $1 AND id = ANY($2::TEXT[])""",

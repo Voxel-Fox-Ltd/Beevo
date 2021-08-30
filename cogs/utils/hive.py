@@ -1,4 +1,13 @@
-import typing
+from typing import (
+    Dict,
+    TypeVar,
+    Set,
+    List,
+    Optional,
+    Tuple,
+    Callable,
+    Awaitable,
+)
 import random
 import uuid
 import asyncio
@@ -18,11 +27,12 @@ HIVE_NAMES = [
     "Juliet", "Kilo", "Lima", "Mike", "November", "Oscar", "Papa", "Quebec", "Romeo",
     "Sierra", "Tango", "Uniform", "Victor", "Whiskey", "Xray", "Yankee", "Zulu",
 ]
+H = TypeVar("H", bound="Hive")
 
 
 class Hive(object):
 
-    SLASH_COMMAND_ARG_TYPE = vbu.ApplicationCommandOptionType.STRING
+    SLASH_COMMAND_ARG_TYPE = discord.enums.ApplicationCommandOptionType.string
 
     __slots__ = (
         'id', 'index', 'guild_id', 'owner_id', 'bees', 'inventory',
@@ -33,7 +43,7 @@ class Hive(object):
         self.index: int = index
         self.guild_id: int = guild_id
         self.owner_id: int = owner_id
-        self.bees: typing.Set[Bee] = set()
+        self.bees: Set[Bee] = set()
         self.inventory: Inventory = Inventory()
 
     @property
@@ -53,7 +63,7 @@ class Hive(object):
             raise commands.BadArgument(f"**{value}** isn't a valid hive name.")
 
         # Database time
-        async with ctx.bot.database() as db:
+        async with vbu.Database() as db:
 
             # Grab the hive and the bees in it
             hive_rows = await db(
@@ -128,7 +138,7 @@ class Hive(object):
     @classmethod
     async def fetch_hives_by_user(
             cls, db, guild_id: int, user_id: int, *, fetch_bees: bool = True,
-            fetch_inventory: bool = True) -> typing.List['Hive']:
+            fetch_inventory: bool = True) -> List['Hive']:
         """
         Get all the hives for a given user.
         """
@@ -139,7 +149,7 @@ class Hive(object):
             WHERE h.guild_id=$1 AND h.owner_id=$2""",
             guild_id, user_id,
         )
-        hives = {}
+        hives: Dict[str, H] = {}
         bee_ids = []
         if hive_rows:
             for r in hive_rows:
@@ -181,7 +191,7 @@ class Hive(object):
     @classmethod
     async def fetch_hive_by_id(
             cls, db, hive_id: str, *, fetch_bees: bool = True,
-            fetch_inventory: bool = True) -> typing.Optional['Hive']:
+            fetch_inventory: bool = True) -> Optional['Hive']:
         """
         Get all the hives for a given user.
         """
@@ -236,14 +246,15 @@ class Hive(object):
 
     @classmethod
     async def send_hive_dropdown(
-            cls, ctx: vbu.Context, send_method, current_message: discord.Message, *, max_values: int = 1,
-            check=None, content: str = None) -> typing.Tuple[vbu.ComponentInteractionPayload, discord.Message, typing.List['Hive']]:
+            cls, ctx: vbu.Context, send_method: Callable[..., Awaitable[Optional[discord.Message]]], 
+            current_message: Optional[discord.Message], *, max_values: int = 1,
+            check=None, content: str = None) -> Tuple[Optional[discord.Interaction], Optional[discord.Message], Optional[List[H]]]:
         """
         Send a dropdown to let a user pick one of their hives.
         """
 
         # Grab the bees
-        async with ctx.bot.database() as db:
+        async with vbu.Database() as db:
             hives = await cls.fetch_hives_by_user(db, get_bee_guild_id(ctx), ctx.author.id)
 
         # Make sure a check exists
@@ -261,20 +272,20 @@ class Hive(object):
             return (None, current_message, [list(hives.values())[0]],)
 
         # Make components
-        components = vbu.MessageComponents(
-            vbu.ActionRow(vbu.SelectMenu(
+        components = discord.ui.MessageComponents(
+            discord.ui.ActionRow(discord.ui.SelectMenu(
                 custom_id="HIVE_SELECTION",
                 options=[
-                    vbu.SelectOption(label=hive.name, value=hive.id)
+                    discord.ui.SelectOption(label=hive.name, value=hive.id)
                     for hive in hives.values()
                 ],
                 placeholder="Which hive would you like to choose?",
                 max_values=min(max_values, len(hives), 25),
             )),
-            vbu.ActionRow(vbu.Button(
+            discord.ui.ActionRow(discord.ui.Button(
                 label="Cancel",
                 custom_id="CANCEL",
-                style=vbu.ButtonStyle.DANGER,
+                style=discord.ui.ButtonStyle.danger,
             )),
         )
 
@@ -291,7 +302,7 @@ class Hive(object):
 
         # See if it were cancelled
         if payload.component.custom_id == "CANCEL":
-            await payload.update_message(content="Cancelled your hive selection :<", components=None)
+            await payload.response.edit_message(content="Cancelled your hive selection :<", components=None)
             return (payload, current_message, None,)
 
         # Return the bee

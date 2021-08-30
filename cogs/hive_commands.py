@@ -1,8 +1,8 @@
 import asyncio
 import enum
 
-import voxelbotutils as vbu
 import discord
+import voxelbotutils as vbu
 
 from cogs import utils
 
@@ -19,7 +19,7 @@ class HiveCommands(vbu.Cog):
         """
 
         # Open the database
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
 
             # Update bee lifetimes
             await db(
@@ -110,8 +110,8 @@ class HiveCommands(vbu.Cog):
                         text = f"Your queen in hive **{hive.name}** has perished :<"
                     await owner.send(
                         content=text,
-                        components=vbu.MessageComponents(vbu.ActionRow(
-                            vbu.Button("See your hives", custom_id="RUNCOMMAND hive list", style=vbu.ButtonStyle.SECONDARY),
+                        components=discord.ui.MessageComponents(discord.ui.ActionRow(
+                            discord.ui.Button(label="See your hives", custom_id="RUNCOMMAND hive list", style=discord.ui.ButtonStyle.secondary),
                         )),
                     )
                 except discord.HTTPException:
@@ -127,7 +127,7 @@ class HiveCommands(vbu.Cog):
             return await ctx.send_help(ctx.command)
 
     @hive.command(name="list")
-    @vbu.defer()
+    @commands.defer()
     async def hive_list(self, ctx: vbu.Context, user: discord.Member = None):
         """
         Give you a list of all of your hives.
@@ -135,7 +135,7 @@ class HiveCommands(vbu.Cog):
 
         # Grab their hives
         user = user or ctx.author
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             hives = await utils.Hive.fetch_hives_by_user(db, utils.get_bee_guild_id(ctx), user.id)
 
         # Make our content
@@ -196,8 +196,8 @@ class HiveCommands(vbu.Cog):
         # And send
         components = None
         if hive_queen_count != len(hives):
-            components = vbu.MessageComponents(vbu.ActionRow(
-                vbu.Button("Clear your hives", custom_id="RUNCOMMAND hive clear", style=vbu.ButtonStyle.SECONDARY),
+            components = discord.ui.MessageComponents(discord.ui.ActionRow(
+                discord.ui.Button(label="Clear your hives", custom_id="RUNCOMMAND hive clear", style=discord.ui.ButtonStyle.secondary),
             ))
         return await ctx.send(
             content,
@@ -206,7 +206,7 @@ class HiveCommands(vbu.Cog):
         )
 
     @hive.command(name="add")
-    @vbu.defer()
+    @commands.defer()
     async def hive_add(self, ctx: vbu.Context, bee: utils.Bee = None, hive: utils.Hive = None):
         """
         Add one of your queens to a hive.
@@ -218,16 +218,16 @@ class HiveCommands(vbu.Cog):
 
         # See that they gave a bee
         if bee is None:
-            payload, dropdown_message, bee = await utils.Bee.send_bee_dropdown(
+            payload, dropdown_message, bees = await utils.Bee.send_bee_dropdown(
                 ctx=ctx, send_method=send_method, current_message=dropdown_message,
                 group_by_type=True, check=lambda bee: bee.nobility == utils.Nobility.QUEEN,
             )
-            if not bee:
+            if not bees:
                 return
             else:
-                bee = bee[0]
+                bee = bees[0]
             if payload:
-                send_method = payload.update_message
+                send_method = payload.response.update_message
 
         # See that they gave a hive
         if hive is None:
@@ -259,20 +259,20 @@ class HiveCommands(vbu.Cog):
 
         # Actually move the bee around
         async with ctx.typing():
-            async with self.bot.database() as db:
+            async with vbu.Database() as db:
                 await bee.update(db, hive_id=hive.id)
 
         # And done!
         return await send_method(
             content=f"**{bee.name}** buzzes on happily and flys into **{hive.name}** :>",
             allowed_mentions=discord.AllowedMentions.none(),
-            components=vbu.MessageComponents(vbu.ActionRow(
-                vbu.Button("View your hive", custom_id="RUNCOMMAND hive list", style=vbu.ButtonStyle.SECONDARY),
+            components=discord.ui.MessageComponents(discord.ui.ActionRow(
+                discord.ui.Button("View your hive", custom_id="RUNCOMMAND hive list", style=discord.ui.ButtonStyle.SECONDARY),
             )),
         )
 
     @hive.command(name="clear")
-    @vbu.defer()
+    @commands.defer()
     async def hive_clear(self, ctx: vbu.Context, *, hive: utils.Hive = None):
         """
         Clear out the bees from one of your hives.
@@ -307,7 +307,7 @@ class HiveCommands(vbu.Cog):
         if hive_queens:
             current_message = await send_method(
                 content=f"Are you sure? There's an active queen in **{hive.name}** :<",
-                components=vbu.MessageComponents.boolean_buttons(),
+                components=discord.ui.MessageComponents.boolean_buttons(),
             ) or current_message
             try:
                 payload = await self.bot.wait_for("component_interaction", check=vbu.component_check(ctx.author, current_message), timeout=60)
@@ -321,7 +321,7 @@ class HiveCommands(vbu.Cog):
         # Alright move the bee
         bee_count = len(hive.bees)
         async with ctx.typing():
-            async with self.bot.database() as db:
+            async with vbu.Database() as db:
                 await db("""UPDATE bees SET hive_id = NULL WHERE hive_id = $1""", hive.id)
                 await db.start_transaction()
                 await db(
@@ -354,10 +354,10 @@ class HiveCommands(vbu.Cog):
         item_names = [f"**{i}**" for i in item_names]
         return await send_method(
             content=vbu.format("Moved {0:humanjoin} out of **{1.name}**~", item_names, hive),
-            components=vbu.MessageComponents(vbu.ActionRow(
-                vbu.Button("See your bees", custom_id="RUNCOMMAND bee list", style=vbu.ButtonStyle.SECONDARY),
-                vbu.Button("See your hives", custom_id="RUNCOMMAND hive list", style=vbu.ButtonStyle.SECONDARY),
-                vbu.Button("See your inventory", custom_id="RUNCOMMAND inventory", style=vbu.ButtonStyle.SECONDARY),
+            components=discord.ui.MessageComponents(discord.ui.ActionRow(
+                discord.ui.Button("See your bees", custom_id="RUNCOMMAND bee list", style=discord.ui.ButtonStyle.SECONDARY),
+                discord.ui.Button("See your hives", custom_id="RUNCOMMAND hive list", style=discord.ui.ButtonStyle.SECONDARY),
+                discord.ui.Button("See your inventory", custom_id="RUNCOMMAND inventory", style=discord.ui.ButtonStyle.SECONDARY),
             )),
         )
 

@@ -228,7 +228,7 @@ class HiveCommands(vbu.Cog):
             else:
                 bee = bees[0]
             if payload:
-                send_method = payload.response.update_message
+                send_method = payload.response.edit_message
 
         # See that they gave a hive
         if hive is None:
@@ -241,7 +241,7 @@ class HiveCommands(vbu.Cog):
             else:
                 hive = hive[0]
             if payload:
-                send_method = payload.update_message
+                send_method = payload.response.edit_message
 
         # See if the bee is already in a hive
         if bee.hive_id:
@@ -294,7 +294,7 @@ class HiveCommands(vbu.Cog):
             else:
                 hive = hive[0]
             if payload:
-                send_method = payload.update_message
+                send_method = payload.response.edit_message
 
         # See if the hive has a bee
         if not hive.bees and hive.inventory.is_empty():
@@ -317,7 +317,7 @@ class HiveCommands(vbu.Cog):
             if payload.component.custom_id == "NO":
                 return await payload.update_message(content="Alright, cancelling you hive clear!", components=None)
             current_message = payload.message
-            send_method = payload.update_message
+            send_method = payload.response.edit_message
 
         # Alright move the bee
         bee_count = len(hive.bees)

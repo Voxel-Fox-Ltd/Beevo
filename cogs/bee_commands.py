@@ -254,6 +254,7 @@ class BeeCommands(vbu.Cog):
         send_method = ctx.send
 
         # Get the princess
+        self.logger.info("Getting princess")
         payload, current_message, bees = await utils.Bee.send_bee_dropdown(
             ctx=ctx, send_method=send_method, current_message=None, group_by_nobility=True,
             group_by_type=True, check=lambda bee: bee.nobility == utils.Nobility.PRINCESS,
@@ -266,6 +267,7 @@ class BeeCommands(vbu.Cog):
         princess = bees[0]
 
         # Get the drone
+        self.logger.info("Getting drone")
         payload, current_message, bees = await utils.Bee.send_bee_dropdown(
             ctx=ctx, send_method=send_method, current_message=current_message, group_by_nobility=True,
             group_by_type=True, check=lambda bee: bee.nobility == utils.Nobility.DRONE,
@@ -279,6 +281,7 @@ class BeeCommands(vbu.Cog):
         drone = bees[0]
 
         # Breed the bee
+        self.logger.info("Breeding bee")
         async with vbu.Database() as db:
             try:
                 new_bee = await utils.Bee.breed(db, princess, drone)
@@ -294,6 +297,7 @@ class BeeCommands(vbu.Cog):
             )
 
         # Tell the user about their new queen
+        self.logger.info("And done")
         return await send_method(
             content=(
                 f"Your {princess.type.value} princess and {drone.type.value} drone got "

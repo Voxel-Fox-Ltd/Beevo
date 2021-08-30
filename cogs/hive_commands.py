@@ -268,7 +268,7 @@ class HiveCommands(vbu.Cog):
             content=f"**{bee.name}** buzzes on happily and flys into **{hive.name}** :>",
             allowed_mentions=discord.AllowedMentions.none(),
             components=discord.ui.MessageComponents(discord.ui.ActionRow(
-                discord.ui.Button("View your hive", custom_id="RUNCOMMAND hive list", style=discord.ui.ButtonStyle.SECONDARY),
+                discord.ui.Button("View your hive", custom_id="RUNCOMMAND hive list", style=discord.ui.ButtonStyle.secondary),
             )),
         )
 
@@ -356,9 +356,9 @@ class HiveCommands(vbu.Cog):
         return await send_method(
             content=vbu.format("Moved {0:humanjoin} out of **{1.name}**~", item_names, hive),
             components=discord.ui.MessageComponents(discord.ui.ActionRow(
-                discord.ui.Button("See your bees", custom_id="RUNCOMMAND bee list", style=discord.ui.ButtonStyle.SECONDARY),
-                discord.ui.Button("See your hives", custom_id="RUNCOMMAND hive list", style=discord.ui.ButtonStyle.SECONDARY),
-                discord.ui.Button("See your inventory", custom_id="RUNCOMMAND inventory", style=discord.ui.ButtonStyle.SECONDARY),
+                discord.ui.Button("See your bees", custom_id="RUNCOMMAND bee list", style=discord.ui.ButtonStyle.secondary),
+                discord.ui.Button("See your hives", custom_id="RUNCOMMAND hive list", style=discord.ui.ButtonStyle.secondary),
+                discord.ui.Button("See your inventory", custom_id="RUNCOMMAND inventory", style=discord.ui.ButtonStyle.secondary),
             )),
         )
 

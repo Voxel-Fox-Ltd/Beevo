@@ -1,5 +1,4 @@
-import voxelbotutils as vbu
-from discord.ext import tasks
+from discord.ext import tasks, vbu
 
 
 class TickHandler(vbu.Cog):

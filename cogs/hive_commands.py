@@ -2,8 +2,7 @@ import asyncio
 import enum
 
 import discord
-from discord.ext import commands
-import voxelbotutils as vbu
+from discord.ext import commands, vbu
 
 from cogs import utils
 

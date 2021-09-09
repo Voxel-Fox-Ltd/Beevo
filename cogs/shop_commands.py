@@ -44,7 +44,7 @@ class ShopCommands(vbu.Cog):
                     custom_id="INVENTORY_SELECT",
                     options=[
                         discord.ui.SelectOption(label=(name := i['item_name']), description=f"Sells for **{item_prices[name]}** each.")
-                        for i in rows if i['amount'] > 0
+                        for i in rows if i['quantity'] > 0
                     ],
                     placeholder="What item would you like to sell?",
                 ),
@@ -92,7 +92,7 @@ class ShopCommands(vbu.Cog):
                     break
                 current_sell_amount += int(interaction.component.custom_id.split(" ")[1])
                 current_sell_amount = max(current_sell_amount, 1)
-                current_sell_amount = min(current_sell_amount, [i['amount'] for i in rows if i['item_name'] == user_item_sell_name][0])
+                current_sell_amount = min(current_sell_amount, [i['quantity'] for i in rows if i['item_name'] == user_item_sell_name][0])
             except asyncio.TimeoutError:
                 return await interaction.followup.send("Timed out asking how much you want to sell.")
 

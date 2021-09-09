@@ -75,15 +75,17 @@ class ShopCommands(vbu.Cog):
                 pass
             return await ctx.send("Timed out asking what you want to sell.")
         user_item_sell_name = interaction.values[0]
+        user_quantity = [i['quantity'] for i in rows if i['item_name'] == user_item_sell_name][0]
 
         # Ask how many they'd like to send
         current_sell_amount = 1
         number_components = discord.ui.MessageComponents.add_number_buttons(add_negative=True)
         number_components.add_component(discord.ui.ActionRow(
             discord.ui.Button(label=f"Confirm NaN", custom_id="CONFIRM", style=discord.ui.ButtonStyle.success)
+            discord.ui.Button(label=f"Cancel", custom_id="CANCEL", style=discord.ui.ButtonStyle.danger)
         ))
         while True:
-            number_components.get_component("CONFIRM").label = f"Confirm {current_sell_amount}"
+            number_components.get_component("CONFIRM").label = f"Confirm {current_sell_amount}/{user_quantity}"
             await interaction.response.edit_message(content=f"How many of that item would you like to sell?", components=number_components)
             try:
                 interaction: discord.Interaction = await self.bot.wait_for(
@@ -93,14 +95,19 @@ class ShopCommands(vbu.Cog):
                 )
                 if interaction.component.custom_id == "CONFIRM":
                     break
+                elif interaction.component.custom_id == "CANCEL":
+                    return await interaction.response.edit_message(content="Cancelled item sell.", components=None)
                 current_sell_amount += int(interaction.component.custom_id.split(" ")[1])
                 current_sell_amount = max(current_sell_amount, 1)
-                current_sell_amount = min(current_sell_amount, [i['quantity'] for i in rows if i['item_name'] == user_item_sell_name][0])
+                current_sell_amount = min(current_sell_amount, user_quantity)
             except asyncio.TimeoutError:
                 return await interaction.followup.send("Timed out asking how much you want to sell.")
 
         # Sell their items
-        return await interaction.response.edit_message(content=f"fake sold {current_sell_amount} {user_item_sell_name} items")
+        return await interaction.response.edit_message(
+            content=f"fake sold {current_sell_amount} {user_item_sell_name} items",
+            components=None,
+        )
         # async with vbu.Database() as db:
         #     async with db.transaction() as trans:
         #         await trans("UPDATE ")

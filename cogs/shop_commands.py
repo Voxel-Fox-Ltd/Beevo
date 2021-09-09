@@ -53,10 +53,7 @@ class ShopCommands(vbu.Cog):
                 ),
             ),
             discord.ui.ActionRow(
-                discord.ui.Button(
-                    label="CANCEL",
-                    style=discord.ui.ButtonStyle.danger,
-                ),
+                discord.ui.Button.cancel(),
             ),
         )
 
@@ -81,8 +78,8 @@ class ShopCommands(vbu.Cog):
         current_sell_amount = 1
         number_components = discord.ui.MessageComponents.add_number_buttons(add_negative=True)
         number_components.add_component(discord.ui.ActionRow(
-            discord.ui.Button(label=f"Confirm NaN", custom_id="CONFIRM", style=discord.ui.ButtonStyle.success),
-            discord.ui.Button(label=f"Cancel", custom_id="CANCEL", style=discord.ui.ButtonStyle.danger),
+            discord.ui.Button.confirm(),
+            discord.ui.Button.cancel(),
         ))
         while True:
             number_components.get_component("CONFIRM").label = f"Confirm {current_sell_amount}/{user_quantity}"

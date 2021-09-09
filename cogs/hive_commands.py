@@ -105,9 +105,9 @@ class HiveCommands(vbu.Cog):
                 try:
                     owner = self.bot.get_user(owner_id) or await self.bot.fetch_user(owner_id)
                     try:
-                        text = f"**{dead_queens[hive.id].display_name}** in hive **{hive.name}** has perished :<"
+                        text = f"**{dead_queens[hive.id].display_name}**'s swarm in hive **{hive.name}** stopped producing combs, and needs a new queen."
                     except KeyError:
-                        text = f"Your queen in hive **{hive.name}** has perished :<"
+                        text = f"Your swarm in hive **{hive.name}** stopped producing combs, and needs a new queen."
                     await owner.send(
                         content=text,
                         components=discord.ui.MessageComponents(discord.ui.ActionRow(

@@ -43,8 +43,11 @@ class ShopCommands(vbu.Cog):
                 discord.ui.SelectMenu(
                     custom_id="INVENTORY_SELECT",
                     options=[
-                        discord.ui.SelectOption(label=(name := i['item_name']), description=f"Sells for **{item_prices[name]}** each.")
-                        for i in rows if i['quantity'] > 0
+                        discord.ui.SelectOption(
+                            label=(name := i['item_name']),
+                            description=f"You have {quantity}, and they sell for {item_prices[name]} honey each."
+                        )
+                        for i in rows if (quantity := i['quantity']) > 0
                     ],
                     placeholder="What item would you like to sell?",
                 ),

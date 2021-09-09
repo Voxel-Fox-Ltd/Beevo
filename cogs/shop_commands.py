@@ -25,7 +25,7 @@ class ShopCommands(vbu.Cog):
         # Grab the items that the user has
         async with vbu.Database() as db:
             rows = await db(
-                """SELECT user_inventory WHERE guild_id = $1 AND user_id = $2""",
+                """SELECT * FROM user_inventory WHERE guild_id = $1 AND user_id = $2""",
                 utils.get_bee_guild_id(ctx), ctx.author.id,
             )
         if not rows:

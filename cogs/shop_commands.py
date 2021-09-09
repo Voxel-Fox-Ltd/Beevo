@@ -29,7 +29,7 @@ class ShopCommands(vbu.Cog):
                 utils.get_bee_guild_id(ctx), ctx.author.id,
             )
         if not rows:
-            return await ctx.send("You don't have any items available to senll :<")
+            return await ctx.send("You don't have any items available to sell :<")
 
         # See how much each item sells for
         item_prices = {

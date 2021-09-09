@@ -1,2 +1,2 @@
-novus>=0.0.1,<0.1
-voxelbotutils>=0.7,<0.8
+novus>=0.0.3,<0.1
+voxelbotutils>=0.7.4,<0.8

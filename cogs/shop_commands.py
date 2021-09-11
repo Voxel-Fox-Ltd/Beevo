@@ -25,7 +25,7 @@ class ShopCommands(vbu.Cog):
         # Grab the items that the user has
         async with vbu.Database() as db:
             rows = await db(
-                """SELECT * FROM user_inventory WHERE guild_id = $1 AND user_id = $2""",
+                """SELECT * FROM user_inventory WHERE guild_id = $1 AND user_id = $2 AND item_name != 'money'""",
                 utils.get_bee_guild_id(ctx), ctx.author.id,
             )
         if not rows:
@@ -101,13 +101,27 @@ class ShopCommands(vbu.Cog):
                 return await interaction.followup.send("Timed out asking how much you want to sell.")
 
         # Sell their items
-        return await interaction.response.edit_message(
-            content=f"fake sold {current_sell_amount} {user_item_sell_name} items",
+        await interaction.response.defer_update()
+        async with vbu.Database() as db:
+            async with db.transaction() as trans:
+                await trans(
+                    """INSERT INTO user_inventory (user_id, guild_id, item_name, quantity)
+                    VALUES ($1, $2, 'money', $3) ON CONFLICT (user_id, guild_id, item_name) 
+                    DO UPDATE SET quantity=quantity+excluded.quantity""",
+                    ctx.author.id, utils.get_bee_guild_id(ctx), 
+                    current_sell_amount * item_prices[user_item_sell_name],
+                )
+                await trans(
+                    """UPDATE user_inventory SET quantity=quantity-$4 WHERE user_id=$1 AND guild_id=$2 AND item_name=$3""",
+                    ctx.author.id, utils.get_bee_guild_id(ctx), user_item_sell_name, current_sell_amount,
+                )
+        await interaction.edit_original_message(
+            content=(
+                f"Sold **{current_sell_amount}x {user_item_sell_name}** for "
+                f"**{current_sell_amount * item_prices[user_item_sell_name]}**"
+            ),
             components=None,
         )
-        # async with vbu.Database() as db:
-        #     async with db.transaction() as trans:
-        #         await trans("UPDATE ")
 
 
 def setup(bot: vbu.Bot):

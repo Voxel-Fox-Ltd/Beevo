@@ -5,8 +5,7 @@ CREATE TABLE IF NOT EXISTS guild_settings(
 
 
 CREATE TABLE IF NOT EXISTS user_settings(
-    user_id BIGINT PRIMARY KEY,
-    money INTEGER DEFAULT 0
+    user_id BIGINT PRIMARY KEY
 );
 
 

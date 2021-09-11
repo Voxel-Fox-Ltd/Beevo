@@ -1,13 +1,6 @@
-from typing import (
-    Dict,
-    TypeVar,
-    Set,
-    List,
-    Optional,
-    Tuple,
-    Callable,
-    Awaitable,
-)
+from __future__ import annotations
+
+import typing
 import random
 import uuid
 import asyncio
@@ -27,7 +20,7 @@ HIVE_NAMES = [
     "Juliet", "Kilo", "Lima", "Mike", "November", "Oscar", "Papa", "Quebec", "Romeo",
     "Sierra", "Tango", "Uniform", "Victor", "Whiskey", "Xray", "Yankee", "Zulu",
 ]
-H = TypeVar("H", bound="Hive")
+H = typing.TypeVar("H", bound="Hive")
 
 
 class Hive(object):
@@ -43,7 +36,7 @@ class Hive(object):
         self.index: int = index
         self.guild_id: int = guild_id
         self.owner_id: int = owner_id
-        self.bees: Set[Bee] = set()
+        self.bees: typing.Set[Bee] = set()
         self.inventory: Inventory = Inventory()
 
     @property
@@ -138,7 +131,7 @@ class Hive(object):
     @classmethod
     async def fetch_hives_by_user(
             cls, db, guild_id: int, user_id: int, *, fetch_bees: bool = True,
-            fetch_inventory: bool = True) -> List['Hive']:
+            fetch_inventory: bool = True) -> typing.List['Hive']:
         """
         Get all the hives for a given user.
         """
@@ -149,7 +142,7 @@ class Hive(object):
             WHERE h.guild_id=$1 AND h.owner_id=$2""",
             guild_id, user_id,
         )
-        hives: Dict[str, H] = {}
+        hives: typing.Dict[str, H] = {}
         bee_ids = []
         if hive_rows:
             for r in hive_rows:
@@ -191,7 +184,7 @@ class Hive(object):
     @classmethod
     async def fetch_hive_by_id(
             cls, db, hive_id: str, *, fetch_bees: bool = True,
-            fetch_inventory: bool = True) -> Optional['Hive']:
+            fetch_inventory: bool = True) -> typing.Optional['Hive']:
         """
         Get all the hives for a given user.
         """
@@ -246,9 +239,9 @@ class Hive(object):
 
     @classmethod
     async def send_hive_dropdown(
-            cls, ctx: vbu.Context, send_method: Callable[..., Awaitable[Optional[discord.Message]]], 
-            current_message: Optional[discord.Message], *, max_values: int = 1,
-            check=None, content: str = None) -> Tuple[Optional[discord.Interaction], Optional[discord.Message], Optional[List[H]]]:
+            cls, ctx: vbu.Context, send_method: typing.Callable[..., typing.Awaitable[typing.Optional[discord.Message]]],
+            current_message: typing.Optional[discord.Message], *, max_values: int = 1,
+            check=None, content: str = None) -> typing.Tuple[typing.Optional[discord.Interaction], typing.Optional[discord.Message], typing.Optional[typing.List[H]]]:
         """
         Send a dropdown to let a user pick one of their hives.
         """

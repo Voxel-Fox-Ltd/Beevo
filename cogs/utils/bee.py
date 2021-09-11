@@ -1,12 +1,6 @@
-from typing import (
-    List, 
-    Optional, 
-    Union, 
-    Awaitable, 
-    Callable, 
-    Tuple, 
-    TypeVar,
-)
+from __future__ import annotations
+
+import typing
 import enum
 import random
 import math
@@ -20,16 +14,14 @@ import voxelbotutils as vbu
 from .name_utils import get_random_name
 from .utils import get_bee_guild_id
 
+if typing.TYPE_CHECKING:
+    from .hive import Hive
+
 
 class Nobility(enum.Enum):
     DRONE = 'Drone'
     PRINCESS = 'Princess'
     QUEEN = 'Queen'
-
-
-BT = TypeVar("BT", bound="BeeType")
-B = TypeVar("B", bound="Bee")
-H = TypeVar("H", bound="Hive")
 
 
 class BeeType(object):
@@ -74,7 +66,7 @@ class BeeType(object):
                 yield x
 
     @classmethod
-    def get(cls, value: str) -> BT:
+    def get(cls, value: str) -> BeeType:
         """
         Get a given bee type.
         """
@@ -103,7 +95,7 @@ class BeeType(object):
             return item.name == comparable.name
 
     @classmethod
-    def combine(cls, first: BT, second: BT, *, return_all_types: bool = False) -> BT:
+    def combine(cls, first: BeeType, second: BeeType, *, return_all_types: bool = False) -> BeeType:
         """
         Combine two bees and give the child type.
         """
@@ -259,19 +251,19 @@ class Bee(object):
     """
     Attributes
     ------------
-    id: Optional[str]
+    id: typing.Optional[str]
         The ID of this bee.
-    parent_ids: List[:class:`str`]
+    parent_ids: typing.List[:class:`str`]
         The IDs of this bee's parents - can be empty but cannot be null.
     guild_id: :class:`int`
         The guild that this bee belongs to.
-    owner_id: Optional[:class:`int`]
+    owner_id: typing.Optional[:class:`int`]
         The owner of this particular bee.
-    hive_id: Optional[:class:`str`]
+    hive_id: typing.Optional[:class:`str`]
         The ID of the hive that this bee lives in.
-    hive: Optional[:class:`Hive`]
+    hive: typing.Optional[:class:`Hive`]
         The hive object that this bee lives in.
-    name: Optional[:class:`str`]
+    name: typing.Optional[:class:`str`]
         The name that the owner gave to this bee.
     type: :class:`BeeType`
         The type of bee that this is
@@ -296,17 +288,17 @@ class Bee(object):
     )
 
     def __init__(
-            self, id: Optional[str], parent_ids: List[str], hive_id: Optional[str],
-            nobility: Union[str, Nobility], speed: int, fertility: int,
-            owner_id: Optional[int], name: Optional[str], type: Union[str, BeeType],
+            self, id: typing.Optional[str], parent_ids: typing.List[str], hive_id: typing.Optional[str],
+            nobility: typing.Union[str, Nobility], speed: int, fertility: int,
+            owner_id: typing.Optional[int], name: typing.Optional[str], type: typing.Union[str, BeeType],
             guild_id: int, lifetime: int, lived_lifetime: int):
-        self.id: Optional[str] = id
-        self.parent_ids: List[str] = parent_ids or list()
+        self.id: typing.Optional[str] = id
+        self.parent_ids: typing.List[str] = parent_ids or list()
         self.guild_id: int = guild_id
-        self.owner_id: Optional[int] = owner_id
-        self.hive_id: Optional[str] = hive_id
-        self.hive: Optional[H] = None
-        self.name: Optional[str] = name
+        self.owner_id: typing.Optional[int] = owner_id
+        self.hive_id: typing.Optional[str] = hive_id
+        self.hive: typing.Optional[Hive] = None
+        self.name: typing.Optional[str] = name
         self.type = type  # Added as _type
         self.nobility = nobility  # Added as _nobility
         self.speed: int = speed
@@ -327,7 +319,7 @@ class Bee(object):
         return self._nobility
 
     @nobility.setter
-    def nobility(self, value: Union[str, Nobility]):
+    def nobility(self, value: typing.Union[str, Nobility]):
         if isinstance(value, Nobility):
             self._nobility = value
         else:
@@ -338,7 +330,7 @@ class Bee(object):
         return self._type
 
     @type.setter
-    def type(self, value: Union[str, BeeType]):
+    def type(self, value: typing.Union[str, BeeType]):
         if isinstance(value, BeeType):
             self._type = value
         else:
@@ -398,7 +390,7 @@ class Bee(object):
         await drone.update(db, owner_id=None)
         return new_bee
 
-    async def die(self, db) -> List[B]:
+    async def die(self, db) -> typing.List[Bee]:
         """
         Have this bee die, leaving behind a princess and a series of drones.
         """
@@ -408,7 +400,7 @@ class Bee(object):
             raise ValueError()
 
         # Generate our new bees
-        def make_new_bee(nobility):
+        def make_new_bee(nobility) -> Bee:
             v = self.__class__(
                 id=None,
                 parent_ids=[self.id],
@@ -456,7 +448,7 @@ class Bee(object):
         return new_bees
 
     @classmethod
-    async def fetch_bee_by_id(cls, db, bee_id: str) -> Optional[B]:
+    async def fetch_bee_by_id(cls, db, bee_id: str) -> typing.Optional[Bee]:
         """
         Get a bee instance by its ID.
         """
@@ -468,16 +460,18 @@ class Bee(object):
             return None
 
     @classmethod
-    async def fetch_bees_by_user(cls, db, guild_id: int, user_id: int) -> List[B]:
+    async def fetch_bees_by_user(cls, db, guild_id: int, user_id: int) -> typing.List[B]:
         """
-        Gives you a list of the bees owned by the given user.
+        Gives you a typing.list of the bees owned by the given user.
         """
 
         rows = await db("""SELECT * FROM bees WHERE owner_id = $1 AND guild_id = $2""", user_id, guild_id)
         return [cls(**i) for i in rows]
 
     @classmethod
-    async def create_bee(cls, db, guild_id: int, user_id: int, bee_type: BeeType = None, nobility: Nobility = Nobility.DRONE) -> B:
+    async def create_bee(
+            cls, db, guild_id: int, user_id: int, bee_type: BeeType = None,
+            nobility: Nobility = Nobility.DRONE) -> Bee:
         """
         Create a new bee.
         """
@@ -582,11 +576,12 @@ class Bee(object):
 
     @classmethod
     async def send_bee_dropdown(
-            cls, ctx: vbu.Context, send_method: Callable[..., Awaitable[Optional[discord.Message]]], 
-            current_message: Optional[discord.Message], max_values: int = 1, *,
+            cls, ctx: vbu.Context, send_method: typing.Callable[..., typing.Awaitable[typing.Optional[discord.Message]]],
+            current_message: typing.Optional[discord.Message], max_values: int = 1, *,
             group_by_nobility: bool = False, group_by_type: bool = False, check=None,
             content: str = None, 
-            no_available_bees_content: str = None) -> Tuple[Optional[discord.Interaction], Optional[discord.Message], Optional[List[B]]]:
+            no_available_bees_content: str = None) -> typing.Tuple[
+            typing.Optional[discord.Interaction], typing.Optional[discord.Message], typing.Optional[typing.List[Bee]]]:
         """
         Send a dropdown to let a user pick one of their bees.
         """
@@ -601,7 +596,7 @@ class Bee(object):
         payload: discord.Interaction
 
         # Get the check
-        bees: Dict[str, B] = {i.id: i for i in bee_list if check(i)}
+        bees: typing.Dict[str, Bee] = {i.id: i for i in bee_list if check(i)}
 
         # Make sure there are bees
         if not bees:
@@ -731,5 +726,5 @@ class Bee(object):
             return (payload, current_message, None,)
 
         # Return the bee
-        specified_bees: List[B] = [bees[i] for i in payload.values]
+        specified_bees = [bees[i] for i in payload.values]
         return (payload, current_message, specified_bees,)

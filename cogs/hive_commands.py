@@ -1,3 +1,4 @@
+import typing
 import asyncio
 import enum
 
@@ -55,7 +56,7 @@ class HiveCommands(vbu.Cog):
                 (row['hive_id'], utils.BeeType.get(row['type']).get_comb(), row['quantity'],)
                 for row in comb_rows
             ]
-            await db.execute_many(
+            await db.executemany(
                 """
                 INSERT INTO
                     hive_inventory
@@ -102,20 +103,29 @@ class HiveCommands(vbu.Cog):
             # DM authors who want to know when the bees die
             for hive_id, owner_id in all_owner_ids.items():
                 hive = await utils.Hive.fetch_hive_by_id(db, hive_id)
+                if hive is None:
+                    continue
                 try:
                     owner = self.bot.get_user(owner_id) or await self.bot.fetch_user(owner_id)
-                    try:
-                        text = f"**{dead_queens[hive.id].display_name}**'s swarm in hive **{hive.name}** stopped producing combs, and needs a new queen."
-                    except KeyError:
-                        text = f"Your swarm in hive **{hive.name}** stopped producing combs, and needs a new queen."
+                except discord.HTTPException:
+                    continue
+                try:
+                    text = f"**{dead_queens[hive.id].display_name}**'s swarm in hive **{hive.name}** stopped producing combs, and needs a new queen."
+                except KeyError:
+                    text = f"Your swarm in hive **{hive.name}** stopped producing combs, and needs a new queen."
+                try:
                     await owner.send(
                         content=text,
                         components=discord.ui.MessageComponents(discord.ui.ActionRow(
-                            discord.ui.Button(label="See your hives", custom_id="RUNCOMMAND hive list", style=discord.ui.ButtonStyle.secondary),
+                            discord.ui.Button(
+                                label="See your hives",
+                                custom_id="RUNCOMMAND hive list",
+                                style=discord.ui.ButtonStyle.secondary
+                            ),
                         )),
                     )
                 except discord.HTTPException:
-                    pass
+                    continue
 
     @vbu.group(invoke_without_command=False)
     async def hive(self, ctx: vbu.Context):
@@ -145,7 +155,7 @@ class HiveCommands(vbu.Cog):
             len(hives),
             user.mention,
         )
-        embeds = []
+        embeds: typing.List[discord.Embed] = []
 
         # We have data for each hive
         hive_queen_count = 0
@@ -194,10 +204,14 @@ class HiveCommands(vbu.Cog):
             embeds.append(embed)
 
         # And send
-        components = None
+        components = discord.ui.MessageComponents()
         if hive_queen_count != len(hives):
-            components = discord.ui.MessageComponents(discord.ui.ActionRow(
-                discord.ui.Button(label="Clear your hives", custom_id="RUNCOMMAND hive clear", style=discord.ui.ButtonStyle.secondary),
+            components.add_component(discord.ui.ActionRow(
+                discord.ui.Button(
+                    label="Clear your hives",
+                    custom_id="RUNCOMMAND hive clear",
+                    style=discord.ui.ButtonStyle.secondary,
+                ),
             ))
         return await ctx.send(
             content,
